@@ -3229,21 +3229,14 @@
         // Main site
         if (getToken()) {
           startHeartbeat();
-          const loginPage = document.getElementById('login');
-          const createPage = document.getElementById('create');
           const saved = getSavedUserPage();
-          if (loginPage?.classList.contains('active') || createPage?.classList.contains('active')) {
-            showPage(saved || 'home', true);
-          } else if (saved && saved !== 'login' && saved !== 'create') {
-            showPage(saved, true);
-          }
-        }
-        window.addEventListener('hashchange', () => {
-          if (IS_ADMIN_ROUTE || !getToken()) return;
-          const page = getSavedUserPage();
-          const active = document.querySelector('.page.active')?.id;
-          if (page && page !== active) showPage(page, true);
-        });
+          showPage(saved || 'home', true);
+          window.addEventListener('hashchange', () => {
+            if (IS_ADMIN_ROUTE || !getToken()) return;
+            const page = getSavedUserPage();
+            const active = document.querySelector('.page.active')?.id;
+            if (page && page !== active) showPage(page, true);
+          });
         } else {
           showPage('login', true);
         }
