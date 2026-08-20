@@ -1366,35 +1366,32 @@
         </button>
       </header>
 
-      <!-- Top: Total Users + large Balance (with Earned Today on the side) -->
-      <div class="grid grid-cols-2 gap-3 mb-3">
-        <div class="glass-strong rounded-2xl p-4">
-          <div class="flex items-center gap-2 mb-2">
-            <div class="w-9 h-9 rounded-xl bg-pink-300/15 flex items-center justify-center">
-              <i class="fa-solid fa-users text-pink-300 text-sm"></i>
+      <!-- Balance + Earned Today — one connected long card -->
+      <div class="glass-strong rounded-2xl p-4 mb-3">
+        <div class="flex items-stretch">
+          <div class="flex-1 min-w-0 pr-4">
+            <div class="flex items-center gap-2 mb-2">
+              <div class="w-9 h-9 rounded-xl bg-orange-300/15 flex items-center justify-center">
+                <i class="fa-solid fa-wallet text-orange-300 text-sm"></i>
+              </div>
+              <p class="text-[10px] text-pink-100/55 leading-tight">Balance</p>
             </div>
-            <p class="text-[10px] text-pink-100/55 leading-tight">Total Users</p>
-          </div>
-          <p class="text-2xl font-bold tracking-tight" id="stat-total-users">—</p>
-        </div>
-        <div class="glass-strong rounded-2xl p-4">
-          <div class="flex items-center gap-2 mb-2">
-            <div class="w-9 h-9 rounded-xl bg-orange-300/15 flex items-center justify-center">
-              <i class="fa-solid fa-wallet text-orange-300 text-sm"></i>
-            </div>
-            <p class="text-[10px] text-pink-100/55 leading-tight">Balance</p>
-          </div>
-          <div class="flex items-end justify-between gap-2">
             <p class="text-2xl font-bold tracking-tight" id="stat-balance">₱0</p>
-            <div class="text-right leading-tight shrink-0">
-              <p class="text-[10px] text-pink-100/50">Earned Today</p>
-              <p class="text-sm font-bold text-emerald-300" id="stat-earnings">₱0</p>
+          </div>
+          <div class="w-px self-stretch bg-pink-200/15 mx-1"></div>
+          <div class="flex-1 min-w-0 pl-4 text-right">
+            <div class="flex items-center justify-end gap-2 mb-2">
+              <p class="text-[10px] text-pink-100/55 leading-tight">Earned Today</p>
+              <div class="w-9 h-9 rounded-xl bg-emerald-400/15 flex items-center justify-center">
+                <i class="fa-solid fa-chart-line text-emerald-300 text-sm"></i>
+              </div>
             </div>
+            <p class="text-2xl font-bold tracking-tight text-emerald-300" id="stat-earnings">₱0</p>
           </div>
         </div>
       </div>
 
-      <!-- Under Balance: Deposits + Withdrawals only -->
+      <!-- Deposits + Withdrawals -->
       <div class="grid grid-cols-2 gap-3 mb-6">
         <button type="button" onclick="showPage('admin-deposits')" class="glass-strong rounded-2xl p-3.5 text-left card-hover w-full">
           <p class="text-[10px] text-pink-100/50 mb-1">Deposits Today</p>
@@ -1408,67 +1405,63 @@
         </button>
       </div>
 
-      <!-- Activity (Today) -->
+      <!-- Activity (Today) + Total Users pie -->
       <div class="glass-strong rounded-2xl p-5 mb-6">
         <div class="flex items-center justify-between mb-4">
           <div>
             <h3 class="font-semibold text-sm">Activity (Today)</h3>
-            <p class="text-[10px] text-pink-100/45 mt-0.5">Registers & logins</p>
-          </div>
-          <div class="flex items-center gap-3 text-[10px]">
-            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-pink-300"></span> Registers</span>
-            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-orange-300/80"></span> Logins</span>
+            <p class="text-[10px] text-pink-100/45 mt-0.5">Users summary &amp; activity</p>
           </div>
         </div>
-        <div class="grid grid-cols-3 gap-3">
-          <div class="rounded-xl bg-white/5 px-3 py-2.5 border border-pink-200/10">
-            <p class="text-[10px] text-pink-100/45">Total Users</p>
-            <p class="text-xl font-bold tracking-tight" id="chart-stat-users">—</p>
+
+        <div class="flex flex-col sm:flex-row gap-5 items-center mb-5">
+          <!-- Pie chart -->
+          <div class="relative w-36 h-36 shrink-0">
+            <svg id="admin-users-pie" viewBox="0 0 120 120" class="w-full h-full -rotate-90">
+              <circle cx="60" cy="60" r="48" fill="none" stroke="rgba(255,190,205,0.12)" stroke-width="14"/>
+              <circle id="pie-new-arc" cx="60" cy="60" r="48" fill="none" stroke="#f9a8d4" stroke-width="14"
+                stroke-dasharray="0 302" stroke-linecap="round"/>
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center rotate-0" style="transform:none">
+              <p class="text-[10px] text-pink-100/50">Total</p>
+              <p class="text-xl font-bold tracking-tight leading-none" id="chart-stat-users">—</p>
+            </div>
           </div>
-          <div class="rounded-xl bg-white/5 px-3 py-2.5 border border-pink-200/10">
-            <p class="text-[10px] text-pink-100/45">Logins Today</p>
-            <p class="text-xl font-bold tracking-tight text-orange-300" id="chart-stat-logins">—</p>
-          </div>
-          <div class="rounded-xl bg-white/5 px-3 py-2.5 border border-pink-200/10">
-            <p class="text-[10px] text-pink-100/45">Registers Today</p>
-            <p class="text-xl font-bold tracking-tight text-pink-300" id="chart-stat-regs">—</p>
+          <!-- Legend / summary -->
+          <div class="flex-1 w-full space-y-2.5">
+            <div class="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2.5 border border-pink-200/10">
+              <span class="flex items-center gap-2 text-xs text-pink-100/70">
+                <span class="w-2.5 h-2.5 rounded-full bg-pink-300"></span> New users today
+              </span>
+              <span class="text-sm font-semibold text-pink-300" id="chart-stat-regs">0</span>
+            </div>
+            <div class="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2.5 border border-pink-200/10">
+              <span class="flex items-center gap-2 text-xs text-pink-100/70">
+                <span class="w-2.5 h-2.5 rounded-full bg-pink-200/30"></span> Existing users
+              </span>
+              <span class="text-sm font-semibold" id="chart-stat-existing">0</span>
+            </div>
+            <div class="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2.5 border border-pink-200/10">
+              <span class="flex items-center gap-2 text-xs text-pink-100/70">
+                <span class="w-2.5 h-2.5 rounded-full bg-orange-300/80"></span> Logins today
+              </span>
+              <span class="text-sm font-semibold text-orange-300" id="chart-stat-logins">0</span>
+            </div>
           </div>
         </div>
+        <!-- hidden id kept for loadAdminData compatibility -->
+        <span id="stat-total-users" class="hidden">—</span>
       </div>
 
-      <!-- Two-column: quick snapshot + recent activity -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-        <div class="glass-strong rounded-2xl p-4">
-          <h3 class="font-semibold text-sm mb-3">Quick snapshot</h3>
-          <div class="space-y-2.5">
-            <div class="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2.5">
-              <span class="text-xs text-pink-100/60">New users today</span>
-              <span class="text-sm font-semibold" id="snap-users-today">0</span>
-            </div>
-            <div class="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2.5">
-              <span class="text-xs text-pink-100/60">Active now</span>
-              <span class="text-sm font-semibold text-emerald-300" id="snap-active">0</span>
-            </div>
-            <div class="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2.5">
-              <span class="text-xs text-pink-100/60">Logins today</span>
-              <span class="text-sm font-semibold" id="snap-logins">0</span>
-            </div>
-            <div class="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2.5">
-              <span class="text-xs text-pink-100/60">Platform balance</span>
-              <span class="text-sm font-semibold text-orange-300" id="snap-balance">₱0</span>
-            </div>
-          </div>
+      <!-- Recent Activity (full width) -->
+      <div class="glass-strong rounded-2xl overflow-hidden flex flex-col mb-6">
+        <div class="px-4 py-3 border-b border-pink-200/10 flex items-center justify-between">
+          <h3 class="font-semibold text-sm">Recent Activity</h3>
+          <span class="text-[10px] text-pink-100/40">Live</span>
         </div>
-        <div class="glass-strong rounded-2xl overflow-hidden flex flex-col">
-          <div class="px-4 py-3 border-b border-pink-200/10 flex items-center justify-between">
-            <h3 class="font-semibold text-sm">Recent Activity</h3>
-            <span class="text-[10px] text-pink-100/40">Live</span>
-          </div>
-          <div class="divide-y divide-pink-200/10 max-h-64 overflow-y-auto flex-1" id="admin-activity-list">
-            <p class="px-4 py-6 text-center text-xs text-pink-100/40">No activity yet</p>
-          </div>
+        <div class="divide-y divide-pink-200/10 max-h-80 overflow-y-auto flex-1" id="admin-activity-list">
+          <p class="px-4 py-6 text-center text-xs text-pink-100/40">No activity yet</p>
         </div>
-      </div>
       </div>
     </div>
   </div>
@@ -2428,33 +2421,35 @@
     }
 
     function renderAdminChart() {
-      // Activity (Today) — fill today's counts only
       const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Manila', year: 'numeric', month: '2-digit', day: '2-digit' });
       const todayKey = fmt.format(new Date());
 
+      const totalUsers = (adminUsersCache || []).length;
+      const newToday = (adminUsersCache || []).filter(u => isCreatedTodayPH(u.createdAt)).length;
+      const existing = Math.max(0, totalUsers - newToday);
       const loginsToday = (adminActivityCache || []).filter(
         a => a.type === 'login' && fmt.format(new Date(a.time)) === todayKey
       ).length;
-      const regsToday = (adminActivityCache || []).filter(
-        a => a.type === 'register' && fmt.format(new Date(a.time)) === todayKey
-      ).length;
 
       const elU = document.getElementById('chart-stat-users');
-      const elL = document.getElementById('chart-stat-logins');
       const elR = document.getElementById('chart-stat-regs');
-      if (elU) elU.textContent = (adminUsersCache || []).length;
+      const elE = document.getElementById('chart-stat-existing');
+      const elL = document.getElementById('chart-stat-logins');
+      const elHidden = document.getElementById('stat-total-users');
+      if (elU) elU.textContent = totalUsers;
+      if (elR) elR.textContent = newToday;
+      if (elE) elE.textContent = existing;
       if (elL) elL.textContent = loginsToday;
-      if (elR) elR.textContent = regsToday;
+      if (elHidden) elHidden.textContent = totalUsers;
 
-      // Quick snapshot
-      const todayUsers = (adminUsersCache || []).filter(u => isCreatedTodayPH(u.createdAt)).length;
-      const activeNow = (adminUsersCache || []).filter(u => u.isActive).length;
-      const snapU = document.getElementById('snap-users-today');
-      const snapA = document.getElementById('snap-active');
-      const snapL = document.getElementById('snap-logins');
-      if (snapU) snapU.textContent = todayUsers;
-      if (snapA) snapA.textContent = activeNow;
-      if (snapL) snapL.textContent = loginsToday;
+      // Pie: circumference ≈ 2 * π * 48 ≈ 301.6
+      const C = 2 * Math.PI * 48;
+      const arc = document.getElementById('pie-new-arc');
+      if (arc) {
+        const ratio = totalUsers > 0 ? (newToday / totalUsers) : 0;
+        const len = Math.max(0, Math.min(C, ratio * C));
+        arc.setAttribute('stroke-dasharray', len + ' ' + C);
+      }
     }
 
     function renderAdminActivePage() {
