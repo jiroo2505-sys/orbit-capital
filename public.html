@@ -2543,14 +2543,19 @@
       }
     }
 
-    function statusBadge(isActive) {
+    function statusBadge(isActive, status) {
+      if (status === 'banned') {
+        return `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium bg-rose-500/20 text-rose-300">
+          <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>Banned
+        </span>`;
+      }
       if (isActive) {
         return `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium bg-emerald-400/15 text-emerald-300">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>Active
         </span>`;
       }
-      return `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium bg-rose-400/15 text-rose-300">
-        <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>Inactive
+      return `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium bg-white/10 text-pink-100/50">
+        <span class="w-1.5 h-1.5 rounded-full bg-pink-100/40"></span>Inactive
       </span>`;
     }
 
@@ -2595,9 +2600,9 @@
           <td class="px-4 py-3 text-sm">${u.email}</td>
           <td class="px-4 py-3 text-xs text-pink-100/55">${formatAdminDate(u.createdAt)}</td>
           <td class="px-4 py-3 text-xs text-pink-100/55">${formatAdminDate(u.lastLogin)}</td>
-          <td class="px-4 py-3">${statusBadge(u.isActive)}</td>
+          <td class="px-4 py-3">${statusBadge(u.isActive, u.status)}</td>
           <td class="px-4 py-3">
-            <button type="button" onclick="deleteAdminUser('${u.id}', '${(u.email || '').replace(/'/g, "\\'")}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-rose-400/15 text-rose-300 hover:bg-rose-400/25">Delete</button>
+            <button type="button" onclick="banAdminUser('${u.id}', '${(u.email || '').replace(/'/g, "\\'")}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-rose-400/15 text-rose-300 hover:bg-rose-400/25">Ban</button>
           </td>
         </tr>
       `).join('');
@@ -2610,8 +2615,8 @@
             <p class="text-[10px] text-pink-100/40">Last login ${formatAdminDate(u.lastLogin)}</p>
           </div>
           <div class="flex flex-col items-end gap-2 shrink-0">
-            ${statusBadge(u.isActive)}
-            <button type="button" onclick="deleteAdminUser('${u.id}', '${(u.email || '').replace(/'/g, "\\'")}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-rose-400/15 text-rose-300">Delete</button>
+            ${statusBadge(u.isActive, u.status)}
+            <button type="button" onclick="banAdminUser('${u.id}', '${(u.email || '').replace(/'/g, "\\'")}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-rose-400/15 text-rose-300">Ban</button>
           </div>
         </div>
       `).join('');
@@ -2639,9 +2644,9 @@
           <td class="px-4 py-3 text-sm">${u.email}</td>
           <td class="px-4 py-3 text-xs text-pink-100/55">${formatAdminDate(u.createdAt)}</td>
           <td class="px-4 py-3 text-xs text-pink-100/55">${formatAdminDate(u.lastLogin)}</td>
-          <td class="px-4 py-3">${statusBadge(u.isActive)}</td>
+          <td class="px-4 py-3">${statusBadge(u.isActive, u.status)}</td>
           <td class="px-4 py-3">
-            <button type="button" onclick="deleteAdminUser('${u.id}', '${(u.email || '').replace(/'/g, "\\'")}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-rose-400/15 text-rose-300 hover:bg-rose-400/25">Delete</button>
+            <button type="button" onclick="banAdminUser('${u.id}', '${(u.email || '').replace(/'/g, "\\'")}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-rose-400/15 text-rose-300 hover:bg-rose-400/25">Ban</button>
           </td>
         </tr>
       `).join('');
@@ -2652,8 +2657,8 @@
             <p class="text-[10px] text-pink-100/40 mt-0.5">Created ${formatAdminDate(u.createdAt)}</p>
           </div>
           <div class="flex flex-col items-end gap-2 shrink-0">
-            ${statusBadge(u.isActive)}
-            <button type="button" onclick="deleteAdminUser('${u.id}', '${(u.email || '').replace(/'/g, "\\'")}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-rose-400/15 text-rose-300">Delete</button>
+            ${statusBadge(u.isActive, u.status)}
+            <button type="button" onclick="banAdminUser('${u.id}', '${(u.email || '').replace(/'/g, "\\'")}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-rose-400/15 text-rose-300">Ban</button>
           </div>
         </div>
       `).join('');
@@ -2679,8 +2684,12 @@
       tbody.innerHTML = users.map(u => {
         const safeEmail = (u.email || '').replace(/'/g, "\\'");
         const bal = typeof formatPeso === 'function' ? formatPeso(u.balance) : ('₱' + (Number(u.balance) || 0));
+        const isBanned = u.status === 'banned';
+        const actionBtn = isBanned
+          ? `<button type="button" onclick="unbanAdminUser('${u.id}', '${safeEmail}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-emerald-400/15 text-emerald-300 hover:bg-emerald-400/25">Unban</button>`
+          : `<button type="button" onclick="banAdminUser('${u.id}', '${safeEmail}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-rose-400/15 text-rose-300 hover:bg-rose-400/25">Ban</button>`;
         return `
-        <tr class="border-b border-pink-200/5 hover:bg-white/5">
+        <tr class="border-b border-pink-200/5 hover:bg-white/5 ${isBanned ? 'opacity-75' : ''}">
           <td class="px-4 py-3 text-sm">${u.email}</td>
           <td class="px-4 py-3 text-sm font-semibold text-orange-300 whitespace-nowrap">${bal}</td>
           <td class="px-4 py-3">
@@ -2690,31 +2699,33 @@
             </div>
           </td>
           <td class="px-4 py-3 text-xs text-pink-100/55 whitespace-nowrap">${formatAdminDate(u.createdAt)}</td>
-          <td class="px-4 py-3">${statusBadge(u.isActive)}</td>
-          <td class="px-4 py-3">
-            <button type="button" onclick="deleteAdminUser('${u.id}', '${safeEmail}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-rose-400/15 text-rose-300 hover:bg-rose-400/25">Delete</button>
-          </td>
+          <td class="px-4 py-3">${statusBadge(u.isActive, u.status)}</td>
+          <td class="px-4 py-3">${actionBtn}</td>
         </tr>`;
       }).join('');
 
       mobile.innerHTML = users.map(u => {
         const safeEmail = (u.email || '').replace(/'/g, "\\'");
         const bal = typeof formatPeso === 'function' ? formatPeso(u.balance) : ('₱' + (Number(u.balance) || 0));
+        const isBanned = u.status === 'banned';
+        const actionBtn = isBanned
+          ? `<button type="button" onclick="unbanAdminUser('${u.id}', '${safeEmail}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-emerald-400/15 text-emerald-300">Unban</button>`
+          : `<button type="button" onclick="banAdminUser('${u.id}', '${safeEmail}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-rose-400/15 text-rose-300">Ban</button>`;
         return `
-        <div class="px-4 py-3 space-y-2.5 border-b border-pink-200/5">
+        <div class="px-4 py-3 space-y-2.5 border-b border-pink-200/5 ${isBanned ? 'opacity-75' : ''}">
           <div class="flex items-center justify-between gap-3">
             <div class="min-w-0">
               <p class="text-sm font-medium truncate">${u.email}</p>
               <p class="text-[10px] text-orange-300 mt-0.5">Balance ${bal}</p>
               <p class="text-[10px] text-pink-100/40">Created ${formatAdminDate(u.createdAt)}</p>
             </div>
-            ${statusBadge(u.isActive)}
+            ${statusBadge(u.isActive, u.status)}
           </div>
           <div class="flex items-center gap-2">
             <input type="text" id="pwd-input-m-${u.id}" maxlength="25" placeholder="New password" autocomplete="off" data-lpignore="true" class="input-field flex-1 px-3 py-2 rounded-xl text-xs">
             <button type="button" onclick="saveAdminUserPassword('${u.id}', '${safeEmail}', true)" class="text-[10px] px-3 py-2 rounded-xl bg-pink-300/20 text-pink-300 font-medium shrink-0">Set</button>
           </div>
-          <button type="button" onclick="deleteAdminUser('${u.id}', '${safeEmail}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-rose-400/15 text-rose-300">Delete</button>
+          ${actionBtn}
         </div>`;
       }).join('');
 
@@ -2878,9 +2889,9 @@
       }
     }
 
-    async function deleteAdminUser(id, email) {
+    async function banAdminUser(id, email) {
       if (!id) return;
-      const ok = confirm('Delete user "' + (email || id) + '"?\nThis cannot be undone.');
+      const ok = confirm('Deactivate / ban user "' + (email || id) + '"?\nThey will not be able to log in. Data is kept.');
       if (!ok) return;
       const token = getAdminToken();
       if (!token) {
@@ -2888,24 +2899,64 @@
         return;
       }
       try {
-        const res = await fetch(`${API_URL}/admin/users/${encodeURIComponent(id)}`, {
-          method: 'DELETE',
+        const res = await fetch(`${API_URL}/admin/users/${encodeURIComponent(id)}/ban`, {
+          method: 'POST',
           headers: { Authorization: 'Bearer ' + token }
         });
         const data = await res.json();
         if (data.success) {
-          showToast('User deleted', 'success');
-          adminUsersCache = (adminUsersCache || []).filter(u => u.id !== id);
-          renderAdminUsers(adminUsersCache);
-          renderAdminAllUsers(adminUsersCache);
+          showToast('User deactivated', 'success');
+          adminUsersCache = (adminUsersCache || []).map(u =>
+            u.id === id ? { ...u, status: 'banned', isActive: false } : u
+          );
+          renderAdminAllUsers(
+            (document.getElementById('admin-all-search')?.value || '').trim()
+              ? adminUsersCache.filter(u => (u.email || '').toLowerCase().includes((document.getElementById('admin-all-search')?.value || '').toLowerCase().trim()))
+              : adminUsersCache
+          );
           loadAdminData();
         } else {
-          showToast(data.message || 'Delete failed', 'error');
+          showToast(data.message || 'Ban failed', 'error');
         }
       } catch (err) {
         showToast('Cannot reach server', 'error');
       }
     }
+
+    async function unbanAdminUser(id, email) {
+      if (!id) return;
+      const ok = confirm('Reactivate user "' + (email || id) + '"?');
+      if (!ok) return;
+      const token = getAdminToken();
+      if (!token) {
+        showToast('Admin session expired', 'error');
+        return;
+      }
+      try {
+        const res = await fetch(`${API_URL}/admin/users/${encodeURIComponent(id)}/unban`, {
+          method: 'POST',
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('User reactivated', 'success');
+          adminUsersCache = (adminUsersCache || []).map(u =>
+            u.id === id ? { ...u, status: 'active' } : u
+          );
+          renderAdminAllUsers(
+            (document.getElementById('admin-all-search')?.value || '').trim()
+              ? adminUsersCache.filter(u => (u.email || '').toLowerCase().includes((document.getElementById('admin-all-search')?.value || '').toLowerCase().trim()))
+              : adminUsersCache
+          );
+          loadAdminData();
+        } else {
+          showToast(data.message || 'Unban failed', 'error');
+        }
+      } catch (err) {
+        showToast('Cannot reach server', 'error');
+      }
+    }
+
 
     function renderAdminActivity(logs) {
       const el = document.getElementById('admin-activity-list');
