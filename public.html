@@ -323,6 +323,82 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(249,168,212,0.25); border-radius: 4px; }
 
+    /* ===== Admin left drawer (hidden, swipe / menu) ===== */
+    #admin-drawer-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9000;
+      background: rgba(10, 4, 8, 0.55);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    #admin-drawer-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #admin-drawer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      height: 100dvh;
+      width: min(300px, 82vw);
+      z-index: 9001;
+      background: linear-gradient(180deg, rgba(40, 12, 28, 0.98), rgba(22, 6, 16, 0.98));
+      border-right: 1px solid rgba(249, 168, 212, 0.18);
+      box-shadow: 8px 0 40px rgba(0,0,0,0.4);
+      transform: translateX(-105%);
+      transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+      display: flex;
+      flex-direction: column;
+      padding: 20px 14px 24px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    #admin-drawer.open {
+      transform: translateX(0);
+    }
+    .admin-drawer-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      text-align: left;
+      padding: 12px 14px;
+      border-radius: 14px;
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(255, 230, 240, 0.85);
+      transition: background 0.15s ease, color 0.15s ease;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+    }
+    .admin-drawer-item:hover,
+    .admin-drawer-item:active {
+      background: rgba(249, 168, 212, 0.12);
+      color: #f9a8d4;
+    }
+    .admin-drawer-item.active-nav {
+      background: rgba(249, 168, 212, 0.16);
+      color: #f9a8d4;
+    }
+    .admin-drawer-item i {
+      width: 20px;
+      text-align: center;
+      opacity: 0.9;
+    }
+    .admin-drawer-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(249, 168, 212, 0.4);
+      padding: 12px 14px 6px;
+    }
+
     /* ===== Toast / Error notification ===== */
     #toast {
       position: fixed;
@@ -1274,6 +1350,9 @@
     <div class="max-w-5xl mx-auto min-h-screen px-4 sm:px-6 pt-5 pb-16 relative z-10">
       <header class="flex items-center justify-between mb-6 gap-3">
         <div class="flex items-center gap-3 min-w-0">
+          <button type="button" onclick="openAdminDrawer()" class="w-10 h-10 rounded-xl glass flex items-center justify-center card-hover shrink-0" aria-label="Open menu">
+            <i class="fa-solid fa-bars text-pink-200"></i>
+          </button>
           <div class="w-9 h-9 rounded-full border-2 border-pink-300/80 flex items-center justify-center shrink-0 shadow-[0_0_12px_rgba(249,168,212,0.35)]">
             <div class="w-3.5 h-3.5 rounded-full bg-pink-300"></div>
           </div>
@@ -1421,6 +1500,9 @@
     <div class="max-w-5xl mx-auto min-h-screen px-4 sm:px-6 pt-5 pb-16 relative z-10">
       <header class="flex items-center justify-between mb-6 gap-3">
         <div class="flex items-center gap-3 min-w-0">
+          <button type="button" onclick="openAdminDrawer()" class="w-10 h-10 rounded-xl glass flex items-center justify-center card-hover shrink-0">
+            <i class="fa-solid fa-bars text-pink-200"></i>
+          </button>
           <button type="button" onclick="showPage('admin-dash')" class="w-10 h-10 rounded-xl glass flex items-center justify-center card-hover shrink-0">
             <i class="fa-solid fa-arrow-left text-pink-200"></i>
           </button>
@@ -1561,6 +1643,135 @@
       </div>
     </div>
   </div>
+
+  <!-- ========== ADMIN SETTINGS ========== -->
+  <div id="admin-settings" class="page">
+    <div class="max-w-5xl mx-auto min-h-screen px-4 sm:px-6 pt-5 pb-16 relative z-10">
+      <header class="flex items-center gap-3 mb-6">
+        <button type="button" onclick="openAdminDrawer()" class="w-10 h-10 rounded-xl glass flex items-center justify-center card-hover shrink-0">
+          <i class="fa-solid fa-bars text-pink-200"></i>
+        </button>
+        <button type="button" onclick="showPage('admin-dash')" class="w-10 h-10 rounded-xl glass flex items-center justify-center card-hover shrink-0">
+          <i class="fa-solid fa-arrow-left text-pink-200"></i>
+        </button>
+        <div>
+          <p class="font-semibold text-sm sm:text-base">Settings</p>
+          <p class="text-[10px] text-pink-100/45">Admin preferences</p>
+        </div>
+      </header>
+      <div class="space-y-3">
+        <div class="glass-strong rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium">Admin password</p>
+            <p class="text-[10px] text-pink-100/45 mt-0.5">Change via Render Environment Variables</p>
+          </div>
+          <span class="text-[10px] text-pink-100/40">Env only</span>
+        </div>
+        <div class="glass-strong rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium">Activity refresh</p>
+            <p class="text-[10px] text-pink-100/45 mt-0.5">Dashboard auto-refresh every 10s</p>
+          </div>
+          <span class="text-[10px] text-emerald-300">On</span>
+        </div>
+        <div class="glass-strong rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium">Timezone</p>
+            <p class="text-[10px] text-pink-100/45 mt-0.5">Display times in Asia/Manila</p>
+          </div>
+          <span class="text-[10px] text-pink-300">PH</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== ADMIN PAYMENT METHODS ========== -->
+  <div id="admin-payments" class="page">
+    <div class="max-w-5xl mx-auto min-h-screen px-4 sm:px-6 pt-5 pb-16 relative z-10">
+      <header class="flex items-center gap-3 mb-6">
+        <button type="button" onclick="openAdminDrawer()" class="w-10 h-10 rounded-xl glass flex items-center justify-center card-hover shrink-0">
+          <i class="fa-solid fa-bars text-pink-200"></i>
+        </button>
+        <button type="button" onclick="showPage('admin-dash')" class="w-10 h-10 rounded-xl glass flex items-center justify-center card-hover shrink-0">
+          <i class="fa-solid fa-arrow-left text-pink-200"></i>
+        </button>
+        <div>
+          <p class="font-semibold text-sm sm:text-base">Payment methods</p>
+          <p class="text-[10px] text-pink-100/45">For user deposits & withdrawals</p>
+        </div>
+      </header>
+      <div class="glass-strong rounded-2xl p-6 text-center mb-4">
+        <div class="w-14 h-14 rounded-2xl bg-pink-300/10 flex items-center justify-center mx-auto mb-3">
+          <i class="fa-solid fa-wallet text-pink-300 text-xl"></i>
+        </div>
+        <p class="text-sm font-medium mb-1">No payment methods yet</p>
+        <p class="text-xs text-pink-100/45 leading-relaxed max-w-xs mx-auto">
+          Dito mo ilalagay ang GCash, bank, crypto, at iba pang methods para sa users. Idadagdag natin kapag ready na.
+        </p>
+      </div>
+      <button type="button" class="w-full glass rounded-2xl p-4 text-left flex items-center gap-3 opacity-60 cursor-not-allowed">
+        <i class="fa-solid fa-plus text-pink-300 w-5 text-center"></i>
+        <span class="text-sm">Add payment method (soon)</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Admin drawer (shared) -->
+  <div id="admin-drawer-overlay" onclick="closeAdminDrawer()"></div>
+  <aside id="admin-drawer" aria-hidden="true">
+    <div class="flex items-center gap-3 px-2 mb-6">
+      <div class="w-10 h-10 rounded-full border-2 border-pink-300/80 flex items-center justify-center shrink-0">
+        <div class="w-3.5 h-3.5 rounded-full bg-gradient-to-br from-pink-300 to-orange-300"></div>
+      </div>
+      <div class="min-w-0">
+        <p class="font-semibold text-sm">Orbit Capital</p>
+        <p class="text-[10px] text-pink-100/45">Admin menu</p>
+      </div>
+      <button type="button" onclick="closeAdminDrawer()" class="ml-auto w-9 h-9 rounded-xl glass flex items-center justify-center">
+        <i class="fa-solid fa-xmark text-pink-200"></i>
+      </button>
+    </div>
+
+    <p class="admin-drawer-label">Main</p>
+    <button type="button" class="admin-drawer-item" data-admin-nav="admin-dash" onclick="adminNav('admin-dash')">
+      <i class="fa-solid fa-house"></i> Home
+    </button>
+    <button type="button" class="admin-drawer-item" data-admin-nav="admin-users-all" onclick="adminNav('admin-users-all')">
+      <i class="fa-solid fa-users"></i> All Users
+    </button>
+    <button type="button" class="admin-drawer-item" data-admin-nav="admin-active" onclick="adminNav('admin-active')">
+      <i class="fa-solid fa-circle text-emerald-400 text-[10px]"></i> Active Now
+    </button>
+    <button type="button" class="admin-drawer-item" data-admin-nav="admin-logins" onclick="adminNav('admin-logins')">
+      <i class="fa-solid fa-right-to-bracket"></i> Logins Today
+    </button>
+
+    <p class="admin-drawer-label">Finance</p>
+    <button type="button" class="admin-drawer-item" data-admin-nav="admin-earnings" onclick="adminNav('admin-earnings')">
+      <i class="fa-solid fa-chart-line"></i> Earned Today
+    </button>
+    <button type="button" class="admin-drawer-item" data-admin-nav="admin-deposits" onclick="adminNav('admin-deposits')">
+      <i class="fa-solid fa-arrow-down"></i> Deposits
+    </button>
+    <button type="button" class="admin-drawer-item" data-admin-nav="admin-withdrawals" onclick="adminNav('admin-withdrawals')">
+      <i class="fa-solid fa-arrow-up"></i> Withdrawals
+    </button>
+    <button type="button" class="admin-drawer-item" data-admin-nav="admin-payments" onclick="adminNav('admin-payments')">
+      <i class="fa-solid fa-credit-card"></i> Payment methods
+    </button>
+
+    <p class="admin-drawer-label">System</p>
+    <button type="button" class="admin-drawer-item" data-admin-nav="admin-settings" onclick="adminNav('admin-settings')">
+      <i class="fa-solid fa-gear"></i> Settings
+    </button>
+
+    <div class="mt-auto pt-6 px-1">
+      <button type="button" onclick="closeAdminDrawer(); handleAdminLogout();" class="admin-drawer-item border border-rose-400/20 text-rose-300">
+        <i class="fa-solid fa-right-from-bracket"></i> Sign out
+      </button>
+      <p class="text-center text-[10px] text-pink-100/25 mt-4">Swipe right from edge to open</p>
+    </div>
+  </aside>
 
   <!-- BOTTOM NAV -->
   <nav id="bottom-nav" class="fixed bottom-0 left-0 right-0 max-w-md mx-auto glass-strong border-t border-pink-200/15 px-4 py-2.5 flex justify-between items-center z-50 rounded-t-2xl hidden">
@@ -1821,6 +2032,8 @@
       'admin-earnings': 'bg-menu',
       'admin-deposits': 'bg-menu',
       'admin-withdrawals': 'bg-menu',
+      'admin-settings': 'bg-menu',
+      'admin-payments': 'bg-menu',
       home: 'bg-home',
       portfolio: 'bg-portfolio',
       deals: 'bg-deals',
@@ -1842,8 +2055,8 @@
       insights: 'nav-insights'
     };
 
-    const AUTH_PAGES = ['login', 'create', 'admin-login', 'admin-dash', 'admin-users-all', 'admin-active', 'admin-logins', 'admin-earnings', 'admin-deposits', 'admin-withdrawals'];
-    const ADMIN_PAGES = ['admin-login', 'admin-dash', 'admin-users-all', 'admin-active', 'admin-logins', 'admin-earnings', 'admin-deposits', 'admin-withdrawals'];
+    const AUTH_PAGES = ['login', 'create', 'admin-login', 'admin-dash', 'admin-users-all', 'admin-active', 'admin-logins', 'admin-earnings', 'admin-deposits', 'admin-withdrawals', 'admin-settings', 'admin-payments'];
+    const ADMIN_PAGES = ['admin-login', 'admin-dash', 'admin-users-all', 'admin-active', 'admin-logins', 'admin-earnings', 'admin-deposits', 'admin-withdrawals', 'admin-settings', 'admin-payments'];
     let isNavigating = false;
     let adminUsersCache = [];
     const IS_ADMIN_ROUTE = window.location.pathname.replace(/\/$/, '') === '/admin';
@@ -1976,10 +2189,65 @@
 
     function handleAdminLogout() {
       stopAdminRefresh();
+      closeAdminDrawer();
       clearAdminToken();
       showToast('Admin signed out', 'success');
       showPage('admin-login');
     }
+
+    // ========== ADMIN DRAWER (left menu + swipe) ==========
+    function openAdminDrawer() {
+      const d = document.getElementById('admin-drawer');
+      const o = document.getElementById('admin-drawer-overlay');
+      if (!d) return;
+      d.classList.add('open');
+      o?.classList.add('open');
+      d.setAttribute('aria-hidden', 'false');
+      // highlight current page
+      const active = document.querySelector('.page.active')?.id;
+      document.querySelectorAll('[data-admin-nav]').forEach(btn => {
+        btn.classList.toggle('active-nav', btn.getAttribute('data-admin-nav') === active);
+      });
+    }
+    function closeAdminDrawer() {
+      document.getElementById('admin-drawer')?.classList.remove('open');
+      document.getElementById('admin-drawer-overlay')?.classList.remove('open');
+      document.getElementById('admin-drawer')?.setAttribute('aria-hidden', 'true');
+    }
+    function adminNav(pageId) {
+      closeAdminDrawer();
+      showPage(pageId);
+    }
+
+    // Swipe: from left edge → open; on drawer swipe left → close
+    (function initAdminSwipe() {
+      let startX = 0, startY = 0, tracking = false;
+      document.addEventListener('touchstart', (e) => {
+        if (!IS_ADMIN_ROUTE || !getAdminToken()) return;
+        const t = e.touches[0];
+        startX = t.clientX;
+        startY = t.clientY;
+        tracking = true;
+      }, { passive: true });
+      document.addEventListener('touchend', (e) => {
+        if (!tracking) return;
+        tracking = false;
+        if (!IS_ADMIN_ROUTE || !getAdminToken()) return;
+        const t = e.changedTouches[0];
+        const dx = t.clientX - startX;
+        const dy = t.clientY - startY;
+        if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy)) return;
+        const drawerOpen = document.getElementById('admin-drawer')?.classList.contains('open');
+        // Swipe right from left edge (or general swipe right when closed) → open
+        if (dx > 60 && startX < 40 && !drawerOpen) {
+          openAdminDrawer();
+        }
+        // Swipe left when open → close (user said "swipe left")
+        if (dx < -60 && drawerOpen) {
+          closeAdminDrawer();
+        }
+      }, { passive: true });
+    })();
 
     function formatAdminDate(iso) {
       if (!iso) return '—';
