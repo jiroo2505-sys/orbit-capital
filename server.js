@@ -355,6 +355,25 @@ app.get('/api/admin/users', adminMiddleware, (req, res) => {
   }
 });
 
+// Delete user (admin)
+app.delete('/api/admin/users/:id', adminMiddleware, (req, res) => {
+  try {
+    const id = req.params.id;
+    let users = loadUsers();
+    const target = users.find(u => u.id === id);
+    if (!target) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    users = users.filter(u => u.id !== id);
+    saveUsers(users);
+    logActivity('admin_delete_user', target.email, { deletedId: id });
+    res.json({ success: true, message: 'User deleted', total: users.length });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 app.get('/api/admin/stats', adminMiddleware, (req, res) => {
   try {
     const users = loadUsers();
@@ -407,7 +426,7 @@ app.get('/api/admin/activity', adminMiddleware, (req, res) => {
 
 // Start server — listen on 0.0.0.0 so phone / other devices can connect
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`\n Orbit Capital running!`);
+  console.log(`\n🚀 Orbit Capital running!`);
   console.log(`   Local  : http://localhost:${PORT}`);
   console.log(`   Admin  : http://localhost:${PORT}/admin`);
   console.log(`   Phone  : use the localtunnel / ngrok link`);
