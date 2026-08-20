@@ -1501,7 +1501,7 @@
               <tr class="text-[10px] uppercase tracking-wider text-pink-100/40 border-b border-pink-200/10">
                 <th class="px-4 py-3 font-medium">Email / Phone</th>
                 <th class="px-4 py-3 font-medium">Balance</th>
-                <th class="px-4 py-3 font-medium">Password</th>
+                <th class="px-4 py-3 font-medium">New password</th>
                 <th class="px-4 py-3 font-medium">Created</th>
                 <th class="px-4 py-3 font-medium">Status</th>
                 <th class="px-4 py-3 font-medium">Action</th>
@@ -2682,17 +2682,17 @@
         return `
         <tr class="border-b border-pink-200/5 hover:bg-white/5">
           <td class="px-4 py-3 text-sm">${u.email}</td>
-          <td class="px-4 py-3 text-sm font-semibold text-orange-300">${bal}</td>
+          <td class="px-4 py-3 text-sm font-semibold text-orange-300 whitespace-nowrap">${bal}</td>
           <td class="px-4 py-3">
-            <span class="text-xs text-pink-100/40 tracking-widest">••••••••</span>
+            <div class="flex items-center gap-1.5 min-w-[140px]">
+              <input type="text" id="pwd-input-${u.id}" maxlength="25" placeholder="New password" autocomplete="off" data-lpignore="true" class="input-field px-2.5 py-1.5 rounded-lg text-xs w-28 sm:w-32">
+              <button type="button" onclick="saveAdminUserPassword('${u.id}', '${safeEmail}')" class="text-[10px] px-2.5 py-1.5 rounded-lg bg-pink-300/20 text-pink-300 hover:bg-pink-300/30 shrink-0 font-medium">Set</button>
+            </div>
           </td>
-          <td class="px-4 py-3 text-xs text-pink-100/55">${formatAdminDate(u.createdAt)}</td>
+          <td class="px-4 py-3 text-xs text-pink-100/55 whitespace-nowrap">${formatAdminDate(u.createdAt)}</td>
           <td class="px-4 py-3">${statusBadge(u.isActive)}</td>
           <td class="px-4 py-3">
-            <div class="flex flex-wrap gap-1.5">
-              <button type="button" onclick="changeAdminUserPassword('${u.id}', '${safeEmail}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-pink-300/15 text-pink-300 hover:bg-pink-300/25">Change pass</button>
-              <button type="button" onclick="deleteAdminUser('${u.id}', '${safeEmail}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-rose-400/15 text-rose-300 hover:bg-rose-400/25">Delete</button>
-            </div>
+            <button type="button" onclick="deleteAdminUser('${u.id}', '${safeEmail}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-rose-400/15 text-rose-300 hover:bg-rose-400/25">Delete</button>
           </td>
         </tr>`;
       }).join('');
@@ -2701,20 +2701,20 @@
         const safeEmail = (u.email || '').replace(/'/g, "\\'");
         const bal = typeof formatPeso === 'function' ? formatPeso(u.balance) : ('₱' + (Number(u.balance) || 0));
         return `
-        <div class="px-4 py-3 space-y-2">
+        <div class="px-4 py-3 space-y-2.5 border-b border-pink-200/5">
           <div class="flex items-center justify-between gap-3">
             <div class="min-w-0">
               <p class="text-sm font-medium truncate">${u.email}</p>
               <p class="text-[10px] text-orange-300 mt-0.5">Balance ${bal}</p>
-              <p class="text-[10px] text-pink-100/40">Password ••••••••</p>
               <p class="text-[10px] text-pink-100/40">Created ${formatAdminDate(u.createdAt)}</p>
             </div>
             ${statusBadge(u.isActive)}
           </div>
-          <div class="flex gap-2">
-            <button type="button" onclick="changeAdminUserPassword('${u.id}', '${safeEmail}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-pink-300/15 text-pink-300">Change pass</button>
-            <button type="button" onclick="deleteAdminUser('${u.id}', '${safeEmail}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-rose-400/15 text-rose-300">Delete</button>
+          <div class="flex items-center gap-2">
+            <input type="text" id="pwd-input-m-${u.id}" maxlength="25" placeholder="New password" autocomplete="off" data-lpignore="true" class="input-field flex-1 px-3 py-2 rounded-xl text-xs">
+            <button type="button" onclick="saveAdminUserPassword('${u.id}', '${safeEmail}', true)" class="text-[10px] px-3 py-2 rounded-xl bg-pink-300/20 text-pink-300 font-medium shrink-0">Set</button>
           </div>
+          <button type="button" onclick="deleteAdminUser('${u.id}', '${safeEmail}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-rose-400/15 text-rose-300">Delete</button>
         </div>`;
       }).join('');
 
@@ -2828,11 +2828,20 @@
       if (listEl) listEl.innerHTML = '';
     }
 
-    async function changeAdminUserPassword(id, email) {
+    async function saveAdminUserPassword(id, email, mobile) {
       if (!id) return;
-      const pwd = prompt('New password for "' + (email || id) + '"\n(min 6, max 25 characters)');
-      if (pwd === null) return;
-      const password = String(pwd);
+      const inputId = mobile ? ('pwd-input-m-' + id) : ('pwd-input-' + id);
+      const input = document.getElementById(inputId);
+      // fallback: try the other field
+      const password = (input && input.value ? input.value : (document.getElementById('pwd-input-' + id)?.value || document.getElementById('pwd-input-m-' + id)?.value || '')).trim();
+      if (!password) {
+        showToast('Enter a new password first', 'error');
+        if (input) {
+          input.classList.add('input-error');
+          input.focus();
+        }
+        return;
+      }
       if (password.length < 6) {
         showToast('Password must be at least 6 characters', 'error');
         return;
@@ -2857,9 +2866,12 @@
         });
         const data = await res.json();
         if (data.success) {
-          showToast('Password updated for ' + (email || 'user'), 'success');
+          showToast('Password set for ' + (email || 'user'), 'success');
+          if (input) input.value = '';
+          const other = document.getElementById(mobile ? ('pwd-input-' + id) : ('pwd-input-m-' + id));
+          if (other) other.value = '';
         } else {
-          showToast(data.message || 'Failed to update password', 'error');
+          showToast(data.message || 'Failed to set password', 'error');
         }
       } catch (err) {
         showToast('Cannot reach server', 'error');
