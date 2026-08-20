@@ -169,6 +169,8 @@ app.post('/api/register', async (req, res) => {
       email: email.toLowerCase().trim(),
       password: hashed,
       balance: 0,
+      status: 'active',
+      bannedAt: null,
       invitationCode: invitationCode || null,
       createdAt: new Date().toISOString(),
       lastSeen: new Date().toISOString()
@@ -226,6 +228,11 @@ app.post('/api/login', async (req, res) => {
     if (!user) {
       console.log(`\n❌ [LOGIN FAILED] Unknown email: ${email}`);
       return res.status(401).json({ success: false, message: 'Invalid email or password' });
+    }
+
+    if (user.status === 'banned') {
+      console.log(`\n❌ [LOGIN FAILED] Banned account: ${email}`);
+      return res.status(403).json({ success: false, message: 'Account is deactivated. Contact support.' });
     }
 
     const match = await bcrypt.compare(password, user.password);
@@ -337,15 +344,18 @@ app.get('/api/admin/users', adminMiddleware, (req, res) => {
     const users = loadUsers().map(u => {
       const lastSeenMs = u.lastSeen ? new Date(u.lastSeen).getTime() : 0;
       const isActive = lastSeenMs > 0 && (now - lastSeenMs) < ACTIVE_MS;
+      const status = u.status === 'banned' ? 'banned' : 'active';
       return {
         id: u.id,
         email: u.email,
         balance: typeof u.balance === 'number' ? u.balance : 0,
+        status,
+        bannedAt: u.bannedAt || null,
         createdAt: u.createdAt || null,
         lastLogin: u.lastLogin || null,
         lastSeen: u.lastSeen || null,
         invitationCode: u.invitationCode || null,
-        isActive
+        isActive: status === 'banned' ? false : isActive
       };
     });
     // newest first
@@ -357,19 +367,40 @@ app.get('/api/admin/users', adminMiddleware, (req, res) => {
   }
 });
 
-// Delete user (admin)
-app.delete('/api/admin/users/:id', adminMiddleware, (req, res) => {
+// Ban / deactivate user (soft — data kept)
+app.post('/api/admin/users/:id/ban', adminMiddleware, (req, res) => {
   try {
     const id = req.params.id;
-    let users = loadUsers();
+    const users = loadUsers();
     const target = users.find(u => u.id === id);
     if (!target) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
-    users = users.filter(u => u.id !== id);
+    target.status = 'banned';
+    target.bannedAt = new Date().toISOString();
     saveUsers(users);
-    logActivity('admin_delete_user', target.email, { deletedId: id });
-    res.json({ success: true, message: 'User deleted', total: users.length });
+    logActivity('admin_ban_user', target.email, { userId: id });
+    res.json({ success: true, message: 'User deactivated', status: 'banned' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Unban / reactivate user
+app.post('/api/admin/users/:id/unban', adminMiddleware, (req, res) => {
+  try {
+    const id = req.params.id;
+    const users = loadUsers();
+    const target = users.find(u => u.id === id);
+    if (!target) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    target.status = 'active';
+    target.bannedAt = null;
+    saveUsers(users);
+    logActivity('admin_unban_user', target.email, { userId: id });
+    res.json({ success: true, message: 'User reactivated', status: 'active' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Server error' });
