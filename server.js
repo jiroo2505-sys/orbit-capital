@@ -168,6 +168,7 @@ app.post('/api/register', async (req, res) => {
       id: Date.now().toString(),
       email: email.toLowerCase().trim(),
       password: hashed,
+      balance: 0,
       invitationCode: invitationCode || null,
       createdAt: new Date().toISOString(),
       lastSeen: new Date().toISOString()
@@ -339,6 +340,7 @@ app.get('/api/admin/users', adminMiddleware, (req, res) => {
       return {
         id: u.id,
         email: u.email,
+        balance: typeof u.balance === 'number' ? u.balance : 0,
         createdAt: u.createdAt || null,
         lastLogin: u.lastLogin || null,
         lastSeen: u.lastSeen || null,
@@ -368,6 +370,36 @@ app.delete('/api/admin/users/:id', adminMiddleware, (req, res) => {
     saveUsers(users);
     logActivity('admin_delete_user', target.email, { deletedId: id });
     res.json({ success: true, message: 'User deleted', total: users.length });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Admin: set / reset user password (cannot read old password — bcrypt hash only)
+app.post('/api/admin/users/:id/password', adminMiddleware, async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { password } = req.body || {};
+    if (!password || typeof password !== 'string') {
+      return res.status(400).json({ success: false, message: 'New password is required' });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
+    }
+    if (password.length > 25) {
+      return res.status(400).json({ success: false, message: 'Password must be 25 characters or less' });
+    }
+    const users = loadUsers();
+    const user = users.find(u => u.id === id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    user.password = await bcrypt.hash(password, 10);
+    if (typeof user.balance !== 'number') user.balance = 0;
+    saveUsers(users);
+    logActivity('admin_reset_password', user.email, { userId: id });
+    res.json({ success: true, message: 'Password updated' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Server error' });
@@ -438,5 +470,6 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`   POST /api/admin/login`);
   console.log(`   GET  /api/admin/users`);
   console.log(`   GET  /api/admin/stats`);
-  console.log(`   GET  /api/admin/activity\n`);
+  console.log(`   GET  /api/admin/activity`);
+  console.log(`   POST /api/admin/users/:id/password\n`);
 });
