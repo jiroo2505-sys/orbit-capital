@@ -16,26 +16,62 @@
     }
 
     * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
+    html {
+      scroll-behavior: auto;
+      overscroll-behavior: none;
+      overscroll-behavior-y: none;
+      -webkit-text-size-adjust: 100%;
+      height: 100%;
+    }
 
     body {
       font-family: 'Inter', sans-serif;
       margin: 0;
       background: var(--bg-deep);
       overflow-x: hidden;
+      overscroll-behavior: none;
+      overscroll-behavior-y: none;
       color: #fff;
+      position: relative;
+      min-height: 100%;
+      min-height: 100dvh;
+    }
+
+    /* Fixed shell — isolates backgrounds from scroll / address-bar resize on Chrome */
+    #bg-shell {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      height: -webkit-fill-available;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+      transform: translate3d(0, 0, 0);
+      -webkit-transform: translate3d(0, 0, 0);
     }
 
     .bg-layer {
-      position: fixed;
-      inset: 0;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       z-index: 0;
       background-size: cover;
-      background-position: center;
+      background-position: center center;
       background-repeat: no-repeat;
+      background-attachment: scroll;
       opacity: 0;
-      transition: opacity 0.28s ease;
+      transition: opacity 0.2s ease;
       pointer-events: none;
+      transform: translate3d(0, 0, 0);
+      -webkit-transform: translate3d(0, 0, 0);
+      will-change: opacity;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
     }
     .bg-layer.active { opacity: 1; }
 
@@ -92,11 +128,11 @@
     }
     .page.active {
       display: block;
-      animation: pageIn 0.22s ease-out forwards;
+      animation: pageIn 0.15s ease-out forwards;
     }
 
     @keyframes pageIn {
-      from { opacity: 0; transform: translateY(8px); }
+      from { opacity: 0; transform: translateY(4px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
@@ -153,7 +189,7 @@
       justify-content: center;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.15s ease;
+      transition: opacity 0.1s ease;
     }
     #loader.show {
       opacity: 1;
@@ -314,20 +350,28 @@
       pointer-events: auto;
     }
     #toast.error {
-      background: rgba(60, 12, 28, 0.92);
-      border: 1px solid rgba(251, 113, 133, 0.45);
-      color: #fda4af;
+      background: rgba(45, 18, 28, 0.94);
+      border: 1px solid rgba(249, 168, 212, 0.45);
+      color: #f9a8d4;
       backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
     }
     #toast.success {
-      background: rgba(12, 40, 30, 0.92);
-      border: 1px solid rgba(52, 211, 153, 0.4);
-      color: #6ee7b7;
+      background: rgba(40, 22, 18, 0.94);
+      border: 1px solid rgba(253, 186, 116, 0.50);
+      color: #fdba74;
       backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
     }
     #toast .toast-icon {
       font-size: 18px;
       flex-shrink: 0;
+    }
+    #toast.error .toast-icon {
+      color: #f9a8d4;
+    }
+    #toast.success .toast-icon {
+      color: #fdba74;
     }
     #toast .toast-msg {
       flex: 1;
@@ -350,25 +394,27 @@
 
     /* Subtle error state on inputs */
     .input-error {
-      border-color: rgba(251, 113, 133, 0.7) !important;
-      box-shadow: 0 0 0 3px rgba(251, 113, 133, 0.15) !important;
+      border-color: rgba(249, 168, 212, 0.75) !important;
+      box-shadow: 0 0 0 3px rgba(249, 168, 212, 0.18) !important;
     }
   </style>
 </head>
 <body>
 
-  <!-- Background layers -->
-  <div id="bg-auth" class="bg-layer bg-auth active"></div>
-  <div id="bg-home" class="bg-layer bg-home"></div>
-  <div id="bg-portfolio" class="bg-layer bg-portfolio"></div>
-  <div id="bg-deals" class="bg-layer bg-deals"></div>
-  <div id="bg-insights" class="bg-layer bg-insights"></div>
-  <div id="bg-explore" class="bg-layer bg-explore"></div>
-  <div id="bg-featured" class="bg-layer bg-featured"></div>
-  <div id="bg-early" class="bg-layer bg-early"></div>
-  <div id="bg-menu" class="bg-layer bg-menu"></div>
-  <div id="bg-article" class="bg-layer bg-article"></div>
-  <div id="bg-category" class="bg-layer bg-category"></div>
+  <!-- Background layers (inside fixed shell so they never move on scroll) -->
+  <div id="bg-shell">
+    <div id="bg-auth" class="bg-layer bg-auth active"></div>
+    <div id="bg-home" class="bg-layer bg-home"></div>
+    <div id="bg-portfolio" class="bg-layer bg-portfolio"></div>
+    <div id="bg-deals" class="bg-layer bg-deals"></div>
+    <div id="bg-insights" class="bg-layer bg-insights"></div>
+    <div id="bg-explore" class="bg-layer bg-explore"></div>
+    <div id="bg-featured" class="bg-layer bg-featured"></div>
+    <div id="bg-early" class="bg-layer bg-early"></div>
+    <div id="bg-menu" class="bg-layer bg-menu"></div>
+    <div id="bg-article" class="bg-layer bg-article"></div>
+    <div id="bg-category" class="bg-layer bg-category"></div>
+  </div>
 
   <!-- Loader -->
   <div id="loader">
@@ -414,8 +460,8 @@
             <div class="relative">
               <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-pink-300/60 text-sm"></i>
               <input type="password" id="login-password" class="input-field w-full pl-10 pr-12 py-3.5 rounded-xl text-sm" maxlength="25" autocomplete="current-password">
-              <button type="button" onclick="togglePassword('login-password','login-eye')" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-pink-100/40 hover:text-pink-300">
-                <i class="fa-solid fa-eye text-sm" id="login-eye"></i>
+              <button type="button" onclick="togglePassword('login-password','login-eye')" class="absolute right-1 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center text-pink-100/40 hover:text-pink-300 active:text-pink-200">
+                <i class="fa-solid fa-eye text-base" id="login-eye"></i>
               </button>
             </div>
           </div>
@@ -470,8 +516,8 @@
             <div class="relative">
               <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-pink-300/60 text-sm"></i>
               <input type="password" id="create-password" class="input-field w-full pl-10 pr-12 py-3.5 rounded-xl text-sm" maxlength="25" autocomplete="new-password">
-              <button type="button" onclick="togglePassword('create-password','create-eye')" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-pink-100/40 hover:text-pink-300">
-                <i class="fa-solid fa-eye text-sm" id="create-eye"></i>
+              <button type="button" onclick="togglePassword('create-password','create-eye')" class="absolute right-1 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center text-pink-100/40 hover:text-pink-300 active:text-pink-200">
+                <i class="fa-solid fa-eye text-base" id="create-eye"></i>
               </button>
             </div>
           </div>
@@ -481,8 +527,8 @@
             <div class="relative">
               <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-pink-300/60 text-sm"></i>
               <input type="password" id="confirm-password" class="input-field w-full pl-10 pr-12 py-3.5 rounded-xl text-sm" maxlength="25" autocomplete="new-password">
-              <button type="button" onclick="togglePassword('confirm-password','confirm-eye')" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-pink-100/40 hover:text-pink-300">
-                <i class="fa-solid fa-eye text-sm" id="confirm-eye"></i>
+              <button type="button" onclick="togglePassword('confirm-password','confirm-eye')" class="absolute right-1 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center text-pink-100/40 hover:text-pink-300 active:text-pink-200">
+                <i class="fa-solid fa-eye text-base" id="confirm-eye"></i>
               </button>
             </div>
           </div>
@@ -1193,6 +1239,123 @@
     </div>
   </div>
 
+  <!-- ========== ADMIN LOGIN ========== -->
+  <div id="admin-login" class="page">
+    <div class="max-w-md mx-auto min-h-screen flex flex-col px-5 pt-16 pb-10 relative z-10">
+      <div class="flex flex-col items-center mb-10">
+        <div class="w-14 h-14 rounded-full border-2 border-pink-300/80 flex items-center justify-center mb-4 shadow-[0_0_20px_rgba(249,168,212,0.4)]">
+          <div class="w-5 h-5 rounded-full bg-gradient-to-br from-pink-300 to-orange-300"></div>
+        </div>
+        <h1 class="text-2xl font-bold tracking-tight">Orbit Capital</h1>
+        <p class="text-pink-100/55 text-sm mt-1">Admin Panel</p>
+      </div>
+      <div class="glass-strong rounded-3xl p-6 mb-6">
+        <h2 class="text-xl font-semibold mb-1">Admin access</h2>
+        <p class="text-pink-100/50 text-sm mb-6">Enter admin password to continue</p>
+        <div class="mb-6">
+          <label class="block text-xs text-pink-100/55 mb-1.5 font-medium">Password</label>
+          <div class="relative">
+            <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-pink-300/60 text-sm"></i>
+            <input type="password" id="admin-password" class="input-field w-full pl-10 pr-12 py-3.5 rounded-xl text-sm" maxlength="50" autocomplete="current-password">
+            <button type="button" onclick="togglePassword('admin-password','admin-eye')" class="absolute right-1 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center text-pink-100/40 hover:text-pink-300">
+              <i class="fa-solid fa-eye text-base" id="admin-eye"></i>
+            </button>
+          </div>
+        </div>
+        <button onclick="handleAdminLogin()" class="w-full btn-peach font-semibold py-3.5 rounded-full text-sm shadow-lg shadow-pink-400/25">
+          Sign In as Admin
+        </button>
+      </div>
+      <p class="text-center text-[10px] text-pink-100/30 mt-auto">Restricted access · Orbit Capital</p>
+    </div>
+  </div>
+
+  <!-- ========== ADMIN DASHBOARD ========== -->
+  <div id="admin-dash" class="page">
+    <div class="max-w-5xl mx-auto min-h-screen px-4 sm:px-6 pt-5 pb-16 relative z-10">
+      <header class="flex items-center justify-between mb-6 gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-9 h-9 rounded-full border-2 border-pink-300/80 flex items-center justify-center shrink-0 shadow-[0_0_12px_rgba(249,168,212,0.35)]">
+            <div class="w-3.5 h-3.5 rounded-full bg-pink-300"></div>
+          </div>
+          <div class="min-w-0">
+            <p class="font-semibold text-sm sm:text-base truncate">Orbit Capital</p>
+            <p class="text-[10px] text-pink-100/45">Admin Panel</p>
+          </div>
+        </div>
+        <button onclick="handleAdminLogout()" class="glass rounded-xl px-3 py-2 text-xs text-pink-200/80 hover:text-pink-100 card-hover">
+          <i class="fa-solid fa-right-from-bracket mr-1"></i> Sign out
+        </button>
+      </header>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+        <div class="glass-strong rounded-2xl p-4">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-10 h-10 rounded-xl bg-pink-300/15 flex items-center justify-center">
+              <i class="fa-solid fa-users text-pink-300"></i>
+            </div>
+            <p class="text-xs text-pink-100/55">Total Users</p>
+          </div>
+          <p class="text-2xl font-bold" id="stat-total-users">—</p>
+        </div>
+        <div class="glass-strong rounded-2xl p-4">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-10 h-10 rounded-xl bg-pink-300/15 flex items-center justify-center">
+              <i class="fa-solid fa-wave-square text-pink-300"></i>
+            </div>
+            <p class="text-xs text-pink-100/55">Active Sessions</p>
+          </div>
+          <p class="text-2xl font-bold" id="stat-active">—</p>
+          <p class="text-[10px] text-pink-100/40 mt-1">Logins (24h)</p>
+        </div>
+        <div class="glass-strong rounded-2xl p-4">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-10 h-10 rounded-xl bg-pink-300/15 flex items-center justify-center">
+              <i class="fa-solid fa-lock text-pink-300"></i>
+            </div>
+            <p class="text-xs text-pink-100/55">Logins Today</p>
+          </div>
+          <p class="text-2xl font-bold" id="stat-logins">—</p>
+          <p class="text-[10px] text-pink-100/40 mt-1" id="stat-registers">— new accounts</p>
+        </div>
+      </div>
+
+      <div class="glass-strong rounded-2xl overflow-hidden mb-6">
+        <div class="flex items-center justify-between px-4 py-3 border-b border-pink-200/10">
+          <h3 class="font-semibold text-sm">Users</h3>
+          <div class="relative">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-pink-100/35 text-xs"></i>
+            <input type="text" id="admin-search" placeholder="Search users…" class="input-field pl-8 pr-3 py-2 rounded-xl text-xs w-36 sm:w-48" oninput="filterAdminUsers()">
+          </div>
+        </div>
+        <div class="hidden sm:block overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead>
+              <tr class="text-[10px] uppercase tracking-wider text-pink-100/40 border-b border-pink-200/10">
+                <th class="px-4 py-3 font-medium">Email / Phone</th>
+                <th class="px-4 py-3 font-medium">Created</th>
+                <th class="px-4 py-3 font-medium">Last Login</th>
+                <th class="px-4 py-3 font-medium">Status</th>
+              </tr>
+            </thead>
+            <tbody id="admin-users-tbody"></tbody>
+          </table>
+        </div>
+        <div class="sm:hidden divide-y divide-pink-200/10" id="admin-users-mobile"></div>
+        <div class="px-4 py-3 text-[10px] text-pink-100/35 border-t border-pink-200/10" id="admin-users-count">Loading…</div>
+      </div>
+
+      <div class="glass-strong rounded-2xl overflow-hidden">
+        <div class="px-4 py-3 border-b border-pink-200/10">
+          <h3 class="font-semibold text-sm">Recent Activity</h3>
+        </div>
+        <div class="divide-y divide-pink-200/10 max-h-72 overflow-y-auto" id="admin-activity-list">
+          <p class="px-4 py-6 text-center text-xs text-pink-100/40">No activity yet</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- BOTTOM NAV -->
   <nav id="bottom-nav" class="fixed bottom-0 left-0 right-0 max-w-md mx-auto glass-strong border-t border-pink-200/15 px-4 py-2.5 flex justify-between items-center z-50 rounded-t-2xl hidden">
     <button onclick="showPage('home')" id="nav-home" class="nav-btn active flex flex-col items-center gap-1 text-pink-300">
@@ -1327,7 +1490,7 @@
         if (data.success) {
           saveAuth(data.token, data.user);
           showToast('Welcome back!', 'success');
-          setTimeout(() => showPage('home'), 400);
+          showPage('home');
         } else {
           showToast(data.message || 'Invalid email or password', 'error');
           shakeElement(formCard);
@@ -1404,7 +1567,7 @@
         if (data.success) {
           saveAuth(data.token, data.user);
           showToast('Account created successfully!', 'success');
-          setTimeout(() => showPage('home'), 450);
+          showPage('home');
         } else {
           showToast(data.message || 'Registration failed', 'error');
           shakeElement(formCard);
@@ -1441,6 +1604,8 @@
     const BG_MAP = {
       login: 'bg-auth',
       create: 'bg-auth',
+      'admin-login': 'bg-auth',
+      'admin-dash': 'bg-menu',
       home: 'bg-home',
       portfolio: 'bg-portfolio',
       deals: 'bg-deals',
@@ -1462,15 +1627,24 @@
       insights: 'nav-insights'
     };
 
-    const AUTH_PAGES = ['login', 'create'];
+    const AUTH_PAGES = ['login', 'create', 'admin-login', 'admin-dash'];
     let isNavigating = false;
+    let adminUsersCache = [];
+    const IS_ADMIN_ROUTE = window.location.pathname.replace(/\/$/, '') === '/admin';
 
     function showPage(pageId) {
       if (isNavigating) return;
 
-      // Simple auth guard: require login for non-auth pages
-      if (!AUTH_PAGES.includes(pageId) && !getToken()) {
-        pageId = 'login';
+      // Admin route: only allow admin pages
+      if (IS_ADMIN_ROUTE) {
+        if (pageId !== 'admin-login' && pageId !== 'admin-dash') pageId = 'admin-login';
+        if (pageId === 'admin-dash' && !getAdminToken()) pageId = 'admin-login';
+      } else {
+        // Main site: never show admin pages; require user login for app pages
+        if (pageId === 'admin-login' || pageId === 'admin-dash') pageId = 'login';
+        if (!AUTH_PAGES.includes(pageId) && !getToken()) {
+          pageId = 'login';
+        }
       }
 
       const target = document.getElementById(pageId);
@@ -1481,6 +1655,7 @@
       const loader = document.getElementById('loader');
       loader.classList.add('show');
 
+      // Short loader flash only — keeps "Entering orbit…" but feels instant
       setTimeout(() => {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.bg-layer').forEach(b => b.classList.remove('active'));
@@ -1503,7 +1678,7 @@
         }
 
         const bottomNav = document.getElementById('bottom-nav');
-        if (AUTH_PAGES.includes(pageId)) {
+        if (AUTH_PAGES.includes(pageId) || pageId === 'admin-login' || pageId === 'admin-dash') {
           bottomNav.classList.add('hidden');
         } else {
           bottomNav.classList.remove('hidden');
@@ -1525,8 +1700,8 @@
         setTimeout(() => {
           loader.classList.remove('show');
           isNavigating = false;
-        }, 80);
-      }, 220);
+        }, 40);
+      }, 70);
     }
 
     function togglePassword(inputId, iconId) {
@@ -1541,18 +1716,190 @@
       }
     }
 
+    // ========== ADMIN AUTH ==========
+    function getAdminToken() {
+      return localStorage.getItem('orbit_admin_token');
+    }
+    function setAdminToken(token) {
+      localStorage.setItem('orbit_admin_token', token);
+    }
+    function clearAdminToken() {
+      localStorage.removeItem('orbit_admin_token');
+    }
+
+    async function handleAdminLogin() {
+      const input = document.getElementById('admin-password');
+      const password = input ? input.value : '';
+      if (!password) {
+        showToast('Please enter admin password', 'error');
+        return;
+      }
+      try {
+        const res = await fetch(`${API_URL}/admin/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password })
+        });
+        const data = await res.json();
+        if (data.success) {
+          setAdminToken(data.token);
+          showToast('Welcome, Admin', 'success');
+          showPage('admin-dash');
+          loadAdminData();
+        } else {
+          showToast(data.message || 'Invalid admin password', 'error');
+        }
+      } catch (err) {
+        showToast('Cannot reach server. Check if backend is running.', 'error');
+      }
+    }
+
+    function handleAdminLogout() {
+      clearAdminToken();
+      showToast('Admin signed out', 'success');
+      showPage('admin-login');
+    }
+
+    function formatAdminDate(iso) {
+      if (!iso) return '—';
+      try {
+        const d = new Date(iso);
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) +
+          ' · ' + d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      } catch {
+        return '—';
+      }
+    }
+
+    function renderAdminUsers(users) {
+      const tbody = document.getElementById('admin-users-tbody');
+      const mobile = document.getElementById('admin-users-mobile');
+      const countEl = document.getElementById('admin-users-count');
+      if (!tbody || !mobile) return;
+
+      if (!users.length) {
+        tbody.innerHTML = '<tr><td colspan="4" class="px-4 py-8 text-center text-xs text-pink-100/40">No users yet</td></tr>';
+        mobile.innerHTML = '<p class="px-4 py-8 text-center text-xs text-pink-100/40">No users yet</p>';
+        if (countEl) countEl.textContent = '0 users';
+        return;
+      }
+
+      tbody.innerHTML = users.map(u => `
+        <tr class="border-b border-pink-200/5 hover:bg-white/5">
+          <td class="px-4 py-3 text-sm">${u.email}</td>
+          <td class="px-4 py-3 text-xs text-pink-100/55">${formatAdminDate(u.createdAt)}</td>
+          <td class="px-4 py-3 text-xs text-pink-100/55">${formatAdminDate(u.lastLogin)}</td>
+          <td class="px-4 py-3"><span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-medium bg-pink-300/15 text-pink-300">Active</span></td>
+        </tr>
+      `).join('');
+
+      mobile.innerHTML = users.map(u => `
+        <div class="px-4 py-3 flex items-center justify-between gap-3">
+          <div class="min-w-0">
+            <p class="text-sm font-medium truncate">${u.email}</p>
+            <p class="text-[10px] text-pink-100/40 mt-0.5">Created ${formatAdminDate(u.createdAt)}</p>
+            <p class="text-[10px] text-pink-100/40">Last login ${formatAdminDate(u.lastLogin)}</p>
+          </div>
+          <span class="shrink-0 inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-medium bg-pink-300/15 text-pink-300">Active</span>
+        </div>
+      `).join('');
+
+      if (countEl) countEl.textContent = users.length + (users.length === 1 ? ' user' : ' users');
+    }
+
+    function filterAdminUsers() {
+      const q = (document.getElementById('admin-search')?.value || '').toLowerCase().trim();
+      const filtered = !q ? adminUsersCache : adminUsersCache.filter(u => (u.email || '').toLowerCase().includes(q));
+      renderAdminUsers(filtered);
+    }
+
+    function renderAdminActivity(logs) {
+      const el = document.getElementById('admin-activity-list');
+      if (!el) return;
+      if (!logs || !logs.length) {
+        el.innerHTML = '<p class="px-4 py-6 text-center text-xs text-pink-100/40">No activity yet</p>';
+        return;
+      }
+      const iconMap = {
+        register: 'fa-user-plus',
+        login: 'fa-right-to-bracket',
+        logout: 'fa-right-from-bracket',
+        admin_login: 'fa-user-shield',
+        admin_login_failed: 'fa-triangle-exclamation'
+      };
+      el.innerHTML = logs.map(a => `
+        <div class="px-4 py-3 flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-pink-300/10 flex items-center justify-center shrink-0">
+            <i class="fa-solid ${iconMap[a.type] || 'fa-circle'} text-pink-300 text-xs"></i>
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="text-xs font-medium capitalize">${(a.type || '').replace(/_/g, ' ')}</p>
+            <p class="text-[10px] text-pink-100/45 truncate">${a.email || '—'}</p>
+          </div>
+          <p class="text-[10px] text-pink-100/35 shrink-0">${formatAdminDate(a.time)}</p>
+        </div>
+      `).join('');
+    }
+
+    async function loadAdminData() {
+      const token = getAdminToken();
+      if (!token) return;
+      try {
+        const [statsRes, usersRes, actRes] = await Promise.all([
+          fetch(`${API_URL}/admin/stats`, { headers: { Authorization: 'Bearer ' + token } }),
+          fetch(`${API_URL}/admin/users`, { headers: { Authorization: 'Bearer ' + token } }),
+          fetch(`${API_URL}/admin/activity`, { headers: { Authorization: 'Bearer ' + token } })
+        ]);
+        const statsData = await statsRes.json();
+        const usersData = await usersRes.json();
+        const actData = await actRes.json();
+
+        if (statsData.success && statsData.stats) {
+          document.getElementById('stat-total-users').textContent = statsData.stats.totalUsers;
+          document.getElementById('stat-active').textContent = statsData.stats.activeSessions;
+          document.getElementById('stat-logins').textContent = statsData.stats.loginsToday;
+          document.getElementById('stat-registers').textContent = (statsData.stats.registersToday || 0) + ' new accounts today';
+        }
+        if (usersData.success) {
+          adminUsersCache = usersData.users || [];
+          renderAdminUsers(adminUsersCache);
+        }
+        if (actData.success) {
+          renderAdminActivity(actData.activity || []);
+        }
+      } catch (err) {
+        showToast('Failed to load admin data', 'error');
+      }
+    }
+
     // ========== AUTO-LOGIN CHECK ==========
     window.addEventListener('DOMContentLoaded', () => {
-      // If already logged in and currently on login/create page → go to home
-      if (getToken()) {
-        const loginPage = document.getElementById('login');
-        const createPage = document.getElementById('create');
-        if (loginPage?.classList.contains('active') || createPage?.classList.contains('active')) {
-          showPage('home');
+      // Admin route mode
+      if (IS_ADMIN_ROUTE) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('bottom-nav')?.classList.add('hidden');
+        if (getAdminToken()) {
+          showPage('admin-dash');
+          loadAdminData();
+        } else {
+          showPage('admin-login');
+        }
+        // Enter key on admin password
+        document.getElementById('admin-password')?.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') handleAdminLogin();
+        });
+      } else {
+        // Main site
+        if (getToken()) {
+          const loginPage = document.getElementById('login');
+          const createPage = document.getElementById('create');
+          if (loginPage?.classList.contains('active') || createPage?.classList.contains('active')) {
+            showPage('home');
+          }
         }
       }
 
-      // Clear red border when user types again
+      // Clear error border when user types again
       document.querySelectorAll('.input-field').forEach(input => {
         input.addEventListener('input', () => {
           input.classList.remove('input-error');
