@@ -1346,67 +1346,71 @@
         </button>
       </div>
 
-      <!-- Overview chart (inspired layout; pink/peach theme kept) -->
-      <div class="glass-strong rounded-2xl p-4 mb-6">
-        <div class="flex items-center justify-between mb-3">
+      <!-- Activity chart — clean bar style -->
+      <div class="glass-strong rounded-2xl p-5 mb-6">
+        <div class="flex items-center justify-between mb-4">
           <div>
-            <h3 class="font-semibold text-sm">Overview</h3>
-            <p class="text-[10px] text-pink-100/45 mt-0.5">Users · Logins · Activity (last 7 days)</p>
+            <h3 class="font-semibold text-sm">Activity (7 days)</h3>
+            <p class="text-[10px] text-pink-100/45 mt-0.5">Registers & logins · Philippine time</p>
           </div>
-          <span class="text-[10px] text-pink-100/40" id="chart-range-label">Last 7 days · PH time</span>
+          <div class="flex items-center gap-3 text-[10px]">
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-pink-300"></span> Registers</span>
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-orange-300/80"></span> Logins</span>
+          </div>
         </div>
-        <div class="grid grid-cols-3 gap-3 mb-4">
-          <div class="rounded-xl bg-white/5 px-3 py-2">
+        <div class="grid grid-cols-3 gap-3 mb-5">
+          <div class="rounded-xl bg-white/5 px-3 py-2.5 border border-pink-200/10">
             <p class="text-[10px] text-pink-100/45">Total Users</p>
-            <p class="text-lg font-bold" id="chart-stat-users">—</p>
+            <p class="text-xl font-bold tracking-tight" id="chart-stat-users">—</p>
           </div>
-          <div class="rounded-xl bg-white/5 px-3 py-2">
+          <div class="rounded-xl bg-white/5 px-3 py-2.5 border border-pink-200/10">
             <p class="text-[10px] text-pink-100/45">Logins (7d)</p>
-            <p class="text-lg font-bold text-pink-300" id="chart-stat-logins">—</p>
+            <p class="text-xl font-bold tracking-tight text-orange-300" id="chart-stat-logins">—</p>
           </div>
-          <div class="rounded-xl bg-white/5 px-3 py-2">
+          <div class="rounded-xl bg-white/5 px-3 py-2.5 border border-pink-200/10">
             <p class="text-[10px] text-pink-100/45">Registers (7d)</p>
-            <p class="text-lg font-bold text-orange-300" id="chart-stat-regs">—</p>
+            <p class="text-xl font-bold tracking-tight text-pink-300" id="chart-stat-regs">—</p>
           </div>
         </div>
-        <div class="w-full h-36 relative" id="admin-chart-wrap">
-          <svg id="admin-chart-svg" viewBox="0 0 320 120" class="w-full h-full" preserveAspectRatio="none"></svg>
+        <div class="w-full h-44" id="admin-chart-wrap">
+          <svg id="admin-chart-svg" viewBox="0 0 360 160" class="w-full h-full" preserveAspectRatio="xMidYMid meet"></svg>
         </div>
-        <div class="flex justify-between text-[9px] text-pink-100/35 mt-1 px-0.5" id="admin-chart-labels"></div>
       </div>
 
-      <div class="glass-strong rounded-2xl overflow-hidden mb-6">
-        <div class="flex items-center justify-between px-4 py-3 border-b border-pink-200/10">
-          <h3 class="font-semibold text-sm">Users Today</h3>
-          <div class="relative">
-            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-pink-100/35 text-xs"></i>
-            <input type="text" id="admin-search" placeholder="Search today…" class="input-field pl-8 pr-3 py-2 rounded-xl text-xs w-36 sm:w-48" oninput="filterAdminUsers()">
+      <!-- Two-column: quick snapshot + recent activity -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+        <div class="glass-strong rounded-2xl p-4">
+          <h3 class="font-semibold text-sm mb-3">Quick snapshot</h3>
+          <div class="space-y-2.5">
+            <div class="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2.5">
+              <span class="text-xs text-pink-100/60">New users today</span>
+              <span class="text-sm font-semibold" id="snap-users-today">0</span>
+            </div>
+            <div class="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2.5">
+              <span class="text-xs text-pink-100/60">Active now</span>
+              <span class="text-sm font-semibold text-emerald-300" id="snap-active">0</span>
+            </div>
+            <div class="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2.5">
+              <span class="text-xs text-pink-100/60">Logins today</span>
+              <span class="text-sm font-semibold" id="snap-logins">0</span>
+            </div>
+            <div class="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2.5">
+              <span class="text-xs text-pink-100/60">Platform balance</span>
+              <span class="text-sm font-semibold text-orange-300" id="snap-balance">₱0</span>
+            </div>
+            <button type="button" onclick="showPage('admin-users-all')" class="w-full mt-1 btn-peach font-semibold py-2.5 rounded-xl text-xs">
+              View all users →
+            </button>
           </div>
         </div>
-        <div class="hidden sm:block overflow-x-auto">
-          <table class="w-full text-left text-sm">
-            <thead>
-              <tr class="text-[10px] uppercase tracking-wider text-pink-100/40 border-b border-pink-200/10">
-                <th class="px-4 py-3 font-medium">Email / Phone</th>
-                <th class="px-4 py-3 font-medium">Created</th>
-                <th class="px-4 py-3 font-medium">Last Login</th>
-                <th class="px-4 py-3 font-medium">Status</th>
-                <th class="px-4 py-3 font-medium">Action</th>
-              </tr>
-            </thead>
-            <tbody id="admin-users-tbody"></tbody>
-          </table>
-        </div>
-        <div class="sm:hidden divide-y divide-pink-200/10" id="admin-users-mobile"></div>
-        <div class="px-4 py-3 text-[10px] text-pink-100/35 border-t border-pink-200/10" id="admin-users-count">Loading…</div>
-      </div>
-
-      <div class="glass-strong rounded-2xl overflow-hidden">
-        <div class="px-4 py-3 border-b border-pink-200/10">
-          <h3 class="font-semibold text-sm">Recent Activity</h3>
-        </div>
-        <div class="divide-y divide-pink-200/10 max-h-72 overflow-y-auto" id="admin-activity-list">
-          <p class="px-4 py-6 text-center text-xs text-pink-100/40">No activity yet</p>
+        <div class="glass-strong rounded-2xl overflow-hidden flex flex-col">
+          <div class="px-4 py-3 border-b border-pink-200/10 flex items-center justify-between">
+            <h3 class="font-semibold text-sm">Recent Activity</h3>
+            <span class="text-[10px] text-pink-100/40">Live</span>
+          </div>
+          <div class="divide-y divide-pink-200/10 max-h-64 overflow-y-auto flex-1" id="admin-activity-list">
+            <p class="px-4 py-6 text-center text-xs text-pink-100/40">No activity yet</p>
+          </div>
         </div>
       </div>
     </div>
@@ -2179,7 +2183,6 @@
 
     function renderAdminChart() {
       const svg = document.getElementById('admin-chart-svg');
-      const labelsEl = document.getElementById('admin-chart-labels');
       if (!svg) return;
 
       const days = buildLast7DaysPH();
@@ -2191,53 +2194,44 @@
       const regCounts = days.map(day =>
         (adminActivityCache || []).filter(a => a.type === 'register' && fmt.format(new Date(a.time)) === day.key).length
       );
-      // cumulative users by day (approx from createdAt)
-      const userCounts = days.map(day =>
-        (adminUsersCache || []).filter(u => u.createdAt && fmt.format(new Date(u.createdAt)) <= day.key).length
-      );
 
-      const series = loginCounts.map((v, i) => v + regCounts[i]);
-      const max = Math.max(1, ...series, ...userCounts);
-
-      const W = 320, H = 120, pad = 8;
+      const max = Math.max(1, ...loginCounts, ...regCounts);
+      const W = 360, H = 160;
+      const left = 28, right = 12, top = 12, bottom = 28;
+      const chartW = W - left - right;
+      const chartH = H - top - bottom;
       const n = days.length;
-      const step = (W - pad * 2) / Math.max(1, n - 1);
+      const groupW = chartW / n;
+      const barW = Math.min(12, groupW * 0.28);
+      const gap = 3;
 
-      function points(arr) {
-        return arr.map((v, i) => {
-          const x = pad + i * step;
-          const y = H - pad - (v / max) * (H - pad * 2);
-          return `${x},${y}`;
-        }).join(' ');
+      // horizontal grid lines
+      let grid = '';
+      for (let g = 0; g <= 4; g++) {
+        const y = top + chartH - (chartH * g / 4);
+        const val = Math.round((max * g) / 4);
+        grid += `<line x1="${left}" y1="${y}" x2="${W - right}" y2="${y}" stroke="rgba(255,190,205,0.12)" stroke-width="1"/>`;
+        grid += `<text x="${left - 6}" y="${y + 3}" text-anchor="end" fill="rgba(249,168,212,0.45)" font-size="8" font-family="Inter,sans-serif">${val}</text>`;
       }
 
-      const areaPts = points(series);
-      const linePts = points(series);
-      const userPts = points(userCounts);
-      const first = areaPts.split(' ')[0];
-      const last = areaPts.split(' ').slice(-1)[0];
-      const areaPath = `M ${first} L ${areaPts.replace(/ /g, ' L ')} L ${last.split(',')[0]},${H - pad} L ${first.split(',')[0]},${H - pad} Z`;
+      let bars = '';
+      let labels = '';
+      days.forEach((day, i) => {
+        const cx = left + i * groupW + groupW / 2;
+        const regH = (regCounts[i] / max) * chartH;
+        const logH = (loginCounts[i] / max) * chartH;
+        const regX = cx - barW - gap / 2;
+        const logX = cx + gap / 2;
+        const regY = top + chartH - regH;
+        const logY = top + chartH - logH;
+        bars += `<rect x="${regX}" y="${regY}" width="${barW}" height="${Math.max(regH, regCounts[i] ? 2 : 0)}" rx="3" fill="#f9a8d4"/>`;
+        bars += `<rect x="${logX}" y="${logY}" width="${barW}" height="${Math.max(logH, loginCounts[i] ? 2 : 0)}" rx="3" fill="#fdba74" opacity="0.9"/>`;
+        // short day label e.g. "20"
+        const short = day.label.split(' ').pop() || day.label;
+        labels += `<text x="${cx}" y="${H - 8}" text-anchor="middle" fill="rgba(249,168,212,0.5)" font-size="9" font-family="Inter,sans-serif">${short}</text>`;
+      });
 
-      svg.innerHTML = `
-        <defs>
-          <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#f9a8d4" stop-opacity="0.45"/>
-            <stop offset="100%" stop-color="#f9a8d4" stop-opacity="0.02"/>
-          </linearGradient>
-        </defs>
-        <path d="${areaPath}" fill="url(#chartGrad)"/>
-        <polyline points="${linePts}" fill="none" stroke="#f9a8d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <polyline points="${userPts}" fill="none" stroke="#fdba74" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4 3" opacity="0.85"/>
-        ${series.map((v, i) => {
-          const x = pad + i * step;
-          const y = H - pad - (v / max) * (H - pad * 2);
-          return `<circle cx="${x}" cy="${y}" r="3" fill="#f9a8d4"/>`;
-        }).join('')}
-      `;
-
-      if (labelsEl) {
-        labelsEl.innerHTML = days.map(d => `<span>${d.label}</span>`).join('');
-      }
+      svg.innerHTML = grid + bars + labels;
 
       const elU = document.getElementById('chart-stat-users');
       const elL = document.getElementById('chart-stat-logins');
@@ -2245,6 +2239,15 @@
       if (elU) elU.textContent = (adminUsersCache || []).length;
       if (elL) elL.textContent = loginCounts.reduce((a, b) => a + b, 0);
       if (elR) elR.textContent = regCounts.reduce((a, b) => a + b, 0);
+
+      // Quick snapshot
+      const todayUsers = (adminUsersCache || []).filter(u => isCreatedTodayPH(u.createdAt)).length;
+      const activeNow = (adminUsersCache || []).filter(u => u.isActive).length;
+      const snapU = document.getElementById('snap-users-today');
+      const snapA = document.getElementById('snap-active');
+      const snapL = document.getElementById('snap-logins');
+      if (snapU) snapU.textContent = todayUsers;
+      if (snapA) snapA.textContent = activeNow;
     }
 
     function renderAdminActivePage() {
@@ -2407,6 +2410,10 @@
           if (elEarn) elEarn.textContent = formatPeso(s.earningsToday);
           if (elDep) elDep.textContent = formatPeso(s.depositsToday);
           if (elWd) elWd.textContent = formatPeso(s.withdrawalsToday);
+          const snapL = document.getElementById('snap-logins');
+          const snapB = document.getElementById('snap-balance');
+          if (snapL) snapL.textContent = s.loginsToday;
+          if (snapB) snapB.textContent = formatPeso(s.balance);
         }
         if (actData.success) {
           adminActivityCache = actData.activity || [];
