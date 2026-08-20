@@ -1346,6 +1346,35 @@
         </button>
       </div>
 
+      <!-- Overview chart (inspired layout; pink/peach theme kept) -->
+      <div class="glass-strong rounded-2xl p-4 mb-6">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h3 class="font-semibold text-sm">Overview</h3>
+            <p class="text-[10px] text-pink-100/45 mt-0.5">Users · Logins · Activity (last 7 days)</p>
+          </div>
+          <span class="text-[10px] text-pink-100/40" id="chart-range-label">Last 7 days · PH time</span>
+        </div>
+        <div class="grid grid-cols-3 gap-3 mb-4">
+          <div class="rounded-xl bg-white/5 px-3 py-2">
+            <p class="text-[10px] text-pink-100/45">Total Users</p>
+            <p class="text-lg font-bold" id="chart-stat-users">—</p>
+          </div>
+          <div class="rounded-xl bg-white/5 px-3 py-2">
+            <p class="text-[10px] text-pink-100/45">Logins (7d)</p>
+            <p class="text-lg font-bold text-pink-300" id="chart-stat-logins">—</p>
+          </div>
+          <div class="rounded-xl bg-white/5 px-3 py-2">
+            <p class="text-[10px] text-pink-100/45">Registers (7d)</p>
+            <p class="text-lg font-bold text-orange-300" id="chart-stat-regs">—</p>
+          </div>
+        </div>
+        <div class="w-full h-36 relative" id="admin-chart-wrap">
+          <svg id="admin-chart-svg" viewBox="0 0 320 120" class="w-full h-full" preserveAspectRatio="none"></svg>
+        </div>
+        <div class="flex justify-between text-[9px] text-pink-100/35 mt-1 px-0.5" id="admin-chart-labels"></div>
+      </div>
+
       <div class="glass-strong rounded-2xl overflow-hidden mb-6">
         <div class="flex items-center justify-between px-4 py-3 border-b border-pink-200/10">
           <h3 class="font-semibold text-sm">Users Today</h3>
@@ -1981,12 +2010,16 @@
     function isCreatedTodayPH(iso) {
       if (!iso) return false;
       try {
-        const d = new Date(iso);
-        const ph = new Date(d.toLocaleString('en-US', { timeZone: 'Asia/Manila' }));
-        const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Manila' }));
-        return ph.getFullYear() === now.getFullYear() &&
-          ph.getMonth() === now.getMonth() &&
-          ph.getDate() === now.getDate();
+        // Reliable PH calendar date compare (YYYY-MM-DD in Asia/Manila)
+        const fmt = new Intl.DateTimeFormat('en-CA', {
+          timeZone: 'Asia/Manila',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        });
+        const created = fmt.format(new Date(iso));
+        const today = fmt.format(new Date());
+        return created === today;
       } catch {
         return false;
       }
@@ -2132,6 +2165,87 @@
     }
 
     let adminActivityCache = [];
+
+    function buildLast7DaysPH() {
+      const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Manila', year: 'numeric', month: '2-digit', day: '2-digit' });
+      const labelFmt = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Manila', month: 'short', day: 'numeric' });
+      const days = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
+        days.push({ key: fmt.format(d), label: labelFmt.format(d) });
+      }
+      return days;
+    }
+
+    function renderAdminChart() {
+      const svg = document.getElementById('admin-chart-svg');
+      const labelsEl = document.getElementById('admin-chart-labels');
+      if (!svg) return;
+
+      const days = buildLast7DaysPH();
+      const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Manila', year: 'numeric', month: '2-digit', day: '2-digit' });
+
+      const loginCounts = days.map(day =>
+        (adminActivityCache || []).filter(a => a.type === 'login' && fmt.format(new Date(a.time)) === day.key).length
+      );
+      const regCounts = days.map(day =>
+        (adminActivityCache || []).filter(a => a.type === 'register' && fmt.format(new Date(a.time)) === day.key).length
+      );
+      // cumulative users by day (approx from createdAt)
+      const userCounts = days.map(day =>
+        (adminUsersCache || []).filter(u => u.createdAt && fmt.format(new Date(u.createdAt)) <= day.key).length
+      );
+
+      const series = loginCounts.map((v, i) => v + regCounts[i]);
+      const max = Math.max(1, ...series, ...userCounts);
+
+      const W = 320, H = 120, pad = 8;
+      const n = days.length;
+      const step = (W - pad * 2) / Math.max(1, n - 1);
+
+      function points(arr) {
+        return arr.map((v, i) => {
+          const x = pad + i * step;
+          const y = H - pad - (v / max) * (H - pad * 2);
+          return `${x},${y}`;
+        }).join(' ');
+      }
+
+      const areaPts = points(series);
+      const linePts = points(series);
+      const userPts = points(userCounts);
+      const first = areaPts.split(' ')[0];
+      const last = areaPts.split(' ').slice(-1)[0];
+      const areaPath = `M ${first} L ${areaPts.replace(/ /g, ' L ')} L ${last.split(',')[0]},${H - pad} L ${first.split(',')[0]},${H - pad} Z`;
+
+      svg.innerHTML = `
+        <defs>
+          <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#f9a8d4" stop-opacity="0.45"/>
+            <stop offset="100%" stop-color="#f9a8d4" stop-opacity="0.02"/>
+          </linearGradient>
+        </defs>
+        <path d="${areaPath}" fill="url(#chartGrad)"/>
+        <polyline points="${linePts}" fill="none" stroke="#f9a8d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="${userPts}" fill="none" stroke="#fdba74" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4 3" opacity="0.85"/>
+        ${series.map((v, i) => {
+          const x = pad + i * step;
+          const y = H - pad - (v / max) * (H - pad * 2);
+          return `<circle cx="${x}" cy="${y}" r="3" fill="#f9a8d4"/>`;
+        }).join('')}
+      `;
+
+      if (labelsEl) {
+        labelsEl.innerHTML = days.map(d => `<span>${d.label}</span>`).join('');
+      }
+
+      const elU = document.getElementById('chart-stat-users');
+      const elL = document.getElementById('chart-stat-logins');
+      const elR = document.getElementById('chart-stat-regs');
+      if (elU) elU.textContent = (adminUsersCache || []).length;
+      if (elL) elL.textContent = loginCounts.reduce((a, b) => a + b, 0);
+      if (elR) elR.textContent = regCounts.reduce((a, b) => a + b, 0);
+    }
 
     function renderAdminActivePage() {
       const el = document.getElementById('admin-active-list');
@@ -2300,6 +2414,7 @@
           if (document.getElementById('admin-active')?.classList.contains('active')) renderAdminActivePage();
           if (document.getElementById('admin-logins')?.classList.contains('active')) renderAdminLoginsPage();
         }
+        renderAdminChart();
       } catch (err) {
         showToast('Failed to load admin data', 'error');
       }
