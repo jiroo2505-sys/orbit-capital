@@ -451,7 +451,7 @@
             <label class="block text-xs text-pink-100/55 mb-1.5 font-medium">Email / Phone number</label>
             <div class="relative">
               <i class="fa-solid fa-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-pink-300/60 text-sm"></i>
-              <input type="text" id="login-email" class="input-field w-full pl-10 pr-4 py-3.5 rounded-xl text-sm" maxlength="11" autocomplete="username">
+              <input type="text" id="login-email" class="input-field w-full pl-10 pr-4 py-3.5 rounded-xl text-sm" maxlength="11" autocomplete="off" inputmode="text" autocorrect="off" autocapitalize="off" spellcheck="false">
             </div>
           </div>
 
@@ -499,7 +499,7 @@
             <label class="block text-xs text-pink-100/55 mb-1.5 font-medium">Email / Phone number</label>
             <div class="relative">
               <i class="fa-solid fa-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-pink-300/60 text-sm"></i>
-              <input type="text" id="create-email" class="input-field w-full pl-10 pr-4 py-3.5 rounded-xl text-sm" maxlength="11" autocomplete="username">
+              <input type="text" id="create-email" class="input-field w-full pl-10 pr-4 py-3.5 rounded-xl text-sm" maxlength="11" autocomplete="off" inputmode="text" autocorrect="off" autocapitalize="off" spellcheck="false">
             </div>
           </div>
 
@@ -1145,8 +1145,12 @@
           OC
         </div>
         <div class="flex-1 min-w-0">
-          <p class="font-semibold" id="menu-user-name">Investor Account</p>
-          <p class="text-xs text-pink-100/50 truncate" id="menu-user-email">active <span class="text-emerald-400">•</span></p>
+          <p class="font-semibold truncate" id="menu-user-name">—</p>
+          <p class="text-xs flex items-center gap-1.5 mt-0.5" id="menu-user-status">
+            <span class="inline-block w-2 h-2 rounded-full bg-emerald-400" id="menu-status-dot"></span>
+            <span id="menu-status-text" class="text-emerald-400">Active</span>
+            <span class="text-pink-100/40">•</span>
+          </p>
         </div>
         <i class="fa-solid fa-chevron-right text-pink-100/30"></i>
       </div>
@@ -1210,14 +1214,10 @@
           <i class="fa-solid fa-arrow-up text-pink-300 w-5 text-center"></i>
           <span class="text-sm">Withdrawal</span>
         </button>
-        <button class="w-full glass rounded-2xl p-3.5 text-left flex items-center gap-3 card-hover">
-          <i class="fa-solid fa-layer-group text-orange-300 w-5 text-center"></i>
-          <span class="text-sm">Early Stage Access</span>
-        </button>
         <button class="w-full glass rounded-2xl p-3.5 text-left flex items-center gap-3 card-hover opacity-80">
           <i class="fa-solid fa-bell text-amber-300 w-5 text-center"></i>
           <span class="text-sm">Notifications</span>
-          <span class="ml-auto text-[10px] bg-amber-300/20 text-amber-300 px-2 py-0.5 rounded-full">3</span>
+          <span class="ml-auto text-[10px] bg-amber-300/20 text-amber-300 px-2 py-0.5 rounded-full" id="menu-notif-count">0</span>
         </button>
         <button class="w-full glass rounded-2xl p-3.5 text-left flex items-center gap-3 card-hover opacity-80">
           <i class="fa-solid fa-gear text-rose-300 w-5 text-center"></i>
@@ -1225,7 +1225,7 @@
         </button>
         <button class="w-full glass rounded-2xl p-3.5 text-left flex items-center gap-3 card-hover opacity-80">
           <i class="fa-solid fa-circle-question text-fuchsia-300 w-5 text-center"></i>
-          <span class="text-sm">Help & Support</span>
+          <span class="text-sm">Group/Help Support</span>
         </button>
 
         <!-- SIGN OUT -->
@@ -1288,35 +1288,58 @@
         </button>
       </header>
 
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
         <div class="glass-strong rounded-2xl p-4">
-          <div class="flex items-center gap-3 mb-2">
-            <div class="w-10 h-10 rounded-xl bg-pink-300/15 flex items-center justify-center">
-              <i class="fa-solid fa-users text-pink-300"></i>
+          <div class="flex items-center gap-2 mb-2">
+            <div class="w-9 h-9 rounded-xl bg-pink-300/15 flex items-center justify-center">
+              <i class="fa-solid fa-users text-pink-300 text-sm"></i>
             </div>
-            <p class="text-xs text-pink-100/55">Total Users</p>
+            <p class="text-[10px] text-pink-100/55 leading-tight">Total Users</p>
           </div>
-          <p class="text-2xl font-bold" id="stat-total-users">—</p>
+          <p class="text-xl font-bold" id="stat-total-users">—</p>
         </div>
         <div class="glass-strong rounded-2xl p-4">
-          <div class="flex items-center gap-3 mb-2">
-            <div class="w-10 h-10 rounded-xl bg-pink-300/15 flex items-center justify-center">
-              <i class="fa-solid fa-wave-square text-pink-300"></i>
+          <div class="flex items-center gap-2 mb-2">
+            <div class="w-9 h-9 rounded-xl bg-emerald-400/15 flex items-center justify-center">
+              <i class="fa-solid fa-circle text-emerald-400 text-[10px]"></i>
             </div>
-            <p class="text-xs text-pink-100/55">Active Sessions</p>
+            <p class="text-[10px] text-pink-100/55 leading-tight">Active Now</p>
           </div>
-          <p class="text-2xl font-bold" id="stat-active">—</p>
-          <p class="text-[10px] text-pink-100/40 mt-1">Logins (24h)</p>
+          <p class="text-xl font-bold" id="stat-active">—</p>
+          <p class="text-[10px] text-pink-100/40 mt-0.5">Last 20s</p>
         </div>
         <div class="glass-strong rounded-2xl p-4">
-          <div class="flex items-center gap-3 mb-2">
-            <div class="w-10 h-10 rounded-xl bg-pink-300/15 flex items-center justify-center">
-              <i class="fa-solid fa-lock text-pink-300"></i>
+          <div class="flex items-center gap-2 mb-2">
+            <div class="w-9 h-9 rounded-xl bg-pink-300/15 flex items-center justify-center">
+              <i class="fa-solid fa-right-to-bracket text-pink-300 text-sm"></i>
             </div>
-            <p class="text-xs text-pink-100/55">Logins Today</p>
+            <p class="text-[10px] text-pink-100/55 leading-tight">Logins Today</p>
           </div>
-          <p class="text-2xl font-bold" id="stat-logins">—</p>
-          <p class="text-[10px] text-pink-100/40 mt-1" id="stat-registers">— new accounts</p>
+          <p class="text-xl font-bold" id="stat-logins">—</p>
+          <p class="text-[10px] text-pink-100/40 mt-0.5" id="stat-registers">— new</p>
+        </div>
+        <div class="glass-strong rounded-2xl p-4">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="w-9 h-9 rounded-xl bg-orange-300/15 flex items-center justify-center">
+              <i class="fa-solid fa-wallet text-orange-300 text-sm"></i>
+            </div>
+            <p class="text-[10px] text-pink-100/55 leading-tight">Balance</p>
+          </div>
+          <p class="text-xl font-bold" id="stat-balance">₱0</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-3 gap-3 mb-6">
+        <div class="glass-strong rounded-2xl p-3.5">
+          <p class="text-[10px] text-pink-100/50 mb-1">Earned Today</p>
+          <p class="text-base font-bold text-emerald-300" id="stat-earnings">₱0</p>
+        </div>
+        <div class="glass-strong rounded-2xl p-3.5">
+          <p class="text-[10px] text-pink-100/50 mb-1">Deposits Today</p>
+          <p class="text-base font-bold text-pink-300" id="stat-deposits">₱0</p>
+        </div>
+        <div class="glass-strong rounded-2xl p-3.5">
+          <p class="text-[10px] text-pink-100/50 mb-1">Withdrawals Today</p>
+          <p class="text-base font-bold text-rose-300" id="stat-withdrawals">₱0</p>
         </div>
       </div>
 
@@ -1489,6 +1512,7 @@
 
         if (data.success) {
           saveAuth(data.token, data.user);
+          startHeartbeat();
           showToast('Welcome back!', 'success');
           showPage('home');
         } else {
@@ -1566,6 +1590,7 @@
 
         if (data.success) {
           saveAuth(data.token, data.user);
+          startHeartbeat();
           showToast('Account created successfully!', 'success');
           showPage('home');
         } else {
@@ -1595,6 +1620,7 @@
           // ignore network error on logout
         }
       }
+      stopHeartbeat();
       clearAuth();
       showToast('Signed out successfully', 'success');
       showPage('login');
@@ -1668,13 +1694,8 @@
 
         // Update menu user info when opening menu
         if (pageId === 'menu') {
-          const user = getUser();
-          const nameEl = document.getElementById('menu-user-name');
-          const emailEl = document.getElementById('menu-user-email');
-          if (user && nameEl && emailEl) {
-            nameEl.textContent = user.email.split('@')[0] || 'Investor';
-            emailEl.innerHTML = user.email + ' <span class="text-emerald-400">•</span>';
-          }
+          updateMenuProfile();
+          loadNotificationCount();
         }
 
         const bottomNav = document.getElementById('bottom-nav');
@@ -1746,6 +1767,7 @@
           showToast('Welcome, Admin', 'success');
           showPage('admin-dash');
           loadAdminData();
+          startAdminRefresh();
         } else {
           showToast(data.message || 'Invalid admin password', 'error');
         }
@@ -1755,6 +1777,7 @@
     }
 
     function handleAdminLogout() {
+      stopAdminRefresh();
       clearAdminToken();
       showToast('Admin signed out', 'success');
       showPage('admin-login');
@@ -1764,11 +1787,30 @@
       if (!iso) return '—';
       try {
         const d = new Date(iso);
-        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) +
-          ' · ' + d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        // Philippine time (Asia/Manila)
+        return d.toLocaleString('en-PH', {
+          timeZone: 'Asia/Manila',
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        });
       } catch {
         return '—';
       }
+    }
+
+    function statusBadge(isActive) {
+      if (isActive) {
+        return `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium bg-emerald-400/15 text-emerald-300">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>Active
+        </span>`;
+      }
+      return `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium bg-rose-400/15 text-rose-300">
+        <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>Inactive
+      </span>`;
     }
 
     function renderAdminUsers(users) {
@@ -1789,7 +1831,7 @@
           <td class="px-4 py-3 text-sm">${u.email}</td>
           <td class="px-4 py-3 text-xs text-pink-100/55">${formatAdminDate(u.createdAt)}</td>
           <td class="px-4 py-3 text-xs text-pink-100/55">${formatAdminDate(u.lastLogin)}</td>
-          <td class="px-4 py-3"><span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-medium bg-pink-300/15 text-pink-300">Active</span></td>
+          <td class="px-4 py-3">${statusBadge(u.isActive)}</td>
         </tr>
       `).join('');
 
@@ -1800,7 +1842,7 @@
             <p class="text-[10px] text-pink-100/40 mt-0.5">Created ${formatAdminDate(u.createdAt)}</p>
             <p class="text-[10px] text-pink-100/40">Last login ${formatAdminDate(u.lastLogin)}</p>
           </div>
-          <span class="shrink-0 inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-medium bg-pink-300/15 text-pink-300">Active</span>
+          ${statusBadge(u.isActive)}
         </div>
       `).join('');
 
@@ -1841,6 +1883,12 @@
       `).join('');
     }
 
+    let adminRefreshTimer = null;
+    function formatPeso(n) {
+      const num = Number(n) || 0;
+      return '₱' + num.toLocaleString('en-PH');
+    }
+
     async function loadAdminData() {
       const token = getAdminToken();
       if (!token) return;
@@ -1854,21 +1902,123 @@
         const usersData = await usersRes.json();
         const actData = await actRes.json();
 
-        if (statsData.success && statsData.stats) {
-          document.getElementById('stat-total-users').textContent = statsData.stats.totalUsers;
-          document.getElementById('stat-active').textContent = statsData.stats.activeSessions;
-          document.getElementById('stat-logins').textContent = statsData.stats.loginsToday;
-          document.getElementById('stat-registers').textContent = (statsData.stats.registersToday || 0) + ' new accounts today';
-        }
         if (usersData.success) {
           adminUsersCache = usersData.users || [];
           renderAdminUsers(adminUsersCache);
+          // Real active count from lastSeen (20s window)
+          const activeNow = adminUsersCache.filter(u => u.isActive).length;
+          const elActive = document.getElementById('stat-active');
+          if (elActive) elActive.textContent = activeNow;
+        }
+
+        if (statsData.success && statsData.stats) {
+          const s = statsData.stats;
+          const elTotal = document.getElementById('stat-total-users');
+          const elLogins = document.getElementById('stat-logins');
+          const elReg = document.getElementById('stat-registers');
+          if (elTotal) elTotal.textContent = s.totalUsers;
+          if (elLogins) elLogins.textContent = s.loginsToday;
+          if (elReg) elReg.textContent = (s.registersToday || 0) + ' new today';
+          const elBal = document.getElementById('stat-balance');
+          const elEarn = document.getElementById('stat-earnings');
+          const elDep = document.getElementById('stat-deposits');
+          const elWd = document.getElementById('stat-withdrawals');
+          if (elBal) elBal.textContent = formatPeso(s.balance);
+          if (elEarn) elEarn.textContent = formatPeso(s.earningsToday);
+          if (elDep) elDep.textContent = formatPeso(s.depositsToday);
+          if (elWd) elWd.textContent = formatPeso(s.withdrawalsToday);
         }
         if (actData.success) {
           renderAdminActivity(actData.activity || []);
         }
       } catch (err) {
         showToast('Failed to load admin data', 'error');
+      }
+    }
+
+    function startAdminRefresh() {
+      stopAdminRefresh();
+      adminRefreshTimer = setInterval(() => {
+        if (getAdminToken() && document.getElementById('admin-dash')?.classList.contains('active')) {
+          loadAdminData();
+        }
+      }, 10000); // refresh every 10s for near real-time
+    }
+    function stopAdminRefresh() {
+      if (adminRefreshTimer) {
+        clearInterval(adminRefreshTimer);
+        adminRefreshTimer = null;
+      }
+    }
+
+    // ========== USER PROFILE + HEARTBEAT + NOTIFICATIONS ==========
+    function updateMenuProfile() {
+      const user = getUser();
+      const nameEl = document.getElementById('menu-user-name');
+      const statusText = document.getElementById('menu-status-text');
+      const statusDot = document.getElementById('menu-status-dot');
+      if (!nameEl) return;
+      if (user && user.email) {
+        nameEl.textContent = user.email;
+        // User is viewing the app → always show Active (green)
+        if (statusText) {
+          statusText.textContent = 'Active';
+          statusText.className = 'text-emerald-400';
+        }
+        if (statusDot) {
+          statusDot.className = 'inline-block w-2 h-2 rounded-full bg-emerald-400';
+        }
+      } else {
+        nameEl.textContent = '—';
+        if (statusText) {
+          statusText.textContent = 'Offline';
+          statusText.className = 'text-rose-300';
+        }
+        if (statusDot) {
+          statusDot.className = 'inline-block w-2 h-2 rounded-full bg-rose-400';
+        }
+      }
+    }
+
+    async function loadNotificationCount() {
+      const el = document.getElementById('menu-notif-count');
+      if (!el) return;
+      const token = getToken();
+      if (!token) {
+        el.textContent = '0';
+        return;
+      }
+      try {
+        const res = await fetch(`${API_URL}/notifications/count`, {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        const data = await res.json();
+        el.textContent = (data.success && typeof data.count === 'number') ? data.count : 0;
+      } catch {
+        el.textContent = '0';
+      }
+    }
+
+    let heartbeatTimer = null;
+    function startHeartbeat() {
+      stopHeartbeat();
+      const send = async () => {
+        const token = getToken();
+        if (!token) return;
+        try {
+          await fetch(`${API_URL}/heartbeat`, {
+            method: 'POST',
+            headers: { Authorization: 'Bearer ' + token }
+          });
+        } catch (e) { /* ignore */ }
+      };
+      send();
+      heartbeatTimer = setInterval(send, 12000); // every 12s
+    }
+    function stopHeartbeat() {
+      if (heartbeatTimer) {
+        clearInterval(heartbeatTimer);
+        heartbeatTimer = null;
       }
     }
 
@@ -1881,6 +2031,7 @@
         if (getAdminToken()) {
           showPage('admin-dash');
           loadAdminData();
+          startAdminRefresh();
         } else {
           showPage('admin-login');
         }
@@ -1891,6 +2042,7 @@
       } else {
         // Main site
         if (getToken()) {
+          startHeartbeat();
           const loginPage = document.getElementById('login');
           const createPage = document.getElementById('create');
           if (loginPage?.classList.contains('active') || createPage?.classList.contains('active')) {
