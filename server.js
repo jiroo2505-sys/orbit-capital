@@ -8,17 +8,25 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'orbit-capital-secret-change-this-in-production';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'honda12345';
 const USERS_FILE = path.join(__dirname, 'users.json');
+const ACTIVITY_FILE = path.join(__dirname, 'activity.json');
 
 // Middleware
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 
-// Serve the frontend (public.html) so one URL works for both phone & laptop
+// Serve the frontend (public.html) — main site + admin share the same file
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public.html'));
 });
 app.get('/index.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public.html'));
+});
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public.html'));
+});
+app.get('/admin/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public.html'));
 });
 
@@ -38,9 +46,41 @@ function saveUsers(users) {
   fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
 }
 
-// Ensure users.json exists
+function loadActivity() {
+  try {
+    if (fs.existsSync(ACTIVITY_FILE)) {
+      return JSON.parse(fs.readFileSync(ACTIVITY_FILE, 'utf8'));
+    }
+  } catch (err) {
+    console.error('Error loading activity:', err.message);
+  }
+  return [];
+}
+
+function saveActivity(logs) {
+  // keep last 500 events only
+  const trimmed = logs.slice(-500);
+  fs.writeFileSync(ACTIVITY_FILE, JSON.stringify(trimmed, null, 2));
+}
+
+function logActivity(type, email, extra) {
+  const logs = loadActivity();
+  logs.push({
+    id: Date.now().toString() + Math.random().toString(36).slice(2, 6),
+    type,
+    email: email || null,
+    extra: extra || null,
+    time: new Date().toISOString()
+  });
+  saveActivity(logs);
+}
+
+// Ensure files exist
 if (!fs.existsSync(USERS_FILE)) {
   saveUsers([]);
+}
+if (!fs.existsSync(ACTIVITY_FILE)) {
+  saveActivity([]);
 }
 
 // ---- Auth middleware ----
@@ -53,6 +93,24 @@ function authMiddleware(req, res, next) {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     req.user = decoded;
+    next();
+  } catch (err) {
+    return res.status(401).json({ success: false, message: 'Invalid or expired token' });
+  }
+}
+
+function adminMiddleware(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ success: false, message: 'No token provided' });
+  }
+  const token = authHeader.split(' ')[1];
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    if (!decoded.isAdmin) {
+      return res.status(403).json({ success: false, message: 'Admin access required' });
+    }
+    req.admin = decoded;
     next();
   } catch (err) {
     return res.status(401).json({ success: false, message: 'Invalid or expired token' });
@@ -116,6 +174,7 @@ app.post('/api/register', async (req, res) => {
 
     users.push(newUser);
     saveUsers(users);
+    logActivity('register', newUser.email);
 
     const time = new Date().toLocaleString();
     console.log(`\n✅ [REGISTER] New account created`);
@@ -173,6 +232,10 @@ app.post('/api/login', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
 
+    user.lastLogin = new Date().toISOString();
+    saveUsers(users);
+    logActivity('login', user.email);
+
     const token = jwt.sign(
       { id: user.id, email: user.email },
       JWT_SECRET,
@@ -198,6 +261,7 @@ app.post('/api/login', async (req, res) => {
 
 // LOGOUT (mostly client-side, but endpoint exists for completeness)
 app.post('/api/logout', authMiddleware, (req, res) => {
+  logActivity('logout', req.user.email);
   const time = new Date().toLocaleString();
   console.log(`\n🔴 [LOGOUT] User logged out`);
   console.log(`   Email : ${req.user.email}`);
@@ -219,14 +283,103 @@ app.get('/api/me', authMiddleware, (req, res) => {
   });
 });
 
+// ========== ADMIN ==========
+app.post('/api/admin/login', (req, res) => {
+  try {
+    const { password } = req.body;
+    if (!password) {
+      return res.status(400).json({ success: false, message: 'Password is required' });
+    }
+    if (password !== ADMIN_PASSWORD) {
+      logActivity('admin_login_failed', null);
+      return res.status(401).json({ success: false, message: 'Invalid admin password' });
+    }
+    const token = jwt.sign(
+      { isAdmin: true, role: 'admin' },
+      JWT_SECRET,
+      { expiresIn: '12h' }
+    );
+    logActivity('admin_login', 'admin');
+    res.json({ success: true, message: 'Admin login successful', token });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+app.get('/api/admin/users', adminMiddleware, (req, res) => {
+  try {
+    const users = loadUsers().map(u => ({
+      id: u.id,
+      email: u.email,
+      createdAt: u.createdAt || null,
+      lastLogin: u.lastLogin || null,
+      invitationCode: u.invitationCode || null
+    }));
+    // newest first
+    users.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+    res.json({ success: true, users, total: users.length });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+app.get('/api/admin/stats', adminMiddleware, (req, res) => {
+  try {
+    const users = loadUsers();
+    const activity = loadActivity();
+    const now = Date.now();
+    const dayMs = 24 * 60 * 60 * 1000;
+    const loginsToday = activity.filter(
+      a => a.type === 'login' && now - new Date(a.time).getTime() < dayMs
+    ).length;
+    const registersToday = activity.filter(
+      a => a.type === 'register' && now - new Date(a.time).getTime() < dayMs
+    ).length;
+    // rough "active sessions" = logins in last 24h without logout after (simple approx)
+    const recentLogins = activity.filter(
+      a => a.type === 'login' && now - new Date(a.time).getTime() < dayMs
+    ).length;
+
+    res.json({
+      success: true,
+      stats: {
+        totalUsers: users.length,
+        activeSessions: recentLogins,
+        loginsToday,
+        registersToday
+      }
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+app.get('/api/admin/activity', adminMiddleware, (req, res) => {
+  try {
+    const logs = loadActivity().slice().reverse().slice(0, 100);
+    res.json({ success: true, activity: logs });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // Start server — listen on 0.0.0.0 so phone / other devices can connect
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n🚀 Orbit Capital running!`);
   console.log(`   Local  : http://localhost:${PORT}`);
+  console.log(`   Admin  : http://localhost:${PORT}/admin`);
   console.log(`   Phone  : use the localtunnel / ngrok link`);
   console.log(`\n   API endpoints:`);
   console.log(`   POST /api/register`);
   console.log(`   POST /api/login`);
   console.log(`   POST /api/logout`);
-  console.log(`   GET  /api/me\n`);
+  console.log(`   GET  /api/me`);
+  console.log(`   POST /api/admin/login`);
+  console.log(`   GET  /api/admin/users`);
+  console.log(`   GET  /api/admin/stats`);
+  console.log(`   GET  /api/admin/activity\n`);
 });
