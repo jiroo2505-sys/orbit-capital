@@ -1149,7 +1149,6 @@
           <p class="text-xs flex items-center gap-1.5 mt-0.5" id="menu-user-status">
             <span class="inline-block w-2 h-2 rounded-full bg-emerald-400" id="menu-status-dot"></span>
             <span id="menu-status-text" class="text-emerald-400">Active</span>
-            <span class="text-pink-100/40">•</span>
           </p>
         </div>
         <i class="fa-solid fa-chevron-right text-pink-100/30"></i>
@@ -1289,7 +1288,7 @@
       </header>
 
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-        <div class="glass-strong rounded-2xl p-4">
+        <button type="button" onclick="showPage('admin-users-all')" class="glass-strong rounded-2xl p-4 text-left card-hover w-full">
           <div class="flex items-center gap-2 mb-2">
             <div class="w-9 h-9 rounded-xl bg-pink-300/15 flex items-center justify-center">
               <i class="fa-solid fa-users text-pink-300 text-sm"></i>
@@ -1297,7 +1296,8 @@
             <p class="text-[10px] text-pink-100/55 leading-tight">Total Users</p>
           </div>
           <p class="text-xl font-bold" id="stat-total-users">—</p>
-        </div>
+          <p class="text-[10px] text-pink-300/70 mt-1">View all →</p>
+        </button>
         <div class="glass-strong rounded-2xl p-4">
           <div class="flex items-center gap-2 mb-2">
             <div class="w-9 h-9 rounded-xl bg-emerald-400/15 flex items-center justify-center">
@@ -1359,6 +1359,7 @@
                 <th class="px-4 py-3 font-medium">Created</th>
                 <th class="px-4 py-3 font-medium">Last Login</th>
                 <th class="px-4 py-3 font-medium">Status</th>
+                <th class="px-4 py-3 font-medium">Action</th>
               </tr>
             </thead>
             <tbody id="admin-users-tbody"></tbody>
@@ -1375,6 +1376,52 @@
         <div class="divide-y divide-pink-200/10 max-h-72 overflow-y-auto" id="admin-activity-list">
           <p class="px-4 py-6 text-center text-xs text-pink-100/40">No activity yet</p>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== ADMIN ALL USERS PAGE ========== -->
+  <div id="admin-users-all" class="page">
+    <div class="max-w-5xl mx-auto min-h-screen px-4 sm:px-6 pt-5 pb-16 relative z-10">
+      <header class="flex items-center justify-between mb-6 gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <button type="button" onclick="showPage('admin-dash')" class="w-10 h-10 rounded-xl glass flex items-center justify-center card-hover shrink-0">
+            <i class="fa-solid fa-arrow-left text-pink-200"></i>
+          </button>
+          <div class="min-w-0">
+            <p class="font-semibold text-sm sm:text-base">All Users</p>
+            <p class="text-[10px] text-pink-100/45" id="admin-all-users-subtitle">Total Users</p>
+          </div>
+        </div>
+        <button onclick="handleAdminLogout()" class="glass rounded-xl px-3 py-2 text-xs text-pink-200/80 hover:text-pink-100 card-hover">
+          <i class="fa-solid fa-right-from-bracket mr-1"></i> Sign out
+        </button>
+      </header>
+
+      <div class="glass-strong rounded-2xl overflow-hidden mb-4">
+        <div class="flex items-center justify-between px-4 py-3 border-b border-pink-200/10">
+          <h3 class="font-semibold text-sm">Users list</h3>
+          <div class="relative">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-pink-100/35 text-xs"></i>
+            <input type="text" id="admin-all-search" placeholder="Search users…" class="input-field pl-8 pr-3 py-2 rounded-xl text-xs w-36 sm:w-48" oninput="filterAdminAllUsers()">
+          </div>
+        </div>
+        <div class="hidden sm:block overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead>
+              <tr class="text-[10px] uppercase tracking-wider text-pink-100/40 border-b border-pink-200/10">
+                <th class="px-4 py-3 font-medium">Email / Phone</th>
+                <th class="px-4 py-3 font-medium">Created</th>
+                <th class="px-4 py-3 font-medium">Last Login</th>
+                <th class="px-4 py-3 font-medium">Status</th>
+                <th class="px-4 py-3 font-medium">Action</th>
+              </tr>
+            </thead>
+            <tbody id="admin-all-users-tbody"></tbody>
+          </table>
+        </div>
+        <div class="sm:hidden divide-y divide-pink-200/10" id="admin-all-users-mobile"></div>
+        <div class="px-4 py-3 text-[10px] text-pink-100/35 border-t border-pink-200/10" id="admin-all-users-count">Loading…</div>
       </div>
     </div>
   </div>
@@ -1632,6 +1679,7 @@
       create: 'bg-auth',
       'admin-login': 'bg-auth',
       'admin-dash': 'bg-menu',
+      'admin-users-all': 'bg-menu',
       home: 'bg-home',
       portfolio: 'bg-portfolio',
       deals: 'bg-deals',
@@ -1653,7 +1701,7 @@
       insights: 'nav-insights'
     };
 
-    const AUTH_PAGES = ['login', 'create', 'admin-login', 'admin-dash'];
+    const AUTH_PAGES = ['login', 'create', 'admin-login', 'admin-dash', 'admin-users-all'];
     let isNavigating = false;
     let adminUsersCache = [];
     const IS_ADMIN_ROUTE = window.location.pathname.replace(/\/$/, '') === '/admin';
@@ -1663,11 +1711,12 @@
 
       // Admin route: only allow admin pages
       if (IS_ADMIN_ROUTE) {
-        if (pageId !== 'admin-login' && pageId !== 'admin-dash') pageId = 'admin-login';
-        if (pageId === 'admin-dash' && !getAdminToken()) pageId = 'admin-login';
+        const adminPages = ['admin-login', 'admin-dash', 'admin-users-all'];
+        if (!adminPages.includes(pageId)) pageId = 'admin-login';
+        if ((pageId === 'admin-dash' || pageId === 'admin-users-all') && !getAdminToken()) pageId = 'admin-login';
       } else {
         // Main site: never show admin pages; require user login for app pages
-        if (pageId === 'admin-login' || pageId === 'admin-dash') pageId = 'login';
+        if (pageId === 'admin-login' || pageId === 'admin-dash' || pageId === 'admin-users-all') pageId = 'login';
         if (!AUTH_PAGES.includes(pageId) && !getToken()) {
           pageId = 'login';
         }
@@ -1697,9 +1746,12 @@
           updateMenuProfile();
           loadNotificationCount();
         }
+        if (pageId === 'admin-users-all') {
+          renderAdminAllUsers(adminUsersCache);
+        }
 
         const bottomNav = document.getElementById('bottom-nav');
-        if (AUTH_PAGES.includes(pageId) || pageId === 'admin-login' || pageId === 'admin-dash') {
+        if (AUTH_PAGES.includes(pageId) || pageId === 'admin-login' || pageId === 'admin-dash' || pageId === 'admin-users-all') {
           bottomNav.classList.add('hidden');
         } else {
           bottomNav.classList.remove('hidden');
@@ -1820,7 +1872,7 @@
       if (!tbody || !mobile) return;
 
       if (!users.length) {
-        tbody.innerHTML = '<tr><td colspan="4" class="px-4 py-8 text-center text-xs text-pink-100/40">No users yet</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="px-4 py-8 text-center text-xs text-pink-100/40">No users yet</td></tr>';
         mobile.innerHTML = '<p class="px-4 py-8 text-center text-xs text-pink-100/40">No users yet</p>';
         if (countEl) countEl.textContent = '0 users';
         return;
@@ -1832,6 +1884,9 @@
           <td class="px-4 py-3 text-xs text-pink-100/55">${formatAdminDate(u.createdAt)}</td>
           <td class="px-4 py-3 text-xs text-pink-100/55">${formatAdminDate(u.lastLogin)}</td>
           <td class="px-4 py-3">${statusBadge(u.isActive)}</td>
+          <td class="px-4 py-3">
+            <button type="button" onclick="deleteAdminUser('${u.id}', '${(u.email || '').replace(/'/g, "\\'")}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-rose-400/15 text-rose-300 hover:bg-rose-400/25">Delete</button>
+          </td>
         </tr>
       `).join('');
 
@@ -1842,7 +1897,10 @@
             <p class="text-[10px] text-pink-100/40 mt-0.5">Created ${formatAdminDate(u.createdAt)}</p>
             <p class="text-[10px] text-pink-100/40">Last login ${formatAdminDate(u.lastLogin)}</p>
           </div>
-          ${statusBadge(u.isActive)}
+          <div class="flex flex-col items-end gap-2 shrink-0">
+            ${statusBadge(u.isActive)}
+            <button type="button" onclick="deleteAdminUser('${u.id}', '${(u.email || '').replace(/'/g, "\\'")}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-rose-400/15 text-rose-300">Delete</button>
+          </div>
         </div>
       `).join('');
 
@@ -1853,6 +1911,86 @@
       const q = (document.getElementById('admin-search')?.value || '').toLowerCase().trim();
       const filtered = !q ? adminUsersCache : adminUsersCache.filter(u => (u.email || '').toLowerCase().includes(q));
       renderAdminUsers(filtered);
+    }
+
+    function renderAdminAllUsers(users) {
+      const tbody = document.getElementById('admin-all-users-tbody');
+      const mobile = document.getElementById('admin-all-users-mobile');
+      const countEl = document.getElementById('admin-all-users-count');
+      const sub = document.getElementById('admin-all-users-subtitle');
+      if (!tbody || !mobile) return;
+
+      if (sub) sub.textContent = (users?.length || 0) + ' total';
+
+      if (!users || !users.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="px-4 py-8 text-center text-xs text-pink-100/40">No users yet</td></tr>';
+        mobile.innerHTML = '<p class="px-4 py-8 text-center text-xs text-pink-100/40">No users yet</p>';
+        if (countEl) countEl.textContent = '0 users';
+        return;
+      }
+
+      tbody.innerHTML = users.map(u => `
+        <tr class="border-b border-pink-200/5 hover:bg-white/5">
+          <td class="px-4 py-3 text-sm">${u.email}</td>
+          <td class="px-4 py-3 text-xs text-pink-100/55">${formatAdminDate(u.createdAt)}</td>
+          <td class="px-4 py-3 text-xs text-pink-100/55">${formatAdminDate(u.lastLogin)}</td>
+          <td class="px-4 py-3">${statusBadge(u.isActive)}</td>
+          <td class="px-4 py-3">
+            <button type="button" onclick="deleteAdminUser('${u.id}', '${(u.email || '').replace(/'/g, "\\'")}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-rose-400/15 text-rose-300 hover:bg-rose-400/25">Delete</button>
+          </td>
+        </tr>
+      `).join('');
+
+      mobile.innerHTML = users.map(u => `
+        <div class="px-4 py-3 flex items-center justify-between gap-3">
+          <div class="min-w-0">
+            <p class="text-sm font-medium truncate">${u.email}</p>
+            <p class="text-[10px] text-pink-100/40 mt-0.5">Created ${formatAdminDate(u.createdAt)}</p>
+            <p class="text-[10px] text-pink-100/40">Last login ${formatAdminDate(u.lastLogin)}</p>
+          </div>
+          <div class="flex flex-col items-end gap-2 shrink-0">
+            ${statusBadge(u.isActive)}
+            <button type="button" onclick="deleteAdminUser('${u.id}', '${(u.email || '').replace(/'/g, "\\'")}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-rose-400/15 text-rose-300">Delete</button>
+          </div>
+        </div>
+      `).join('');
+
+      if (countEl) countEl.textContent = users.length + (users.length === 1 ? ' user' : ' users');
+    }
+
+    function filterAdminAllUsers() {
+      const q = (document.getElementById('admin-all-search')?.value || '').toLowerCase().trim();
+      const filtered = !q ? adminUsersCache : adminUsersCache.filter(u => (u.email || '').toLowerCase().includes(q));
+      renderAdminAllUsers(filtered);
+    }
+
+    async function deleteAdminUser(id, email) {
+      if (!id) return;
+      const ok = confirm('Delete user "' + (email || id) + '"?\nThis cannot be undone.');
+      if (!ok) return;
+      const token = getAdminToken();
+      if (!token) {
+        showToast('Admin session expired', 'error');
+        return;
+      }
+      try {
+        const res = await fetch(`${API_URL}/admin/users/${encodeURIComponent(id)}`, {
+          method: 'DELETE',
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('User deleted', 'success');
+          adminUsersCache = (adminUsersCache || []).filter(u => u.id !== id);
+          renderAdminUsers(adminUsersCache);
+          renderAdminAllUsers(adminUsersCache);
+          loadAdminData();
+        } else {
+          showToast(data.message || 'Delete failed', 'error');
+        }
+      } catch (err) {
+        showToast('Cannot reach server', 'error');
+      }
     }
 
     function renderAdminActivity(logs) {
@@ -1905,6 +2043,9 @@
         if (usersData.success) {
           adminUsersCache = usersData.users || [];
           renderAdminUsers(adminUsersCache);
+          if (document.getElementById('admin-users-all')?.classList.contains('active')) {
+            renderAdminAllUsers(adminUsersCache);
+          }
           // Real active count from lastSeen (20s window)
           const activeNow = adminUsersCache.filter(u => u.isActive).length;
           const elActive = document.getElementById('stat-active');
