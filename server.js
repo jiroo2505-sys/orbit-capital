@@ -169,7 +169,8 @@ app.post('/api/register', async (req, res) => {
       email: email.toLowerCase().trim(),
       password: hashed,
       invitationCode: invitationCode || null,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      lastSeen: new Date().toISOString()
     };
 
     users.push(newUser);
@@ -233,6 +234,7 @@ app.post('/api/login', async (req, res) => {
     }
 
     user.lastLogin = new Date().toISOString();
+    user.lastSeen = new Date().toISOString();
     saveUsers(users);
     logActivity('login', user.email);
 
@@ -283,6 +285,26 @@ app.get('/api/me', authMiddleware, (req, res) => {
   });
 });
 
+// Heartbeat — client pings while app is open (for Active/Inactive status)
+app.post('/api/heartbeat', authMiddleware, (req, res) => {
+  try {
+    const users = loadUsers();
+    const user = users.find(u => u.id === req.user.id);
+    if (user) {
+      user.lastSeen = new Date().toISOString();
+      saveUsers(users);
+    }
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false });
+  }
+});
+
+// Notification count (real-time; currently 0 until investment/news notifications exist)
+app.get('/api/notifications/count', authMiddleware, (req, res) => {
+  res.json({ success: true, count: 0 });
+});
+
 // ========== ADMIN ==========
 app.post('/api/admin/login', (req, res) => {
   try {
@@ -309,13 +331,21 @@ app.post('/api/admin/login', (req, res) => {
 
 app.get('/api/admin/users', adminMiddleware, (req, res) => {
   try {
-    const users = loadUsers().map(u => ({
-      id: u.id,
-      email: u.email,
-      createdAt: u.createdAt || null,
-      lastLogin: u.lastLogin || null,
-      invitationCode: u.invitationCode || null
-    }));
+    const now = Date.now();
+    const ACTIVE_MS = 20 * 1000; // 20 seconds
+    const users = loadUsers().map(u => {
+      const lastSeenMs = u.lastSeen ? new Date(u.lastSeen).getTime() : 0;
+      const isActive = lastSeenMs > 0 && (now - lastSeenMs) < ACTIVE_MS;
+      return {
+        id: u.id,
+        email: u.email,
+        createdAt: u.createdAt || null,
+        lastLogin: u.lastLogin || null,
+        lastSeen: u.lastSeen || null,
+        invitationCode: u.invitationCode || null,
+        isActive
+      };
+    });
     // newest first
     users.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
     res.json({ success: true, users, total: users.length });
@@ -337,18 +367,26 @@ app.get('/api/admin/stats', adminMiddleware, (req, res) => {
     const registersToday = activity.filter(
       a => a.type === 'register' && now - new Date(a.time).getTime() < dayMs
     ).length;
-    // rough "active sessions" = logins in last 24h without logout after (simple approx)
-    const recentLogins = activity.filter(
-      a => a.type === 'login' && now - new Date(a.time).getTime() < dayMs
-    ).length;
+    // Active = users with heartbeat in last 20 seconds
+    const ACTIVE_MS = 20 * 1000;
+    const activeNow = users.filter(u => {
+      if (!u.lastSeen) return false;
+      return (now - new Date(u.lastSeen).getTime()) < ACTIVE_MS;
+    }).length;
 
+    // Financial placeholders (no real transactions yet → all 0)
+    // Structure ready for future deposit/withdraw/earnings tracking
     res.json({
       success: true,
       stats: {
         totalUsers: users.length,
-        activeSessions: recentLogins,
+        activeSessions: activeNow,
         loginsToday,
-        registersToday
+        registersToday,
+        earningsToday: 0,
+        depositsToday: 0,
+        withdrawalsToday: 0,
+        balance: 0
       }
     });
   } catch (err) {
@@ -369,7 +407,7 @@ app.get('/api/admin/activity', adminMiddleware, (req, res) => {
 
 // Start server — listen on 0.0.0.0 so phone / other devices can connect
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`\n🚀 Orbit Capital running!`);
+  console.log(`\n Orbit Capital running!`);
   console.log(`   Local  : http://localhost:${PORT}`);
   console.log(`   Admin  : http://localhost:${PORT}/admin`);
   console.log(`   Phone  : use the localtunnel / ngrok link`);
