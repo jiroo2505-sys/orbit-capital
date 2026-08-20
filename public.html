@@ -509,7 +509,7 @@
   </div>
 
   <!-- ========== LOGIN ========== -->
-  <div id="login" class="page active">
+  <div id="login" class="page">
     <div class="max-w-md mx-auto min-h-screen flex flex-col px-5 pt-12 pb-10 relative z-10">
       <div class="flex flex-col items-center mb-10">
         <div class="orbit-logo mb-4"><div class="core"></div></div>
@@ -2335,15 +2335,90 @@
     let adminUsersCache = [];
     const IS_ADMIN_ROUTE = window.location.pathname.replace(/\/$/, '') === '/admin';
 
-    function showPage(pageId) {
-      if (isNavigating) return;
+    let isInitialPageLoad = true;
 
-      // Admin route: only allow admin pages
+    function applyPage(pageId) {
+      document.querySelectorAll('.page').forEach(p => {
+        p.classList.remove('active');
+        p.style.animation = 'none';
+      });
+      document.querySelectorAll('.bg-layer').forEach(b => b.classList.remove('active'));
+
+      const bgId = BG_MAP[pageId] || 'bg-home';
+      const bgEl = document.getElementById(bgId);
+      if (bgEl) bgEl.classList.add('active');
+
+      const target = document.getElementById(pageId);
+      if (target) {
+        if (isInitialPageLoad) {
+          target.style.animation = 'none';
+        } else {
+          target.style.animation = '';
+        }
+        target.classList.add('active');
+      }
+
+      if (pageId === 'menu') {
+        updateMenuProfile();
+        loadNotificationCount();
+      }
+      if (pageId === 'admin-users-all') {
+        renderAdminAllUsers(adminUsersCache);
+      }
+      if (pageId === 'admin-active') renderAdminActivePage();
+      if (pageId === 'admin-logins') renderAdminLoginsPage();
+      if (pageId === 'admin-earnings') renderAdminMoneyPage('earnings');
+      if (pageId === 'admin-deposits') renderAdminMoneyPage('deposits');
+      if (pageId === 'admin-withdrawals') renderAdminMoneyPage('withdrawals');
+
+      const bottomNav = document.getElementById('bottom-nav');
+      if (AUTH_PAGES.includes(pageId) || ADMIN_PAGES.includes(pageId)) {
+        bottomNav.classList.add('hidden');
+      } else {
+        bottomNav.classList.remove('hidden');
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+          btn.classList.remove('active', 'text-pink-300');
+          btn.classList.add('text-pink-100/50');
+        });
+        if (NAV_MAP[pageId]) {
+          const activeNav = document.getElementById(NAV_MAP[pageId]);
+          if (activeNav) {
+            activeNav.classList.remove('text-pink-100/50');
+            activeNav.classList.add('active', 'text-pink-300');
+          }
+        }
+      }
+
+      window.scrollTo({ top: 0, behavior: 'instant' });
+
+      try {
+        if (IS_ADMIN_ROUTE) {
+          sessionStorage.setItem('orbit_admin_page', pageId);
+          if (pageId !== 'admin-login') {
+            const hash = '#' + pageId;
+            if (location.hash !== hash) history.replaceState(null, '', hash);
+          } else if (location.hash) {
+            history.replaceState(null, '', location.pathname + location.search);
+          }
+        } else {
+          sessionStorage.setItem('orbit_user_page', pageId);
+          if (!['login', 'create'].includes(pageId)) {
+            const hash = '#' + pageId;
+            if (location.hash !== hash) history.replaceState(null, '', hash);
+          } else if (location.hash) {
+            history.replaceState(null, '', location.pathname + location.search);
+          }
+        }
+      } catch (e) { /* ignore */ }
+    }
+
+    function showPage(pageId, instant) {
+      if (isNavigating && !instant) return;
+
       if (IS_ADMIN_ROUTE) {
         if (!ADMIN_PAGES.includes(pageId)) pageId = 'admin-login';
         if (pageId !== 'admin-login' && !getAdminToken()) pageId = 'admin-login';
       } else {
-        // Main site: never show admin pages; require user login for app pages
         if (ADMIN_PAGES.includes(pageId)) pageId = 'login';
         if (!AUTH_PAGES.includes(pageId) && !getToken()) {
           pageId = 'login';
@@ -2352,78 +2427,24 @@
 
       const target = document.getElementById(pageId);
       if (!target) return;
-      if (target.classList.contains('active')) return;
+      if (target.classList.contains('active') && !instant) return;
+
+      // First load / refresh: no loader, no transition flash
+      if (instant || isInitialPageLoad) {
+        const loader = document.getElementById('loader');
+        if (loader) loader.classList.remove('show');
+        applyPage(pageId);
+        isInitialPageLoad = false;
+        isNavigating = false;
+        return;
+      }
 
       isNavigating = true;
       const loader = document.getElementById('loader');
       loader.classList.add('show');
 
-      // Short loader flash only — keeps "Entering orbit…" but feels instant
       setTimeout(() => {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.bg-layer').forEach(b => b.classList.remove('active'));
-
-        const bgId = BG_MAP[pageId] || 'bg-home';
-        const bgEl = document.getElementById(bgId);
-        if (bgEl) bgEl.classList.add('active');
-
-        target.classList.add('active');
-
-        // Update menu user info when opening menu
-        if (pageId === 'menu') {
-          updateMenuProfile();
-          loadNotificationCount();
-        }
-        if (pageId === 'admin-users-all') {
-          renderAdminAllUsers(adminUsersCache);
-        }
-        if (pageId === 'admin-active') renderAdminActivePage();
-        if (pageId === 'admin-logins') renderAdminLoginsPage();
-        if (pageId === 'admin-earnings') renderAdminMoneyPage('earnings');
-        if (pageId === 'admin-deposits') renderAdminMoneyPage('deposits');
-        if (pageId === 'admin-withdrawals') renderAdminMoneyPage('withdrawals');
-
-        const bottomNav = document.getElementById('bottom-nav');
-        if (AUTH_PAGES.includes(pageId) || ADMIN_PAGES.includes(pageId)) {
-          bottomNav.classList.add('hidden');
-        } else {
-          bottomNav.classList.remove('hidden');
-          document.querySelectorAll('.nav-btn').forEach(btn => {
-            btn.classList.remove('active', 'text-pink-300');
-            btn.classList.add('text-pink-100/50');
-          });
-          if (NAV_MAP[pageId]) {
-            const activeNav = document.getElementById(NAV_MAP[pageId]);
-            if (activeNav) {
-              activeNav.classList.remove('text-pink-100/50');
-              activeNav.classList.add('active', 'text-pink-300');
-            }
-          }
-        }
-
-        window.scrollTo({ top: 0, behavior: 'instant' });
-
-        // Remember page so refresh stays here (admin + user app)
-        try {
-          if (IS_ADMIN_ROUTE) {
-            sessionStorage.setItem('orbit_admin_page', pageId);
-            if (pageId !== 'admin-login') {
-              const hash = '#' + pageId;
-              if (location.hash !== hash) history.replaceState(null, '', hash);
-            } else if (location.hash) {
-              history.replaceState(null, '', location.pathname + location.search);
-            }
-          } else {
-            sessionStorage.setItem('orbit_user_page', pageId);
-            if (!['login', 'create'].includes(pageId)) {
-              const hash = '#' + pageId;
-              if (location.hash !== hash) history.replaceState(null, '', hash);
-            } else if (location.hash) {
-              history.replaceState(null, '', location.pathname + location.search);
-            }
-          }
-        } catch (e) { /* ignore storage errors */ }
-
+        applyPage(pageId);
         setTimeout(() => {
           loader.classList.remove('show');
           isNavigating = false;
@@ -2488,7 +2509,7 @@
       clearAdminToken();
       try { sessionStorage.removeItem('orbit_admin_page'); } catch (e) {}
       showToast('Admin signed out', 'success');
-      showPage('admin-login');
+      showPage('admin-login', true);
     }
 
     // ========== ADMIN DRAWER (left menu + swipe) ==========
@@ -3187,11 +3208,11 @@
         document.getElementById('bottom-nav')?.classList.add('hidden');
         if (getAdminToken()) {
           const page = getSavedAdminPage();
-          showPage(page);
+          showPage(page, true);
           loadAdminData();
           startAdminRefresh();
         } else {
-          showPage('admin-login');
+          showPage('admin-login', true);
         }
         // Enter key on admin password
         document.getElementById('admin-password')?.addEventListener('keydown', (e) => {
@@ -3202,7 +3223,7 @@
           if (!IS_ADMIN_ROUTE || !getAdminToken()) return;
           const page = getSavedAdminPage();
           const active = document.querySelector('.page.active')?.id;
-          if (page && page !== active) showPage(page);
+          if (page && page !== active) showPage(page, true);
         });
       } else {
         // Main site
@@ -3212,17 +3233,20 @@
           const createPage = document.getElementById('create');
           const saved = getSavedUserPage();
           if (loginPage?.classList.contains('active') || createPage?.classList.contains('active')) {
-            showPage(saved || 'home');
+            showPage(saved || 'home', true);
           } else if (saved && saved !== 'login' && saved !== 'create') {
-            showPage(saved);
+            showPage(saved, true);
           }
         }
         window.addEventListener('hashchange', () => {
           if (IS_ADMIN_ROUTE || !getToken()) return;
           const page = getSavedUserPage();
           const active = document.querySelector('.page.active')?.id;
-          if (page && page !== active) showPage(page);
+          if (page && page !== active) showPage(page, true);
         });
+        } else {
+          showPage('login', true);
+        }
       }
 
       // Clear error border when user types again
