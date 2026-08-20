@@ -1,0 +1,1583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Orbit Capital</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+    :root {
+      --bg-deep: #1a0b12;
+      --pink: #f9a8d4;
+      --peach: #fdba74;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      background: var(--bg-deep);
+      overflow-x: hidden;
+      color: #fff;
+    }
+
+    .bg-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      opacity: 0;
+      transition: opacity 0.28s ease;
+      pointer-events: none;
+    }
+    .bg-layer.active { opacity: 1; }
+
+    .bg-home {
+      background-image: linear-gradient(to bottom, rgba(40,10,25,0.78), rgba(30,8,20,0.88)),
+        url('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=1600');
+    }
+    .bg-portfolio {
+      background-image: linear-gradient(to bottom, rgba(40,10,30,0.80), rgba(25,5,20,0.90)),
+        url('https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=1600');
+    }
+    .bg-deals {
+      background-image: linear-gradient(to bottom, rgba(50,15,35,0.78), rgba(30,8,25,0.88)),
+        url('https://images.unsplash.com/photo-1446776877081-d282a0f896e2?w=1600');
+    }
+    .bg-insights {
+      background-image: linear-gradient(to bottom, rgba(35,10,40,0.80), rgba(20,5,30,0.90)),
+        url('https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?w=1600');
+    }
+    .bg-explore {
+      background-image: linear-gradient(to bottom, rgba(45,12,30,0.78), rgba(25,8,20,0.88)),
+        url('https://images.unsplash.com/photo-1464802686167-b939a6910659?w=1600');
+    }
+    .bg-featured {
+      background-image: linear-gradient(to bottom, rgba(40,10,25,0.82), rgba(20,5,15,0.92)),
+        url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1600');
+    }
+    .bg-early {
+      background-image: linear-gradient(to bottom, rgba(50,15,40,0.80), rgba(30,8,25,0.90)),
+        url('https://images.unsplash.com/photo-1543722530-d2c320262f86?w=1600');
+    }
+    .bg-menu {
+      background-image: linear-gradient(to bottom, rgba(30,8,20,0.88), rgba(20,5,15,0.94)),
+        url('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=1600');
+    }
+    .bg-article {
+      background-image: linear-gradient(to bottom, rgba(35,12,35,0.82), rgba(22,6,25,0.92)),
+        url('https://images.unsplash.com/photo-1446776877081-d282a0f896e2?w=1600');
+    }
+    .bg-category {
+      background-image: linear-gradient(to bottom, rgba(40,12,32,0.80), rgba(25,6,22,0.90)),
+        url('https://images.unsplash.com/photo-1464802686167-b939a6910659?w=1600');
+    }
+    .bg-auth {
+      background-image: linear-gradient(to bottom, rgba(40,10,25,0.82), rgba(20,5,15,0.94)),
+        url('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=1600');
+    }
+
+    .page {
+      display: none;
+      min-height: 100vh;
+      position: relative;
+      z-index: 1;
+    }
+    .page.active {
+      display: block;
+      animation: pageIn 0.22s ease-out forwards;
+    }
+
+    @keyframes pageIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .glass {
+      background: rgba(255, 220, 230, 0.10);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 190, 205, 0.20);
+    }
+    .glass-strong {
+      background: rgba(255, 210, 225, 0.13);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 180, 195, 0.25);
+    }
+
+    .btn-peach {
+      background: linear-gradient(to right, #f9a8d4, #fdba74);
+      color: #1c1917;
+      transition: all 0.25s ease;
+    }
+    .btn-peach:active {
+      transform: scale(0.96);
+      box-shadow: 0 0 22px rgba(249, 168, 212, 0.55);
+    }
+
+    .nav-btn {
+      transition: all 0.2s ease;
+      border-radius: 14px;
+      padding: 8px 12px;
+      min-width: 56px;
+    }
+    .nav-btn.active {
+      color: #f9a8d4 !important;
+      background: rgba(249, 168, 212, 0.12);
+    }
+    .nav-btn:active { transform: scale(0.9); }
+
+    .card-hover { transition: all 0.25s ease; }
+    .card-hover:active {
+      transform: scale(0.98);
+      border-color: rgba(249, 168, 212, 0.5);
+    }
+
+    #loader {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(18, 6, 12, 0.88);
+      backdrop-filter: blur(12px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+    }
+    #loader.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .orbit-loader {
+      position: relative;
+      width: 72px;
+      height: 72px;
+    }
+    .orbit-loader .planet {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 18px;
+      height: 18px;
+      margin: -9px 0 0 -9px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #f9a8d4, #fdba74);
+      box-shadow: 0 0 18px rgba(249, 168, 212, 0.7);
+    }
+    .orbit-loader .ring {
+      position: absolute;
+      inset: 0;
+      border: 2px solid transparent;
+      border-top-color: #f9a8d4;
+      border-right-color: rgba(253, 186, 116, 0.5);
+      border-radius: 50%;
+      animation: spin 1.1s linear infinite;
+    }
+    .orbit-loader .ring2 {
+      inset: 8px;
+      border-top-color: #fdba74;
+      border-right-color: rgba(249, 168, 212, 0.4);
+      animation-duration: 0.85s;
+      animation-direction: reverse;
+    }
+    .orbit-loader .dot {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #f9a8d4;
+      top: 0;
+      left: 50%;
+      margin-left: -3px;
+      box-shadow: 0 0 8px #f9a8d4;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loader-text {
+      margin-top: 22px;
+      font-size: 13px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(249, 168, 212, 0.85);
+      animation: pulseText 1.4s ease-in-out infinite;
+    }
+    @keyframes pulseText {
+      0%, 100% { opacity: 0.55; }
+      50% { opacity: 1; }
+    }
+
+    .input-field {
+      background: rgba(255, 220, 230, 0.08);
+      border: 1px solid rgba(255, 190, 205, 0.18);
+      color: #fff;
+      transition: all 0.2s ease;
+    }
+    .input-field:focus {
+      outline: none;
+      border-color: rgba(249, 168, 212, 0.55);
+      background: rgba(255, 220, 230, 0.12);
+      box-shadow: 0 0 0 3px rgba(249, 168, 212, 0.12);
+    }
+
+    /* Hide browser's native password reveal eye (black eye) */
+    input[type="password"]::-ms-reveal,
+    input[type="password"]::-ms-clear {
+      display: none !important;
+    }
+    input[type="password"]::-webkit-credentials-auto-fill-button,
+    input[type="password"]::-webkit-contacts-auto-fill-button {
+      visibility: hidden;
+      display: none !important;
+      pointer-events: none;
+      position: absolute;
+      right: 0;
+      height: 0;
+      width: 0;
+      margin: 0;
+    }
+    input[type="password"]::-webkit-textfield-decoration-container {
+      visibility: hidden;
+    }
+
+    .orbit-logo {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      border: 2px solid rgba(249, 168, 212, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 18px rgba(249, 168, 212, 0.4);
+    }
+    .orbit-logo .core {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #f9a8d4, #fdba74);
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      line-height: 1;
+      padding: 5px 10px;
+      min-width: 52px;
+      text-align: center;
+      border-radius: 999px;
+      background: rgba(249, 168, 212, 0.18);
+      color: #f9a8d4;
+      font-weight: 500;
+    }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(249,168,212,0.25); border-radius: 4px; }
+
+    /* ===== Toast / Error notification ===== */
+    #toast {
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-120px);
+      z-index: 10000;
+      max-width: 340px;
+      width: calc(100% - 40px);
+      padding: 14px 18px;
+      border-radius: 16px;
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
+      opacity: 0;
+      pointer-events: none;
+    }
+    #toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #toast.error {
+      background: rgba(60, 12, 28, 0.92);
+      border: 1px solid rgba(251, 113, 133, 0.45);
+      color: #fda4af;
+      backdrop-filter: blur(16px);
+    }
+    #toast.success {
+      background: rgba(12, 40, 30, 0.92);
+      border: 1px solid rgba(52, 211, 153, 0.4);
+      color: #6ee7b7;
+      backdrop-filter: blur(16px);
+    }
+    #toast .toast-icon {
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    #toast .toast-msg {
+      flex: 1;
+      line-height: 1.35;
+    }
+
+    /* Shake animation for form on error */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      15% { transform: translateX(-8px); }
+      30% { transform: translateX(8px); }
+      45% { transform: translateX(-6px); }
+      60% { transform: translateX(6px); }
+      75% { transform: translateX(-3px); }
+      90% { transform: translateX(3px); }
+    }
+    .shake {
+      animation: shake 0.45s ease-in-out;
+    }
+
+    /* Subtle error state on inputs */
+    .input-error {
+      border-color: rgba(251, 113, 133, 0.7) !important;
+      box-shadow: 0 0 0 3px rgba(251, 113, 133, 0.15) !important;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background layers -->
+  <div id="bg-auth" class="bg-layer bg-auth active"></div>
+  <div id="bg-home" class="bg-layer bg-home"></div>
+  <div id="bg-portfolio" class="bg-layer bg-portfolio"></div>
+  <div id="bg-deals" class="bg-layer bg-deals"></div>
+  <div id="bg-insights" class="bg-layer bg-insights"></div>
+  <div id="bg-explore" class="bg-layer bg-explore"></div>
+  <div id="bg-featured" class="bg-layer bg-featured"></div>
+  <div id="bg-early" class="bg-layer bg-early"></div>
+  <div id="bg-menu" class="bg-layer bg-menu"></div>
+  <div id="bg-article" class="bg-layer bg-article"></div>
+  <div id="bg-category" class="bg-layer bg-category"></div>
+
+  <!-- Loader -->
+  <div id="loader">
+    <div class="orbit-loader">
+      <div class="ring"></div>
+      <div class="ring ring2"></div>
+      <div class="planet"></div>
+      <div class="dot"></div>
+    </div>
+    <div class="loader-text">Entering orbit…</div>
+  </div>
+
+  <!-- Toast notification -->
+  <div id="toast">
+    <i class="toast-icon fa-solid fa-circle-exclamation"></i>
+    <span class="toast-msg"></span>
+  </div>
+
+  <!-- ========== LOGIN ========== -->
+  <div id="login" class="page active">
+    <div class="max-w-md mx-auto min-h-screen flex flex-col px-5 pt-12 pb-10 relative z-10">
+      <div class="flex flex-col items-center mb-10">
+        <div class="orbit-logo mb-4"><div class="core"></div></div>
+        <h1 class="text-2xl font-bold tracking-tight">Orbit Capital</h1>
+        <p class="text-pink-100/55 text-sm mt-1">Private markets · Space innovation</p>
+      </div>
+
+      <div class="glass-strong rounded-3xl p-6 mb-6">
+        <h2 class="text-xl font-semibold mb-1">Welcome back</h2>
+        <p class="text-pink-100/50 text-sm mb-6">Sign in to your investor account</p>
+
+        <div>
+          <div class="mb-4">
+            <label class="block text-xs text-pink-100/55 mb-1.5 font-medium">Email / Phone number</label>
+            <div class="relative">
+              <i class="fa-solid fa-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-pink-300/60 text-sm"></i>
+              <input type="text" id="login-email" class="input-field w-full pl-10 pr-4 py-3.5 rounded-xl text-sm" maxlength="11" autocomplete="username">
+            </div>
+          </div>
+
+          <div class="mb-6">
+            <label class="block text-xs text-pink-100/55 mb-1.5 font-medium">Password</label>
+            <div class="relative">
+              <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-pink-300/60 text-sm"></i>
+              <input type="password" id="login-password" class="input-field w-full pl-10 pr-12 py-3.5 rounded-xl text-sm" maxlength="25" autocomplete="current-password">
+              <button type="button" onclick="togglePassword('login-password','login-eye')" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-pink-100/40 hover:text-pink-300">
+                <i class="fa-solid fa-eye text-sm" id="login-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <button onclick="handleLogin()" class="w-full btn-peach font-semibold py-3.5 rounded-full text-sm shadow-lg shadow-pink-400/25">
+            Sign In
+          </button>
+        </div>
+      </div>
+
+      <p class="text-center text-sm text-pink-100/50">
+        Don’t have an account?
+        <button onclick="showPage('create')" class="text-pink-300 font-medium hover:underline ml-1">Create account</button>
+      </p>
+
+      <p class="text-center text-[10px] text-pink-100/30 mt-auto pt-8">Orbit Capital · Private markets · v2.4</p>
+    </div>
+  </div>
+
+  <!-- ========== CREATE ACCOUNT ========== -->
+  <div id="create" class="page">
+    <div class="max-w-md mx-auto min-h-screen flex flex-col px-5 pt-12 pb-10 relative z-10">
+      <div class="flex flex-col items-center mb-8">
+        <div class="orbit-logo mb-4"><div class="core"></div></div>
+        <h1 class="text-2xl font-bold tracking-tight">Orbit Capital</h1>
+        <p class="text-pink-100/55 text-sm mt-1">Private markets · Space innovation</p>
+      </div>
+
+      <div class="glass-strong rounded-3xl p-6 mb-6">
+        <h2 class="text-xl font-semibold mb-1">Create account</h2>
+        <p class="text-pink-100/50 text-sm mb-6">Join Orbit Capital</p>
+
+        <div>
+          <div class="mb-4">
+            <label class="block text-xs text-pink-100/55 mb-1.5 font-medium">Email / Phone number</label>
+            <div class="relative">
+              <i class="fa-solid fa-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-pink-300/60 text-sm"></i>
+              <input type="text" id="create-email" class="input-field w-full pl-10 pr-4 py-3.5 rounded-xl text-sm" maxlength="11" autocomplete="username">
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-xs text-pink-100/55 mb-1.5 font-medium">Invitation Code</label>
+            <div class="relative">
+              <i class="fa-solid fa-ticket absolute left-3.5 top-1/2 -translate-y-1/2 text-pink-300/60 text-sm"></i>
+              <input type="text" id="create-code" class="input-field w-full pl-10 pr-4 py-3.5 rounded-xl text-sm" maxlength="20">
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-xs text-pink-100/55 mb-1.5 font-medium">Password</label>
+            <div class="relative">
+              <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-pink-300/60 text-sm"></i>
+              <input type="password" id="create-password" class="input-field w-full pl-10 pr-12 py-3.5 rounded-xl text-sm" maxlength="25" autocomplete="new-password">
+              <button type="button" onclick="togglePassword('create-password','create-eye')" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-pink-100/40 hover:text-pink-300">
+                <i class="fa-solid fa-eye text-sm" id="create-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="mb-6">
+            <label class="block text-xs text-pink-100/55 mb-1.5 font-medium">Confirm Password</label>
+            <div class="relative">
+              <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-pink-300/60 text-sm"></i>
+              <input type="password" id="confirm-password" class="input-field w-full pl-10 pr-12 py-3.5 rounded-xl text-sm" maxlength="25" autocomplete="new-password">
+              <button type="button" onclick="togglePassword('confirm-password','confirm-eye')" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-pink-100/40 hover:text-pink-300">
+                <i class="fa-solid fa-eye text-sm" id="confirm-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <button onclick="handleRegister()" class="w-full btn-peach font-semibold py-3.5 rounded-full text-sm shadow-lg shadow-pink-400/25">
+            Create Account
+          </button>
+        </div>
+      </div>
+
+      <p class="text-center text-sm text-pink-100/50">
+        Already have an account?
+        <button onclick="showPage('login')" class="text-pink-300 font-medium hover:underline ml-1">Sign in</button>
+      </p>
+
+      <p class="text-center text-[10px] text-pink-100/30 mt-auto pt-8">Orbit Capital · Private markets · v2.4</p>
+    </div>
+  </div>
+
+  <!-- ========== HOME ========== -->
+  <div id="home" class="page">
+    <div class="max-w-md mx-auto min-h-screen flex flex-col px-5 pt-6 pb-28 relative z-10">
+      <header class="flex items-center justify-between mb-8">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-full border-2 border-pink-300/80 flex items-center justify-center shadow-[0_0_12px_rgba(249,168,212,0.35)]">
+            <div class="w-3.5 h-3.5 rounded-full bg-pink-300"></div>
+          </div>
+          <span class="font-semibold text-lg tracking-tight">Orbit Capital</span>
+        </div>
+        <button onclick="showPage('menu')" class="w-11 h-11 rounded-xl glass flex items-center justify-center card-hover">
+          <i class="fa-solid fa-bars text-pink-100/90"></i>
+        </button>
+      </header>
+
+      <section class="mb-8">
+        <h1 class="text-4xl font-extrabold leading-[1.15] mb-3">
+          Invest<br>Beyond <span class="text-pink-300">Earth</span>
+        </h1>
+        <p class="text-pink-100/70 text-sm leading-relaxed mb-6 max-w-[280px]">
+          Private markets. Space innovation.<br>Out-of-this-world potential.
+        </p>
+        <button onclick="showPage('explore')" class="btn-peach font-semibold px-6 py-3.5 rounded-full flex items-center gap-2.5 shadow-lg shadow-pink-400/25">
+          Explore Opportunities <i class="fa-solid fa-arrow-right text-sm"></i>
+        </button>
+      </section>
+
+      <section class="grid grid-cols-3 gap-3 mb-6">
+        <div class="glass rounded-2xl p-3.5 card-hover">
+          <div class="flex items-center gap-1.5 mb-2">
+            <i class="fa-solid fa-chart-line text-pink-300 text-xs"></i>
+            <span class="text-[10px] text-pink-100/55">Portfolio</span>
+          </div>
+          <p class="font-bold text-sm">₱0</p>
+          <p class="text-[10px] text-emerald-300 mt-0.5">+0% (30D)</p>
+        </div>
+        <div class="glass rounded-2xl p-3.5 card-hover">
+          <div class="flex items-center gap-1.5 mb-2">
+            <i class="fa-solid fa-rocket text-pink-300 text-xs"></i>
+            <span class="text-[10px] text-pink-100/55">Space Mkt</span>
+          </div>
+          <p class="font-bold text-sm">₱0</p>
+          <p class="text-[10px] text-emerald-300 mt-0.5">+0% (30D)</p>
+        </div>
+        <div class="glass rounded-2xl p-3.5 card-hover">
+          <div class="flex items-center gap-1.5 mb-2">
+            <i class="fa-solid fa-shield-halved text-pink-300 text-xs"></i>
+            <span class="text-[10px] text-pink-100/55">Risk</span>
+          </div>
+          <p class="font-bold text-sm">Growth</p>
+          <p class="text-[10px] text-pink-100/55 mt-0.5">Mod–High</p>
+        </div>
+      </section>
+
+      <section class="mb-6">
+        <div onclick="showPage('featured')" class="glass-strong rounded-2xl overflow-hidden card-hover cursor-pointer">
+          <div class="p-4 pb-3">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-2 h-2 rounded-full bg-pink-300 animate-pulse"></span>
+              <span class="text-[11px] text-pink-100/60 font-medium tracking-wide">FEATURED INVESTMENT</span>
+            </div>
+            <h3 class="text-lg font-bold mb-1">Lunar Horizon Fund</h3>
+            <p class="text-xs text-pink-100/55 mb-4">Infrastructure · Exploration · Returns</p>
+            <div class="flex justify-between text-xs">
+              <div>
+                <p class="text-pink-100/45 mb-0.5">Target Return</p>
+                <p class="font-semibold text-pink-300">0%</p>
+              </div>
+              <div>
+                <p class="text-pink-100/45 mb-0.5">Min. Investment</p>
+                <p class="font-semibold">₱0</p>
+              </div>
+              <div>
+                <p class="text-pink-100/45 mb-0.5">Horizon</p>
+                <p class="font-semibold">180 Days</p>
+              </div>
+            </div>
+          </div>
+          <div class="h-28 relative">
+            <div class="absolute inset-0 bg-gradient-to-t from-[#1a0b12]/95 to-transparent z-10"></div>
+            <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1446776877081-d282a0f896e2?w=800')] bg-cover bg-center"></div>
+            <div class="absolute bottom-3 right-3 z-20 w-9 h-9 rounded-full glass flex items-center justify-center">
+              <i class="fa-solid fa-arrow-right text-xs"></i>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs text-pink-100/45 tracking-wide">CURATED FOR YOU</span>
+          <button onclick="showPage('viewall')" class="text-xs text-pink-300 flex items-center gap-1 font-medium">
+            View All <i class="fa-solid fa-chevron-right text-[10px]"></i>
+          </button>
+        </div>
+        <div class="glass rounded-2xl p-4 flex items-center justify-between card-hover">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-xl bg-pink-300/15 flex items-center justify-center">
+              <i class="fa-solid fa-layer-group text-pink-300"></i>
+            </div>
+            <div>
+              <p class="font-medium text-sm">Early Stage Access</p>
+              <p class="text-xs text-pink-100/50">Handpicked space ventures</p>
+            </div>
+          </div>
+          <i class="fa-solid fa-chevron-right text-pink-100/35 text-sm"></i>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- ========== PORTFOLIO (Empty State) ========== -->
+  <div id="portfolio" class="page">
+    <div class="max-w-md mx-auto min-h-screen flex flex-col px-5 pt-6 pb-28 relative z-10">
+      <header class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-bold">Portfolio</h1>
+        <button onclick="showPage('menu')" class="w-11 h-11 rounded-xl glass flex items-center justify-center card-hover">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </header>
+
+      <div class="glass-strong rounded-2xl p-5 mb-5">
+        <p class="text-pink-100/55 text-sm">Total Portfolio Value</p>
+        <p class="text-3xl font-bold mt-1 tracking-tight">₱0</p>
+        <div class="flex items-center gap-3 mt-2">
+          <span class="text-emerald-300 text-sm font-medium">+0% today</span>
+        </div>
+        <div class="mt-4 h-1.5 rounded-full bg-white/10 overflow-hidden">
+          <div class="h-full rounded-full bg-gradient-to-r from-pink-400 to-orange-300" style="width: 0%"></div>
+        </div>
+        <p class="text-[10px] text-pink-100/40 mt-1.5">0% of target allocation reached</p>
+      </div>
+
+      <!-- Empty State -->
+      <div class="glass rounded-2xl p-10 text-center mt-4">
+        <div class="w-16 h-16 rounded-full bg-pink-300/10 flex items-center justify-center mx-auto mb-4">
+          <i class="fa-solid fa-chart-pie text-pink-300/50 text-2xl"></i>
+        </div>
+        <p class="font-medium text-pink-100/80 mb-1">No active investments yet</p>
+        <p class="text-xs text-pink-100/45 mb-5 leading-relaxed">
+          Your portfolio is empty.<br>Explore available deals to get started.
+        </p>
+        <button onclick="showPage('deals')" class="btn-peach font-semibold px-6 py-2.5 rounded-full text-sm">
+          View Deals
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== DEALS ========== -->
+  <div id="deals" class="page">
+    <div class="max-w-md mx-auto min-h-screen flex flex-col px-5 pt-6 pb-28 relative z-10">
+      <header class="flex items-center justify-between mb-5">
+        <h1 class="text-2xl font-bold">Deals</h1>
+        <button onclick="showPage('menu')" class="w-11 h-11 rounded-xl glass flex items-center justify-center card-hover">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </header>
+      <p class="text-pink-100/55 text-sm mb-5">Available investment products · Updated daily</p>
+
+      <div class="space-y-4">
+        <div class="glass-strong rounded-2xl overflow-hidden card-hover">
+          <div class="p-4 pb-3">
+            <div class="flex justify-between mb-3">
+              <div>
+                <h3 class="font-bold">Natnat 1.0</h3>
+                <p class="text-xs text-pink-100/50 mt-0.5">Fixed Yield · Entry</p>
+              </div>
+              <span class="tag">High</span>
+            </div>
+            <p class="text-xs text-pink-100/55 mb-3 leading-relaxed">Short-term yield product designed for first-time allocators seeking space-market exposure.</p>
+            <div class="flex justify-between text-sm mb-4">
+              <div><p class="text-[10px] text-pink-100/45">Min</p><p class="font-semibold">₱0</p></div>
+              <div><p class="text-[10px] text-pink-100/45">Period</p><p class="font-semibold">90 Days</p></div>
+              <div><p class="text-[10px] text-pink-100/45">Target</p><p class="font-semibold text-pink-300">0%</p></div>
+            </div>
+            <button class="w-full btn-peach font-semibold py-2.5 rounded-full text-sm">Invest Now</button>
+          </div>
+          <div class="h-28 relative">
+            <div class="absolute inset-0 bg-gradient-to-t from-[#1a0b12]/90 to-transparent z-10"></div>
+            <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1446776877081-d282a0f896e2?w=800')] bg-cover bg-center"></div>
+          </div>
+        </div>
+
+        <div class="glass-strong rounded-2xl overflow-hidden card-hover">
+          <div class="p-4 pb-3">
+            <div class="flex justify-between mb-3">
+              <div>
+                <h3 class="font-bold">Natnat 2.0</h3>
+                <p class="text-xs text-pink-100/50 mt-0.5">Fixed Yield · Core</p>
+              </div>
+              <span class="tag">Medium</span>
+            </div>
+            <p class="text-xs text-pink-100/55 mb-3 leading-relaxed">Balanced term product with stable cash-flow structure across orbital data and logistics.</p>
+            <div class="flex justify-between text-sm mb-4">
+              <div><p class="text-[10px] text-pink-100/45">Min</p><p class="font-semibold">₱0</p></div>
+              <div><p class="text-[10px] text-pink-100/45">Period</p><p class="font-semibold">180 Days</p></div>
+              <div><p class="text-[10px] text-pink-100/45">Target</p><p class="font-semibold text-pink-300">0%</p></div>
+            </div>
+            <button class="w-full btn-peach font-semibold py-2.5 rounded-full text-sm">Invest Now</button>
+          </div>
+          <div class="h-28 relative">
+            <div class="absolute inset-0 bg-gradient-to-t from-[#1a0b12]/90 to-transparent z-10"></div>
+            <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800')] bg-cover bg-center"></div>
+          </div>
+        </div>
+
+        <div class="glass-strong rounded-2xl overflow-hidden card-hover">
+          <div class="p-4 pb-3">
+            <div class="flex justify-between mb-3">
+              <div>
+                <h3 class="font-bold">Natnat 3.0</h3>
+                <p class="text-xs text-pink-100/50 mt-0.5">Growth · Active</p>
+              </div>
+              <span class="tag">Med–High</span>
+            </div>
+            <p class="text-xs text-pink-100/55 mb-3 leading-relaxed">Higher-conviction sleeve focused on constellation and connectivity expansion cycles.</p>
+            <div class="flex justify-between text-sm mb-4">
+              <div><p class="text-[10px] text-pink-100/45">Min</p><p class="font-semibold">₱0</p></div>
+              <div><p class="text-[10px] text-pink-100/45">Period</p><p class="font-semibold">90 Days</p></div>
+              <div><p class="text-[10px] text-pink-100/45">Target</p><p class="font-semibold text-pink-300">0%</p></div>
+            </div>
+            <button class="w-full btn-peach font-semibold py-2.5 rounded-full text-sm">Invest Now</button>
+          </div>
+          <div class="h-28 relative">
+            <div class="absolute inset-0 bg-gradient-to-t from-[#1a0b12]/90 to-transparent z-10"></div>
+            <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1464802686167-b939a6910659?w=800')] bg-cover bg-center"></div>
+          </div>
+        </div>
+
+        <div class="glass-strong rounded-2xl overflow-hidden card-hover">
+          <div class="p-4 pb-3">
+            <div class="flex justify-between mb-3">
+              <div>
+                <h3 class="font-bold">Natnat 4.0</h3>
+                <p class="text-xs text-pink-100/50 mt-0.5">Growth · Premium</p>
+              </div>
+              <span class="tag">High</span>
+            </div>
+            <p class="text-xs text-pink-100/55 mb-3 leading-relaxed">Premium term product aligned with longer orbital logistics and infrastructure themes.</p>
+            <div class="flex justify-between text-sm mb-4">
+              <div><p class="text-[10px] text-pink-100/45">Min</p><p class="font-semibold">₱0</p></div>
+              <div><p class="text-[10px] text-pink-100/45">Period</p><p class="font-semibold">180 Days</p></div>
+              <div><p class="text-[10px] text-pink-100/45">Target</p><p class="font-semibold text-pink-300">0%</p></div>
+            </div>
+            <button class="w-full btn-peach font-semibold py-2.5 rounded-full text-sm">Invest Now</button>
+          </div>
+          <div class="h-28 relative">
+            <div class="absolute inset-0 bg-gradient-to-t from-[#1a0b12]/90 to-transparent z-10"></div>
+            <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=800')] bg-cover bg-center"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== INSIGHTS ========== -->
+  <div id="insights" class="page">
+    <div class="max-w-md mx-auto min-h-screen flex flex-col px-5 pt-6 pb-28 relative z-10">
+      <header class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-bold">Insights</h1>
+        <button onclick="showPage('menu')" class="w-11 h-11 rounded-xl glass flex items-center justify-center card-hover">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </header>
+      <p class="text-pink-100/55 text-sm mb-5">Market analysis · Research · News</p>
+
+      <div class="space-y-4">
+        <div class="glass-strong rounded-2xl overflow-hidden card-hover">
+          <div class="h-36 bg-[url('https://images.unsplash.com/photo-1446776877081-d282a0f896e2?w=600')] bg-cover bg-center relative">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+            <span class="absolute top-3 left-3 tag">MARKET ANALYSIS</span>
+          </div>
+          <div class="p-4">
+            <h3 class="font-bold">The Rise of the Lunar Economy</h3>
+            <p class="text-xs text-pink-100/55 mt-1.5 leading-relaxed">Why infrastructure funds are leading 2026 returns and what comes next for cis-lunar capital.</p>
+            <div class="flex items-center gap-3 mt-3 text-[10px] text-pink-100/40">
+              <span>N/A</span><span>·</span><span>0 min read</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass rounded-2xl p-4 card-hover">
+          <div class="flex items-start gap-3">
+            <div class="w-12 h-12 rounded-xl bg-pink-300/15 flex items-center justify-center shrink-0">
+              <i class="fa-solid fa-flask text-pink-300"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-[10px] text-pink-300 font-medium mb-0.5">RESEARCH</p>
+              <h3 class="font-bold text-sm">Satellite Data Yield Strategies</h3>
+              <p class="text-xs text-pink-100/55 mt-1">Short-term opportunities in Earth observation tasking and data marketplaces.</p>
+              <p class="text-[10px] text-pink-100/40 mt-2">N/A · 0 min</p>
+            </div>
+            <i class="fa-solid fa-chevron-right text-pink-100/30 text-sm mt-1"></i>
+          </div>
+        </div>
+
+        <div class="glass rounded-2xl p-4 card-hover">
+          <div class="flex items-start gap-3">
+            <div class="w-12 h-12 rounded-xl bg-pink-300/15 flex items-center justify-center shrink-0">
+              <i class="fa-solid fa-newspaper text-pink-300"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-[10px] text-pink-300 font-medium mb-0.5">NEWS</p>
+              <h3 class="font-bold text-sm">New Launch Cadence Report</h3>
+              <p class="text-xs text-pink-100/55 mt-1">Q3 2026 launch statistics, pricing pressure, and implications for constellation operators.</p>
+              <p class="text-[10px] text-pink-100/40 mt-2">N/A · 0 min</p>
+            </div>
+            <i class="fa-solid fa-chevron-right text-pink-100/30 text-sm mt-1"></i>
+          </div>
+        </div>
+
+        <div class="glass rounded-2xl p-4 card-hover opacity-90">
+          <div class="flex items-start gap-3">
+            <div class="w-12 h-12 rounded-xl bg-pink-300/15 flex items-center justify-center shrink-0">
+              <i class="fa-solid fa-chart-line text-pink-300"></i>
+            </div>
+            <div class="flex-1">
+              <p class="text-[10px] text-pink-300 font-medium mb-0.5">BRIEFING</p>
+              <h3 class="font-bold text-sm">Weekly Orbit Digest</h3>
+              <p class="text-xs text-pink-100/55 mt-1">Top 5 moves in private space markets this week.</p>
+              <p class="text-[10px] text-pink-100/40 mt-2">N/A</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== EXPLORE ========== -->
+  <div id="explore" class="page">
+    <div class="max-w-md mx-auto min-h-screen flex flex-col px-5 pt-6 pb-28 relative z-10">
+      <header class="flex items-center gap-4 mb-5">
+        <button onclick="showPage('home')" class="w-11 h-11 rounded-xl glass flex items-center justify-center card-hover">
+          <i class="fa-solid fa-arrow-left"></i>
+        </button>
+        <h1 class="text-2xl font-bold">Explore</h1>
+      </header>
+      <p class="text-pink-100/55 text-sm mb-6">Discover curated space investment opportunities by theme</p>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div onclick="showPage('cat-launch')" class="glass-strong rounded-2xl p-4 card-hover cursor-pointer">
+          <div class="w-11 h-11 rounded-xl bg-pink-300/15 flex items-center justify-center mb-3">
+            <i class="fa-solid fa-rocket text-pink-300 text-lg"></i>
+          </div>
+          <p class="font-semibold">Launch Funds</p>
+          <p class="text-xs text-pink-100/50 mt-1">0 opportunities</p>
+          <p class="text-[10px] text-pink-300 mt-2">Vehicles · Engines · Infrastructure</p>
+        </div>
+        <div onclick="showPage('cat-satellites')" class="glass-strong rounded-2xl p-4 card-hover cursor-pointer">
+          <div class="w-11 h-11 rounded-xl bg-pink-300/15 flex items-center justify-center mb-3">
+            <i class="fa-solid fa-satellite text-pink-300 text-lg"></i>
+          </div>
+          <p class="font-semibold">Satellites</p>
+          <p class="text-xs text-pink-100/50 mt-1">0 opportunities</p>
+          <p class="text-[10px] text-pink-300 mt-2">Constellations · Components</p>
+        </div>
+        <div onclick="showPage('cat-lunar')" class="glass-strong rounded-2xl p-4 card-hover cursor-pointer">
+          <div class="w-11 h-11 rounded-xl bg-pink-300/15 flex items-center justify-center mb-3">
+            <i class="fa-solid fa-moon text-pink-300 text-lg"></i>
+          </div>
+          <p class="font-semibold">Lunar</p>
+          <p class="text-xs text-pink-100/50 mt-1">0 opportunities</p>
+          <p class="text-[10px] text-pink-300 mt-2">Habitats · ISRU · Logistics</p>
+        </div>
+        <div onclick="showPage('cat-data')" class="glass-strong rounded-2xl p-4 card-hover cursor-pointer">
+          <div class="w-11 h-11 rounded-xl bg-pink-300/15 flex items-center justify-center mb-3">
+            <i class="fa-solid fa-database text-pink-300 text-lg"></i>
+          </div>
+          <p class="font-semibold">Space Data</p>
+          <p class="text-xs text-pink-100/50 mt-1">0 opportunities</p>
+          <p class="text-[10px] text-pink-300 mt-2">EO · Analytics · Yield</p>
+        </div>
+      </div>
+
+      <div class="mt-6 glass rounded-2xl p-4">
+        <p class="text-xs text-pink-100/50 mb-1">Featured theme</p>
+        <p class="font-medium text-sm">Cis-lunar logistics is the highest-conviction sleeve for 2026–2028.</p>
+        <button onclick="showPage('cat-lunar')" class="mt-3 text-xs text-pink-300 font-medium flex items-center gap-1">
+          Explore Lunar <i class="fa-solid fa-arrow-right text-[10px]"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== CATEGORIES ========== -->
+  <div id="cat-launch" class="page">
+    <div class="max-w-md mx-auto min-h-screen flex flex-col px-5 pt-6 pb-28 relative z-10">
+      <header class="flex items-center gap-4 mb-5">
+        <button onclick="showPage('explore')" class="w-11 h-11 rounded-xl glass flex items-center justify-center card-hover">
+          <i class="fa-solid fa-arrow-left"></i>
+        </button>
+        <div>
+          <h1 class="text-xl font-bold">Launch Funds</h1>
+          <p class="text-xs text-pink-100/50">0 opportunities</p>
+        </div>
+      </header>
+      <p class="text-sm text-pink-100/65 mb-5 leading-relaxed">Vehicles, propulsion, and ground infrastructure that enable higher cadence and lower cost-to-orbit.</p>
+      <div class="glass rounded-2xl p-8 text-center">
+        <i class="fa-solid fa-satellite text-pink-300/40 text-2xl mb-3"></i>
+        <p class="text-sm text-pink-100/50">No opportunities available yet</p>
+        <p class="text-xs text-pink-100/30 mt-1">Check back soon</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="cat-satellites" class="page">
+    <div class="max-w-md mx-auto min-h-screen flex flex-col px-5 pt-6 pb-28 relative z-10">
+      <header class="flex items-center gap-4 mb-5">
+        <button onclick="showPage('explore')" class="w-11 h-11 rounded-xl glass flex items-center justify-center card-hover">
+          <i class="fa-solid fa-arrow-left"></i>
+        </button>
+        <div>
+          <h1 class="text-xl font-bold">Satellites</h1>
+          <p class="text-xs text-pink-100/50">0 opportunities</p>
+        </div>
+      </header>
+      <p class="text-sm text-pink-100/65 mb-5 leading-relaxed">Constellations, buses, payloads, and the component supply chain that powers next-generation orbital networks.</p>
+      <div class="glass rounded-2xl p-8 text-center">
+        <i class="fa-solid fa-satellite text-pink-300/40 text-2xl mb-3"></i>
+        <p class="text-sm text-pink-100/50">No opportunities available yet</p>
+        <p class="text-xs text-pink-100/30 mt-1">Check back soon</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="cat-lunar" class="page">
+    <div class="max-w-md mx-auto min-h-screen flex flex-col px-5 pt-6 pb-28 relative z-10">
+      <header class="flex items-center gap-4 mb-5">
+        <button onclick="showPage('explore')" class="w-11 h-11 rounded-xl glass flex items-center justify-center card-hover">
+          <i class="fa-solid fa-arrow-left"></i>
+        </button>
+        <div>
+          <h1 class="text-xl font-bold">Lunar</h1>
+          <p class="text-xs text-pink-100/50">0 opportunities</p>
+        </div>
+      </header>
+      <p class="text-sm text-pink-100/65 mb-5 leading-relaxed">Habitats, power, ISRU, landing systems, and the logistics layer for sustained lunar presence.</p>
+      <div class="glass rounded-2xl p-8 text-center">
+        <i class="fa-solid fa-satellite text-pink-300/40 text-2xl mb-3"></i>
+        <p class="text-sm text-pink-100/50">No opportunities available yet</p>
+        <p class="text-xs text-pink-100/30 mt-1">Check back soon</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="cat-data" class="page">
+    <div class="max-w-md mx-auto min-h-screen flex flex-col px-5 pt-6 pb-28 relative z-10">
+      <header class="flex items-center gap-4 mb-5">
+        <button onclick="showPage('explore')" class="w-11 h-11 rounded-xl glass flex items-center justify-center card-hover">
+          <i class="fa-solid fa-arrow-left"></i>
+        </button>
+        <div>
+          <h1 class="text-xl font-bold">Space Data</h1>
+          <p class="text-xs text-pink-100/50">0 opportunities</p>
+        </div>
+      </header>
+      <p class="text-sm text-pink-100/65 mb-5 leading-relaxed">Earth observation, analytics platforms, data marketplaces, and yield structures built on orbital capacity.</p>
+      <div class="glass rounded-2xl p-8 text-center">
+        <i class="fa-solid fa-satellite text-pink-300/40 text-2xl mb-3"></i>
+        <p class="text-sm text-pink-100/50">No opportunities available yet</p>
+        <p class="text-xs text-pink-100/30 mt-1">Check back soon</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== FEATURED ========== -->
+  <div id="featured" class="page">
+    <div class="max-w-md mx-auto min-h-screen flex flex-col px-5 pt-6 pb-28 relative z-10">
+      <header class="flex items-center gap-4 mb-5">
+        <button onclick="showPage('home')" class="w-11 h-11 rounded-xl glass flex items-center justify-center card-hover">
+          <i class="fa-solid fa-arrow-left"></i>
+        </button>
+        <h1 class="text-xl font-bold">Lunar Horizon Fund</h1>
+      </header>
+      <div class="h-48 rounded-2xl overflow-hidden mb-5 relative">
+        <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1446776877081-d282a0f896e2?w=800')] bg-cover bg-center"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+        <div class="absolute bottom-3 left-3 right-3 flex justify-between items-end">
+          <span class="tag">FEATURED</span>
+          <span class="text-xs text-white/80">Infrastructure</span>
+        </div>
+      </div>
+      <div class="glass-strong rounded-2xl p-5 mb-5">
+        <div class="flex justify-between mb-4">
+          <div>
+            <p class="text-xs text-pink-100/50">Target Return</p>
+            <p class="text-xl font-bold text-pink-300">0%</p>
+          </div>
+          <div>
+            <p class="text-xs text-pink-100/50">Min. Investment</p>
+            <p class="text-xl font-bold">₱0</p>
+          </div>
+        </div>
+        <div class="flex justify-between">
+          <div>
+            <p class="text-xs text-pink-100/50">Period</p>
+            <p class="font-semibold">180 Days</p>
+          </div>
+          <div>
+            <p class="text-xs text-pink-100/50">Risk</p>
+            <p class="font-semibold text-pink-300">High</p>
+          </div>
+          <div>
+            <p class="text-xs text-pink-100/50">Structure</p>
+            <p class="font-semibold">Closed-end</p>
+          </div>
+        </div>
+      </div>
+      <p class="text-sm text-pink-100/70 mb-4 leading-relaxed">
+        Long-term growth fund focused on lunar infrastructure, habitats, and resource utilization. Designed for investors seeking exposure to the emerging lunar economy with institutional-grade governance.
+      </p>
+      <div class="glass rounded-2xl p-4 mb-5 space-y-2.5 text-sm">
+        <div class="flex justify-between"><span class="text-pink-100/50">Strategy</span><span>Direct + co-invest</span></div>
+        <div class="flex justify-between"><span class="text-pink-100/50">Geography</span><span>Global / Cis-lunar</span></div>
+        <div class="flex justify-between"><span class="text-pink-100/50">Manager</span><span>Orbit Capital Partners</span></div>
+        <div class="flex justify-between"><span class="text-pink-100/50">Next close</span><span class="text-pink-300">N/A</span></div>
+      </div>
+      <button class="w-full btn-peach font-semibold py-3.5 rounded-full shadow-lg shadow-pink-400/20">Invest Now</button>
+    </div>
+  </div>
+
+  <!-- ========== VIEW ALL ========== -->
+  <div id="viewall" class="page">
+    <div class="max-w-md mx-auto min-h-screen flex flex-col px-5 pt-6 pb-28 relative z-10">
+      <header class="flex items-center gap-4 mb-5">
+        <button onclick="showPage('home')" class="w-11 h-11 rounded-xl glass flex items-center justify-center card-hover">
+          <i class="fa-solid fa-arrow-left"></i>
+        </button>
+        <h1 class="text-xl font-bold">All Opportunities</h1>
+      </header>
+      <p class="text-pink-100/60 text-sm mb-5">Complete list of curated deals across themes</p>
+      <div class="space-y-3">
+        <button onclick="showPage('deals')" class="w-full glass-strong rounded-2xl p-4 text-left card-hover flex items-center justify-between">
+          <div>
+            <p class="font-medium">Full Deals Book</p>
+            <p class="text-xs text-pink-100/50 mt-0.5">All live products</p>
+          </div>
+          <i class="fa-solid fa-arrow-right text-pink-300 text-sm"></i>
+        </button>
+        <button onclick="showPage('cat-launch')" class="w-full glass rounded-2xl p-4 text-left card-hover flex items-center justify-between">
+          <div>
+            <p class="font-medium">Launch Funds</p>
+            <p class="text-xs text-pink-100/50 mt-0.5">0 opportunities</p>
+          </div>
+          <i class="fa-solid fa-chevron-right text-pink-100/30 text-sm"></i>
+        </button>
+        <button onclick="showPage('cat-satellites')" class="w-full glass rounded-2xl p-4 text-left card-hover flex items-center justify-between">
+          <div>
+            <p class="font-medium">Satellites</p>
+            <p class="text-xs text-pink-100/50 mt-0.5">0 opportunities</p>
+          </div>
+          <i class="fa-solid fa-chevron-right text-pink-100/30 text-sm"></i>
+        </button>
+        <button onclick="showPage('cat-lunar')" class="w-full glass rounded-2xl p-4 text-left card-hover flex items-center justify-between">
+          <div>
+            <p class="font-medium">Lunar</p>
+            <p class="text-xs text-pink-100/50 mt-0.5">0 opportunities</p>
+          </div>
+          <i class="fa-solid fa-chevron-right text-pink-100/30 text-sm"></i>
+        </button>
+        <button onclick="showPage('cat-data')" class="w-full glass rounded-2xl p-4 text-left card-hover flex items-center justify-between">
+          <div>
+            <p class="font-medium">Space Data</p>
+            <p class="text-xs text-pink-100/50 mt-0.5">0 opportunities</p>
+          </div>
+          <i class="fa-solid fa-chevron-right text-pink-100/30 text-sm"></i>
+        </button>
+        <button class="w-full glass rounded-2xl p-4 text-left card-hover flex items-center justify-between">
+          <div>
+            <p class="font-medium">Early Stage Access</p>
+            <p class="text-xs text-pink-100/50 mt-0.5">Coming soon</p>
+          </div>
+          <i class="fa-solid fa-chevron-right text-pink-100/30 text-sm"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== MENU ========== -->
+  <div id="menu" class="page">
+    <div class="max-w-md mx-auto min-h-screen flex flex-col px-5 pt-6 pb-28 relative z-10">
+      <header class="flex items-center justify-between mb-8">
+        <div>
+          <h1 class="text-2xl font-bold">Menu</h1>
+          <p class="text-xs text-pink-100/45 mt-0.5">Orbit Capital</p>
+        </div>
+        <button onclick="showPage('home')" class="w-11 h-11 rounded-xl glass flex items-center justify-center card-hover">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </header>
+
+      <div class="glass-strong rounded-2xl p-4 mb-6 flex items-center gap-4">
+        <div class="w-14 h-14 rounded-full bg-gradient-to-br from-pink-400 to-orange-300 flex items-center justify-center text-stone-900 font-bold text-lg shadow-[0_0_16px_rgba(249,168,212,0.4)]">
+          OC
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="font-semibold" id="menu-user-name">Investor Account</p>
+          <p class="text-xs text-pink-100/50 truncate" id="menu-user-email">active <span class="text-emerald-400">•</span></p>
+        </div>
+        <i class="fa-solid fa-chevron-right text-pink-100/30"></i>
+      </div>
+
+      <p class="text-[10px] uppercase tracking-wider text-pink-100/40 mb-2 px-1">Navigate</p>
+      <div class="space-y-2 mb-6">
+        <button onclick="showPage('home')" class="w-full glass rounded-2xl p-4 text-left flex items-center gap-4 card-hover">
+          <div class="w-10 h-10 rounded-xl bg-pink-300/15 flex items-center justify-center">
+            <i class="fa-solid fa-house text-pink-300"></i>
+          </div>
+          <div class="flex-1 text-left">
+            <p class="font-medium text-sm">Home</p>
+            <p class="text-[10px] text-pink-100/45">Dashboard & featured</p>
+          </div>
+        </button>
+        <button onclick="showPage('portfolio')" class="w-full glass rounded-2xl p-4 text-left flex items-center gap-4 card-hover">
+          <div class="w-10 h-10 rounded-xl bg-pink-300/15 flex items-center justify-center">
+            <i class="fa-solid fa-chart-pie text-pink-300"></i>
+          </div>
+          <div class="flex-1 text-left">
+            <p class="font-medium text-sm">Portfolio</p>
+            <p class="text-[10px] text-pink-100/45">Holdings & performance</p>
+          </div>
+        </button>
+        <button onclick="showPage('deals')" class="w-full glass rounded-2xl p-4 text-left flex items-center gap-4 card-hover">
+          <div class="w-10 h-10 rounded-xl bg-pink-300/15 flex items-center justify-center">
+            <i class="fa-solid fa-rocket text-pink-300"></i>
+          </div>
+          <div class="flex-1 text-left">
+            <p class="font-medium text-sm">Deals</p>
+            <p class="text-[10px] text-pink-100/45">Live investment products</p>
+          </div>
+        </button>
+        <button onclick="showPage('insights')" class="w-full glass rounded-2xl p-4 text-left flex items-center gap-4 card-hover">
+          <div class="w-10 h-10 rounded-xl bg-pink-300/15 flex items-center justify-center">
+            <i class="fa-solid fa-chart-simple text-pink-300"></i>
+          </div>
+          <div class="flex-1 text-left">
+            <p class="font-medium text-sm">Insights</p>
+            <p class="text-[10px] text-pink-100/45">Analysis · Research · News</p>
+          </div>
+        </button>
+        <button onclick="showPage('explore')" class="w-full glass rounded-2xl p-4 text-left flex items-center gap-4 card-hover">
+          <div class="w-10 h-10 rounded-xl bg-pink-300/15 flex items-center justify-center">
+            <i class="fa-solid fa-compass text-pink-300"></i>
+          </div>
+          <div class="flex-1 text-left">
+            <p class="font-medium text-sm">Explore</p>
+            <p class="text-[10px] text-pink-100/45">Themes & categories</p>
+          </div>
+        </button>
+      </div>
+
+      <p class="text-[10px] uppercase tracking-wider text-pink-100/40 mb-2 px-1">More</p>
+      <div class="space-y-2">
+        <button class="w-full glass rounded-2xl p-3.5 text-left flex items-center gap-3 card-hover">
+          <i class="fa-solid fa-arrow-down text-emerald-300 w-5 text-center"></i>
+          <span class="text-sm">Deposit</span>
+        </button>
+        <button class="w-full glass rounded-2xl p-3.5 text-left flex items-center gap-3 card-hover">
+          <i class="fa-solid fa-arrow-up text-pink-300 w-5 text-center"></i>
+          <span class="text-sm">Withdrawal</span>
+        </button>
+        <button class="w-full glass rounded-2xl p-3.5 text-left flex items-center gap-3 card-hover">
+          <i class="fa-solid fa-layer-group text-orange-300 w-5 text-center"></i>
+          <span class="text-sm">Early Stage Access</span>
+        </button>
+        <button class="w-full glass rounded-2xl p-3.5 text-left flex items-center gap-3 card-hover opacity-80">
+          <i class="fa-solid fa-bell text-amber-300 w-5 text-center"></i>
+          <span class="text-sm">Notifications</span>
+          <span class="ml-auto text-[10px] bg-amber-300/20 text-amber-300 px-2 py-0.5 rounded-full">3</span>
+        </button>
+        <button class="w-full glass rounded-2xl p-3.5 text-left flex items-center gap-3 card-hover opacity-80">
+          <i class="fa-solid fa-gear text-rose-300 w-5 text-center"></i>
+          <span class="text-sm">Settings</span>
+        </button>
+        <button class="w-full glass rounded-2xl p-3.5 text-left flex items-center gap-3 card-hover opacity-80">
+          <i class="fa-solid fa-circle-question text-fuchsia-300 w-5 text-center"></i>
+          <span class="text-sm">Help & Support</span>
+        </button>
+
+        <!-- SIGN OUT -->
+        <button onclick="handleLogout()" class="w-full glass rounded-2xl p-3.5 text-left flex items-center gap-3 card-hover mt-3 border border-rose-400/20">
+          <i class="fa-solid fa-right-from-bracket text-rose-400 w-5 text-center"></i>
+          <span class="text-sm text-rose-300 font-medium">Sign Out</span>
+        </button>
+      </div>
+
+      <p class="text-center text-[10px] text-pink-100/30 mt-8">Orbit Capital · v2.4 · Private markets</p>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav id="bottom-nav" class="fixed bottom-0 left-0 right-0 max-w-md mx-auto glass-strong border-t border-pink-200/15 px-4 py-2.5 flex justify-between items-center z-50 rounded-t-2xl hidden">
+    <button onclick="showPage('home')" id="nav-home" class="nav-btn active flex flex-col items-center gap-1 text-pink-300">
+      <i class="fa-solid fa-house text-lg"></i>
+      <span class="text-[10px] font-medium">Home</span>
+    </button>
+    <button onclick="showPage('portfolio')" id="nav-portfolio" class="nav-btn flex flex-col items-center gap-1 text-pink-100/50">
+      <i class="fa-solid fa-chart-pie text-lg"></i>
+      <span class="text-[10px]">Portfolio</span>
+    </button>
+    <button onclick="showPage('deals')" id="nav-deals" class="nav-btn flex flex-col items-center gap-1 text-pink-100/50">
+      <i class="fa-solid fa-rocket text-lg"></i>
+      <span class="text-[10px]">Deals</span>
+    </button>
+    <button onclick="showPage('insights')" id="nav-insights" class="nav-btn flex flex-col items-center gap-1 text-pink-100/50">
+      <i class="fa-solid fa-chart-simple text-lg"></i>
+      <span class="text-[10px]">Insights</span>
+    </button>
+  </nav>
+
+  <script>
+    // ========== API CONFIG ==========
+    // Automatic: works with localhost, IP, ngrok, localtunnel, or any domain
+    const API_URL = window.location.origin + '/api';
+
+    // ========== TOAST ==========
+    let toastTimer = null;
+    function showToast(message, type = 'error') {
+      const toast = document.getElementById('toast');
+      const icon = toast.querySelector('.toast-icon');
+      const msg = toast.querySelector('.toast-msg');
+
+      toast.classList.remove('error', 'success', 'show');
+      void toast.offsetWidth; // force reflow for animation restart
+
+      toast.classList.add(type);
+      msg.textContent = message;
+
+      if (type === 'error') {
+        icon.className = 'toast-icon fa-solid fa-circle-exclamation';
+      } else {
+        icon.className = 'toast-icon fa-solid fa-circle-check';
+      }
+
+      toast.classList.add('show');
+
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3200);
+    }
+
+    function shakeElement(el) {
+      if (!el) return;
+      el.classList.remove('shake');
+      void el.offsetWidth;
+      el.classList.add('shake');
+      setTimeout(() => el.classList.remove('shake'), 500);
+    }
+
+    function clearInputErrors(container) {
+      if (!container) return;
+      container.querySelectorAll('.input-error').forEach(i => i.classList.remove('input-error'));
+    }
+
+    function markError(...inputs) {
+      inputs.forEach(inp => {
+        if (inp) inp.classList.add('input-error');
+      });
+    }
+
+    // ========== AUTH HELPERS ==========
+    function saveAuth(token, user) {
+      localStorage.setItem('orbit_token', token);
+      localStorage.setItem('orbit_user', JSON.stringify(user));
+    }
+
+    function getToken() {
+      return localStorage.getItem('orbit_token');
+    }
+
+    function clearAuth() {
+      localStorage.removeItem('orbit_token');
+      localStorage.removeItem('orbit_user');
+    }
+
+    function getUser() {
+      const u = localStorage.getItem('orbit_user');
+      return u ? JSON.parse(u) : null;
+    }
+
+    // ========== LOGIN ==========
+    async function handleLogin() {
+      const formCard = document.querySelector('#login .glass-strong');
+      const emailInput = document.getElementById('login-email');
+      const passwordInput = document.getElementById('login-password');
+      const email = emailInput ? emailInput.value.trim() : '';
+      const password = passwordInput ? passwordInput.value : '';
+
+      clearInputErrors(document.getElementById('login'));
+
+      if (!email || !password) {
+        showToast('Please enter your email and password', 'error');
+        shakeElement(formCard);
+        if (!email) markError(emailInput);
+        if (!password) markError(passwordInput);
+        return;
+      }
+
+      if (email.length > 11) {
+        showToast('Email / Phone must be 11 characters or less', 'error');
+        shakeElement(formCard);
+        markError(emailInput);
+        return;
+      }
+
+      if (password.length > 25) {
+        showToast('Password must be 25 characters or less', 'error');
+        shakeElement(formCard);
+        markError(passwordInput);
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          saveAuth(data.token, data.user);
+          showToast('Welcome back!', 'success');
+          setTimeout(() => showPage('home'), 400);
+        } else {
+          showToast(data.message || 'Invalid email or password', 'error');
+          shakeElement(formCard);
+          markError(emailInput, passwordInput);
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('Cannot reach server. Check if backend is running.', 'error');
+        shakeElement(formCard);
+      }
+    }
+
+    // ========== REGISTER ==========
+    async function handleRegister() {
+      const formCard = document.querySelector('#create .glass-strong');
+      const createPage = document.getElementById('create');
+      const emailInput = document.getElementById('create-email');
+      const codeInput = document.getElementById('create-code');
+      const passwordInput = document.getElementById('create-password');
+      const confirmInput = document.getElementById('confirm-password');
+
+      const email = emailInput ? emailInput.value.trim() : '';
+      const invitationCode = codeInput ? codeInput.value.trim() : '';
+      const password = passwordInput ? passwordInput.value : '';
+      const confirmPassword = confirmInput ? confirmInput.value : '';
+
+      clearInputErrors(createPage);
+
+      if (!email || !password || !confirmPassword) {
+        showToast('Please fill in all required fields', 'error');
+        shakeElement(formCard);
+        if (!email) markError(emailInput);
+        if (!password) markError(passwordInput);
+        if (!confirmPassword) markError(confirmInput);
+        return;
+      }
+
+      if (email.length > 11) {
+        showToast('Email / Phone must be 11 characters or less', 'error');
+        shakeElement(formCard);
+        markError(emailInput);
+        return;
+      }
+
+      if (password.length < 6) {
+        showToast('Password must be at least 6 characters', 'error');
+        shakeElement(formCard);
+        markError(passwordInput, confirmInput);
+        return;
+      }
+
+      if (password.length > 25) {
+        showToast('Password must be 25 characters or less', 'error');
+        shakeElement(formCard);
+        markError(passwordInput, confirmInput);
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        showToast('Passwords do not match', 'error');
+        shakeElement(formCard);
+        markError(passwordInput, confirmInput);
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, invitationCode, password, confirmPassword })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          saveAuth(data.token, data.user);
+          showToast('Account created successfully!', 'success');
+          setTimeout(() => showPage('home'), 450);
+        } else {
+          showToast(data.message || 'Registration failed', 'error');
+          shakeElement(formCard);
+          if (data.message && data.message.toLowerCase().includes('email')) {
+            markError(emailInput);
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('Cannot reach server. Check if backend is running.', 'error');
+        shakeElement(formCard);
+      }
+    }
+
+    // ========== LOGOUT ==========
+    async function handleLogout() {
+      const token = getToken();
+      if (token) {
+        try {
+          await fetch(`${API_URL}/logout`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+        } catch (e) {
+          // ignore network error on logout
+        }
+      }
+      clearAuth();
+      showToast('Signed out successfully', 'success');
+      showPage('login');
+    }
+
+    // ========== PAGE NAVIGATION (original) ==========
+    const BG_MAP = {
+      login: 'bg-auth',
+      create: 'bg-auth',
+      home: 'bg-home',
+      portfolio: 'bg-portfolio',
+      deals: 'bg-deals',
+      insights: 'bg-insights',
+      explore: 'bg-explore',
+      featured: 'bg-featured',
+      menu: 'bg-menu',
+      viewall: 'bg-deals',
+      'cat-launch': 'bg-category',
+      'cat-satellites': 'bg-category',
+      'cat-lunar': 'bg-category',
+      'cat-data': 'bg-category'
+    };
+
+    const NAV_MAP = {
+      home: 'nav-home',
+      portfolio: 'nav-portfolio',
+      deals: 'nav-deals',
+      insights: 'nav-insights'
+    };
+
+    const AUTH_PAGES = ['login', 'create'];
+    let isNavigating = false;
+
+    function showPage(pageId) {
+      if (isNavigating) return;
+
+      // Simple auth guard: require login for non-auth pages
+      if (!AUTH_PAGES.includes(pageId) && !getToken()) {
+        pageId = 'login';
+      }
+
+      const target = document.getElementById(pageId);
+      if (!target) return;
+      if (target.classList.contains('active')) return;
+
+      isNavigating = true;
+      const loader = document.getElementById('loader');
+      loader.classList.add('show');
+
+      setTimeout(() => {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.bg-layer').forEach(b => b.classList.remove('active'));
+
+        const bgId = BG_MAP[pageId] || 'bg-home';
+        const bgEl = document.getElementById(bgId);
+        if (bgEl) bgEl.classList.add('active');
+
+        target.classList.add('active');
+
+        // Update menu user info when opening menu
+        if (pageId === 'menu') {
+          const user = getUser();
+          const nameEl = document.getElementById('menu-user-name');
+          const emailEl = document.getElementById('menu-user-email');
+          if (user && nameEl && emailEl) {
+            nameEl.textContent = user.email.split('@')[0] || 'Investor';
+            emailEl.innerHTML = user.email + ' <span class="text-emerald-400">•</span>';
+          }
+        }
+
+        const bottomNav = document.getElementById('bottom-nav');
+        if (AUTH_PAGES.includes(pageId)) {
+          bottomNav.classList.add('hidden');
+        } else {
+          bottomNav.classList.remove('hidden');
+          document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.classList.remove('active', 'text-pink-300');
+            btn.classList.add('text-pink-100/50');
+          });
+          if (NAV_MAP[pageId]) {
+            const activeNav = document.getElementById(NAV_MAP[pageId]);
+            if (activeNav) {
+              activeNav.classList.remove('text-pink-100/50');
+              activeNav.classList.add('active', 'text-pink-300');
+            }
+          }
+        }
+
+        window.scrollTo({ top: 0, behavior: 'instant' });
+
+        setTimeout(() => {
+          loader.classList.remove('show');
+          isNavigating = false;
+        }, 80);
+      }, 220);
+    }
+
+    function togglePassword(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon = document.getElementById(iconId);
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+      } else {
+        input.type = 'password';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+      }
+    }
+
+    // ========== AUTO-LOGIN CHECK ==========
+    window.addEventListener('DOMContentLoaded', () => {
+      // If already logged in and currently on login/create page → go to home
+      if (getToken()) {
+        const loginPage = document.getElementById('login');
+        const createPage = document.getElementById('create');
+        if (loginPage?.classList.contains('active') || createPage?.classList.contains('active')) {
+          showPage('home');
+        }
+      }
+
+      // Clear red border when user types again
+      document.querySelectorAll('.input-field').forEach(input => {
+        input.addEventListener('input', () => {
+          input.classList.remove('input-error');
+        });
+      });
+
+      // Soft warning when user tries to type past max length
+      function bindMaxLengthWarning(inputId, max, label) {
+        const el = document.getElementById(inputId);
+        if (!el) return;
+        el.addEventListener('keydown', (e) => {
+          const isPrintable = e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey;
+          if (isPrintable && el.value.length >= max) {
+            e.preventDefault();
+            showToast(`${label} max is ${max} characters`, 'error');
+          }
+        });
+      }
+
+      bindMaxLengthWarning('login-email', 11, 'Email / Phone');
+      bindMaxLengthWarning('login-password', 25, 'Password');
+      bindMaxLengthWarning('create-email', 11, 'Email / Phone');
+      bindMaxLengthWarning('create-password', 25, 'Password');
+      bindMaxLengthWarning('confirm-password', 25, 'Password');
+    });
+  </script>
+</body>
+</html>
