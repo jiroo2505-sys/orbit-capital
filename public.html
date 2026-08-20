@@ -18,8 +18,8 @@
     * { box-sizing: border-box; }
     html {
       scroll-behavior: auto;
-      overscroll-behavior: none;
-      overscroll-behavior-y: none;
+      /* allow pull-to-refresh on mobile browsers */
+      overscroll-behavior-y: auto;
       -webkit-text-size-adjust: 100%;
       height: 100%;
     }
@@ -29,8 +29,7 @@
       margin: 0;
       background: var(--bg-deep);
       overflow-x: hidden;
-      overscroll-behavior: none;
-      overscroll-behavior-y: none;
+      overscroll-behavior-y: auto;
       color: #fff;
       position: relative;
       min-height: 100%;
@@ -2404,6 +2403,27 @@
 
         window.scrollTo({ top: 0, behavior: 'instant' });
 
+        // Remember page so refresh stays here (admin + user app)
+        try {
+          if (IS_ADMIN_ROUTE) {
+            sessionStorage.setItem('orbit_admin_page', pageId);
+            if (pageId !== 'admin-login') {
+              const hash = '#' + pageId;
+              if (location.hash !== hash) history.replaceState(null, '', hash);
+            } else if (location.hash) {
+              history.replaceState(null, '', location.pathname + location.search);
+            }
+          } else {
+            sessionStorage.setItem('orbit_user_page', pageId);
+            if (!['login', 'create'].includes(pageId)) {
+              const hash = '#' + pageId;
+              if (location.hash !== hash) history.replaceState(null, '', hash);
+            } else if (location.hash) {
+              history.replaceState(null, '', location.pathname + location.search);
+            }
+          }
+        } catch (e) { /* ignore storage errors */ }
+
         setTimeout(() => {
           loader.classList.remove('show');
           isNavigating = false;
@@ -2466,6 +2486,7 @@
       stopAdminRefresh();
       closeAdminDrawer();
       clearAdminToken();
+      try { sessionStorage.removeItem('orbit_admin_page'); } catch (e) {}
       showToast('Admin signed out', 'success');
       showPage('admin-login');
     }
@@ -3137,13 +3158,36 @@
     }
 
     // ========== AUTO-LOGIN CHECK ==========
+    function getSavedAdminPage() {
+      const fromHash = (location.hash || '').replace(/^#/, '');
+      if (fromHash && ADMIN_PAGES.includes(fromHash) && fromHash !== 'admin-login') return fromHash;
+      try {
+        const s = sessionStorage.getItem('orbit_admin_page');
+        if (s && ADMIN_PAGES.includes(s) && s !== 'admin-login') return s;
+      } catch (e) {}
+      return 'admin-dash';
+    }
+
+    function getSavedUserPage() {
+      const fromHash = (location.hash || '').replace(/^#/, '');
+      if (fromHash && !ADMIN_PAGES.includes(fromHash) && fromHash !== 'login' && fromHash !== 'create') {
+        if (document.getElementById(fromHash)) return fromHash;
+      }
+      try {
+        const s = sessionStorage.getItem('orbit_user_page');
+        if (s && s !== 'login' && s !== 'create' && document.getElementById(s)) return s;
+      } catch (e) {}
+      return 'home';
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
       // Admin route mode
       if (IS_ADMIN_ROUTE) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById('bottom-nav')?.classList.add('hidden');
         if (getAdminToken()) {
-          showPage('admin-dash');
+          const page = getSavedAdminPage();
+          showPage(page);
           loadAdminData();
           startAdminRefresh();
         } else {
@@ -3153,16 +3197,32 @@
         document.getElementById('admin-password')?.addEventListener('keydown', (e) => {
           if (e.key === 'Enter') handleAdminLogin();
         });
+        // Browser back/forward within admin hashes
+        window.addEventListener('hashchange', () => {
+          if (!IS_ADMIN_ROUTE || !getAdminToken()) return;
+          const page = getSavedAdminPage();
+          const active = document.querySelector('.page.active')?.id;
+          if (page && page !== active) showPage(page);
+        });
       } else {
         // Main site
         if (getToken()) {
           startHeartbeat();
           const loginPage = document.getElementById('login');
           const createPage = document.getElementById('create');
+          const saved = getSavedUserPage();
           if (loginPage?.classList.contains('active') || createPage?.classList.contains('active')) {
-            showPage('home');
+            showPage(saved || 'home');
+          } else if (saved && saved !== 'login' && saved !== 'create') {
+            showPage(saved);
           }
         }
+        window.addEventListener('hashchange', () => {
+          if (IS_ADMIN_ROUTE || !getToken()) return;
+          const page = getSavedUserPage();
+          const active = document.querySelector('.page.active')?.id;
+          if (page && page !== active) showPage(page);
+        });
       }
 
       // Clear error border when user types again
