@@ -453,102 +453,6 @@
       line-height: 1.35;
     }
 
-
-    /* ===== Admin confirm modal ===== */
-    #admin-confirm-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 10050;
-      background: rgba(10, 4, 8, 0.65);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.22s ease;
-    }
-    #admin-confirm-overlay.open {
-      opacity: 1;
-      pointer-events: auto;
-    }
-    #admin-confirm-box {
-      width: min(340px, 100%);
-      background: linear-gradient(165deg, rgba(55, 18, 38, 0.98), rgba(28, 10, 22, 0.98));
-      border: 1px solid rgba(249, 168, 212, 0.28);
-      border-radius: 20px;
-      padding: 22px 20px 18px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.45);
-      transform: translateY(12px) scale(0.96);
-      transition: transform 0.28s cubic-bezier(0.34, 1.2, 0.64, 1);
-    }
-    #admin-confirm-overlay.open #admin-confirm-box {
-      transform: translateY(0) scale(1);
-    }
-    #admin-confirm-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 14px;
-      font-size: 20px;
-    }
-    #admin-confirm-icon.ban {
-      background: rgba(251, 113, 133, 0.15);
-      color: #fda4af;
-    }
-    #admin-confirm-icon.unban {
-      background: rgba(52, 211, 153, 0.15);
-      color: #6ee7b7;
-    }
-    #admin-confirm-title {
-      text-align: center;
-      font-size: 15px;
-      font-weight: 600;
-      margin-bottom: 6px;
-      color: #fff;
-    }
-    #admin-confirm-msg {
-      text-align: center;
-      font-size: 12px;
-      line-height: 1.45;
-      color: rgba(255, 230, 240, 0.55);
-      margin-bottom: 18px;
-    }
-    #admin-confirm-actions {
-      display: flex;
-      gap: 10px;
-    }
-    #admin-confirm-actions button {
-      flex: 1;
-      padding: 11px 12px;
-      border-radius: 12px;
-      font-size: 13px;
-      font-weight: 600;
-      border: none;
-      cursor: pointer;
-      transition: transform 0.15s ease, opacity 0.15s ease;
-    }
-    #admin-confirm-actions button:active {
-      transform: scale(0.97);
-    }
-    #admin-confirm-cancel {
-      background: rgba(255, 255, 255, 0.08);
-      color: rgba(255, 230, 240, 0.85);
-    }
-    #admin-confirm-ok.ban {
-      background: linear-gradient(135deg, #fb7185, #e11d48);
-      color: #fff;
-    }
-    #admin-confirm-ok.unban {
-      background: linear-gradient(135deg, #34d399, #059669);
-      color: #042f2e;
-    }
-
     /* Shake animation for form on error */
     @keyframes shake {
       0%, 100% { transform: translateX(0); }
@@ -602,19 +506,6 @@
   <div id="toast">
     <i class="toast-icon fa-solid fa-circle-exclamation"></i>
     <span class="toast-msg"></span>
-  </div>
-
-  <!-- Admin confirm modal (Ban / Unban) -->
-  <div id="admin-confirm-overlay" role="dialog" aria-modal="true" aria-labelledby="admin-confirm-title">
-    <div id="admin-confirm-box">
-      <div id="admin-confirm-icon" class="ban"><i class="fa-solid fa-ban"></i></div>
-      <p id="admin-confirm-title">Confirm</p>
-      <p id="admin-confirm-msg"></p>
-      <div id="admin-confirm-actions">
-        <button type="button" id="admin-confirm-cancel">Cancel</button>
-        <button type="button" id="admin-confirm-ok" class="ban">Confirm</button>
-      </div>
-    </div>
   </div>
 
   <!-- ========== LOGIN ========== -->
@@ -3040,56 +2931,9 @@
       }
     }
 
-    let _adminConfirmResolver = null;
-
-    function closeAdminConfirm(result) {
-      const overlay = document.getElementById('admin-confirm-overlay');
-      if (!overlay) return;
-      overlay.classList.remove('open');
-      const resolve = _adminConfirmResolver;
-      _adminConfirmResolver = null;
-      if (resolve) resolve(!!result);
-    }
-
-    function adminConfirm({ title, message, confirmLabel, mode }) {
-      return new Promise((resolve) => {
-        _adminConfirmResolver = resolve;
-        const overlay = document.getElementById('admin-confirm-overlay');
-        const icon = document.getElementById('admin-confirm-icon');
-        const titleEl = document.getElementById('admin-confirm-title');
-        const msgEl = document.getElementById('admin-confirm-msg');
-        const okBtn = document.getElementById('admin-confirm-ok');
-        const cancelBtn = document.getElementById('admin-confirm-cancel');
-        if (!overlay || !okBtn) {
-          resolve(false);
-          return;
-        }
-        const m = mode === 'unban' ? 'unban' : 'ban';
-        icon.className = m;
-        icon.innerHTML = m === 'unban'
-          ? '<i class="fa-solid fa-circle-check"></i>'
-          : '<i class="fa-solid fa-ban"></i>';
-        titleEl.textContent = title || 'Confirm';
-        msgEl.textContent = message || '';
-        okBtn.textContent = confirmLabel || 'Confirm';
-        okBtn.className = m;
-        okBtn.onclick = () => closeAdminConfirm(true);
-        cancelBtn.onclick = () => closeAdminConfirm(false);
-        overlay.onclick = (e) => {
-          if (e.target === overlay) closeAdminConfirm(false);
-        };
-        overlay.classList.add('open');
-      });
-    }
-
     async function banAdminUser(id, email) {
       if (!id) return;
-      const ok = await adminConfirm({
-        mode: 'ban',
-        title: 'Ban user?',
-        message: 'Deactivate "' + (email || id) + '"? They will not be able to log in. Account data is kept.',
-        confirmLabel: 'Ban user'
-      });
+      const ok = confirm('Deactivate / ban user "' + (email || id) + '"?\nThey will not be able to log in. Data is kept.');
       if (!ok) return;
       const token = getAdminToken();
       if (!token) {
@@ -3107,9 +2951,10 @@
           adminUsersCache = (adminUsersCache || []).map(u =>
             u.id === id ? { ...u, status: 'banned', isActive: false } : u
           );
-          const q = (document.getElementById('admin-all-search')?.value || '').toLowerCase().trim();
           renderAdminAllUsers(
-            q ? adminUsersCache.filter(u => (u.email || '').toLowerCase().includes(q)) : adminUsersCache
+            (document.getElementById('admin-all-search')?.value || '').trim()
+              ? adminUsersCache.filter(u => (u.email || '').toLowerCase().includes((document.getElementById('admin-all-search')?.value || '').toLowerCase().trim()))
+              : adminUsersCache
           );
           loadAdminData();
         } else {
@@ -3122,12 +2967,7 @@
 
     async function unbanAdminUser(id, email) {
       if (!id) return;
-      const ok = await adminConfirm({
-        mode: 'unban',
-        title: 'Unban user?',
-        message: 'Reactivate "' + (email || id) + '"? They will be able to log in again.',
-        confirmLabel: 'Unban user'
-      });
+      const ok = confirm('Reactivate user "' + (email || id) + '"?');
       if (!ok) return;
       const token = getAdminToken();
       if (!token) {
@@ -3145,9 +2985,10 @@
           adminUsersCache = (adminUsersCache || []).map(u =>
             u.id === id ? { ...u, status: 'active' } : u
           );
-          const q = (document.getElementById('admin-all-search')?.value || '').toLowerCase().trim();
           renderAdminAllUsers(
-            q ? adminUsersCache.filter(u => (u.email || '').toLowerCase().includes(q)) : adminUsersCache
+            (document.getElementById('admin-all-search')?.value || '').trim()
+              ? adminUsersCache.filter(u => (u.email || '').toLowerCase().includes((document.getElementById('admin-all-search')?.value || '').toLowerCase().trim()))
+              : adminUsersCache
           );
           loadAdminData();
         } else {
