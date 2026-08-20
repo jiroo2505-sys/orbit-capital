@@ -1298,7 +1298,7 @@
           <p class="text-xl font-bold" id="stat-total-users">—</p>
           <p class="text-[10px] text-pink-300/70 mt-1">View all →</p>
         </button>
-        <div class="glass-strong rounded-2xl p-4">
+        <button type="button" onclick="showPage('admin-active')" class="glass-strong rounded-2xl p-4 text-left card-hover w-full">
           <div class="flex items-center gap-2 mb-2">
             <div class="w-9 h-9 rounded-xl bg-emerald-400/15 flex items-center justify-center">
               <i class="fa-solid fa-circle text-emerald-400 text-[10px]"></i>
@@ -1306,9 +1306,9 @@
             <p class="text-[10px] text-pink-100/55 leading-tight">Active Now</p>
           </div>
           <p class="text-xl font-bold" id="stat-active">—</p>
-          <p class="text-[10px] text-pink-100/40 mt-0.5">Last 20s</p>
-        </div>
-        <div class="glass-strong rounded-2xl p-4">
+          <p class="text-[10px] text-pink-300/70 mt-1">View →</p>
+        </button>
+        <button type="button" onclick="showPage('admin-logins')" class="glass-strong rounded-2xl p-4 text-left card-hover w-full">
           <div class="flex items-center gap-2 mb-2">
             <div class="w-9 h-9 rounded-xl bg-pink-300/15 flex items-center justify-center">
               <i class="fa-solid fa-right-to-bracket text-pink-300 text-sm"></i>
@@ -1317,7 +1317,7 @@
           </div>
           <p class="text-xl font-bold" id="stat-logins">—</p>
           <p class="text-[10px] text-pink-100/40 mt-0.5" id="stat-registers">— new</p>
-        </div>
+        </button>
         <div class="glass-strong rounded-2xl p-4">
           <div class="flex items-center gap-2 mb-2">
             <div class="w-9 h-9 rounded-xl bg-orange-300/15 flex items-center justify-center">
@@ -1329,26 +1329,29 @@
         </div>
       </div>
       <div class="grid grid-cols-3 gap-3 mb-6">
-        <div class="glass-strong rounded-2xl p-3.5">
+        <button type="button" onclick="showPage('admin-earnings')" class="glass-strong rounded-2xl p-3.5 text-left card-hover w-full">
           <p class="text-[10px] text-pink-100/50 mb-1">Earned Today</p>
           <p class="text-base font-bold text-emerald-300" id="stat-earnings">₱0</p>
-        </div>
-        <div class="glass-strong rounded-2xl p-3.5">
+          <p class="text-[10px] text-pink-300/60 mt-1">View →</p>
+        </button>
+        <button type="button" onclick="showPage('admin-deposits')" class="glass-strong rounded-2xl p-3.5 text-left card-hover w-full">
           <p class="text-[10px] text-pink-100/50 mb-1">Deposits Today</p>
           <p class="text-base font-bold text-pink-300" id="stat-deposits">₱0</p>
-        </div>
-        <div class="glass-strong rounded-2xl p-3.5">
+          <p class="text-[10px] text-pink-300/60 mt-1">View →</p>
+        </button>
+        <button type="button" onclick="showPage('admin-withdrawals')" class="glass-strong rounded-2xl p-3.5 text-left card-hover w-full">
           <p class="text-[10px] text-pink-100/50 mb-1">Withdrawals Today</p>
           <p class="text-base font-bold text-rose-300" id="stat-withdrawals">₱0</p>
-        </div>
+          <p class="text-[10px] text-pink-300/60 mt-1">View →</p>
+        </button>
       </div>
 
       <div class="glass-strong rounded-2xl overflow-hidden mb-6">
         <div class="flex items-center justify-between px-4 py-3 border-b border-pink-200/10">
-          <h3 class="font-semibold text-sm">Users</h3>
+          <h3 class="font-semibold text-sm">Users Today</h3>
           <div class="relative">
             <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-pink-100/35 text-xs"></i>
-            <input type="text" id="admin-search" placeholder="Search users…" class="input-field pl-8 pr-3 py-2 rounded-xl text-xs w-36 sm:w-48" oninput="filterAdminUsers()">
+            <input type="text" id="admin-search" placeholder="Search today…" class="input-field pl-8 pr-3 py-2 rounded-xl text-xs w-36 sm:w-48" oninput="filterAdminUsers()">
           </div>
         </div>
         <div class="hidden sm:block overflow-x-auto">
@@ -1422,6 +1425,106 @@
         </div>
         <div class="sm:hidden divide-y divide-pink-200/10" id="admin-all-users-mobile"></div>
         <div class="px-4 py-3 text-[10px] text-pink-100/35 border-t border-pink-200/10" id="admin-all-users-count">Loading…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== ADMIN ACTIVE NOW PAGE ========== -->
+  <div id="admin-active" class="page">
+    <div class="max-w-5xl mx-auto min-h-screen px-4 sm:px-6 pt-5 pb-16 relative z-10">
+      <header class="flex items-center gap-3 mb-6">
+        <button type="button" onclick="showPage('admin-dash')" class="w-10 h-10 rounded-xl glass flex items-center justify-center card-hover shrink-0">
+          <i class="fa-solid fa-arrow-left text-pink-200"></i>
+        </button>
+        <div>
+          <p class="font-semibold text-sm sm:text-base">Active Now</p>
+          <p class="text-[10px] text-pink-100/45">Users active in the last 20 seconds</p>
+        </div>
+      </header>
+      <div class="glass-strong rounded-2xl overflow-hidden">
+        <div class="divide-y divide-pink-200/10" id="admin-active-list">
+          <p class="px-4 py-8 text-center text-xs text-pink-100/40">No active users right now</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== ADMIN LOGINS TODAY PAGE ========== -->
+  <div id="admin-logins" class="page">
+    <div class="max-w-5xl mx-auto min-h-screen px-4 sm:px-6 pt-5 pb-16 relative z-10">
+      <header class="flex items-center gap-3 mb-6">
+        <button type="button" onclick="showPage('admin-dash')" class="w-10 h-10 rounded-xl glass flex items-center justify-center card-hover shrink-0">
+          <i class="fa-solid fa-arrow-left text-pink-200"></i>
+        </button>
+        <div>
+          <p class="font-semibold text-sm sm:text-base">Logins Today</p>
+          <p class="text-[10px] text-pink-100/45">Login activity (Philippine time)</p>
+        </div>
+      </header>
+      <div class="glass-strong rounded-2xl overflow-hidden">
+        <div class="divide-y divide-pink-200/10" id="admin-logins-list">
+          <p class="px-4 py-8 text-center text-xs text-pink-100/40">No logins today yet</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== ADMIN EARNINGS PAGE ========== -->
+  <div id="admin-earnings" class="page">
+    <div class="max-w-5xl mx-auto min-h-screen px-4 sm:px-6 pt-5 pb-16 relative z-10">
+      <header class="flex items-center gap-3 mb-6">
+        <button type="button" onclick="showPage('admin-dash')" class="w-10 h-10 rounded-xl glass flex items-center justify-center card-hover shrink-0">
+          <i class="fa-solid fa-arrow-left text-pink-200"></i>
+        </button>
+        <div>
+          <p class="font-semibold text-sm sm:text-base">Earned Today</p>
+          <p class="text-[10px] text-pink-100/45">Platform earnings today</p>
+        </div>
+      </header>
+      <div class="glass-strong rounded-2xl p-8 text-center">
+        <p class="text-3xl font-bold text-emerald-300 mb-2" id="earnings-page-total">₱0</p>
+        <p class="text-xs text-pink-100/45" id="earnings-page-empty">No earnings recorded yet</p>
+        <div class="divide-y divide-pink-200/10 mt-6 text-left" id="admin-earnings-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== ADMIN DEPOSITS PAGE ========== -->
+  <div id="admin-deposits" class="page">
+    <div class="max-w-5xl mx-auto min-h-screen px-4 sm:px-6 pt-5 pb-16 relative z-10">
+      <header class="flex items-center gap-3 mb-6">
+        <button type="button" onclick="showPage('admin-dash')" class="w-10 h-10 rounded-xl glass flex items-center justify-center card-hover shrink-0">
+          <i class="fa-solid fa-arrow-left text-pink-200"></i>
+        </button>
+        <div>
+          <p class="font-semibold text-sm sm:text-base">Deposits Today</p>
+          <p class="text-[10px] text-pink-100/45">Who deposited money today</p>
+        </div>
+      </header>
+      <div class="glass-strong rounded-2xl p-8 text-center">
+        <p class="text-3xl font-bold text-pink-300 mb-2" id="deposits-page-total">₱0</p>
+        <p class="text-xs text-pink-100/45" id="deposits-page-empty">No deposits recorded yet</p>
+        <div class="divide-y divide-pink-200/10 mt-6 text-left" id="admin-deposits-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== ADMIN WITHDRAWALS PAGE ========== -->
+  <div id="admin-withdrawals" class="page">
+    <div class="max-w-5xl mx-auto min-h-screen px-4 sm:px-6 pt-5 pb-16 relative z-10">
+      <header class="flex items-center gap-3 mb-6">
+        <button type="button" onclick="showPage('admin-dash')" class="w-10 h-10 rounded-xl glass flex items-center justify-center card-hover shrink-0">
+          <i class="fa-solid fa-arrow-left text-pink-200"></i>
+        </button>
+        <div>
+          <p class="font-semibold text-sm sm:text-base">Withdrawals Today</p>
+          <p class="text-[10px] text-pink-100/45">Who withdrew money today</p>
+        </div>
+      </header>
+      <div class="glass-strong rounded-2xl p-8 text-center">
+        <p class="text-3xl font-bold text-rose-300 mb-2" id="withdrawals-page-total">₱0</p>
+        <p class="text-xs text-pink-100/45" id="withdrawals-page-empty">No withdrawals recorded yet</p>
+        <div class="divide-y divide-pink-200/10 mt-6 text-left" id="admin-withdrawals-list"></div>
       </div>
     </div>
   </div>
@@ -1680,6 +1783,11 @@
       'admin-login': 'bg-auth',
       'admin-dash': 'bg-menu',
       'admin-users-all': 'bg-menu',
+      'admin-active': 'bg-menu',
+      'admin-logins': 'bg-menu',
+      'admin-earnings': 'bg-menu',
+      'admin-deposits': 'bg-menu',
+      'admin-withdrawals': 'bg-menu',
       home: 'bg-home',
       portfolio: 'bg-portfolio',
       deals: 'bg-deals',
@@ -1701,7 +1809,8 @@
       insights: 'nav-insights'
     };
 
-    const AUTH_PAGES = ['login', 'create', 'admin-login', 'admin-dash', 'admin-users-all'];
+    const AUTH_PAGES = ['login', 'create', 'admin-login', 'admin-dash', 'admin-users-all', 'admin-active', 'admin-logins', 'admin-earnings', 'admin-deposits', 'admin-withdrawals'];
+    const ADMIN_PAGES = ['admin-login', 'admin-dash', 'admin-users-all', 'admin-active', 'admin-logins', 'admin-earnings', 'admin-deposits', 'admin-withdrawals'];
     let isNavigating = false;
     let adminUsersCache = [];
     const IS_ADMIN_ROUTE = window.location.pathname.replace(/\/$/, '') === '/admin';
@@ -1711,12 +1820,11 @@
 
       // Admin route: only allow admin pages
       if (IS_ADMIN_ROUTE) {
-        const adminPages = ['admin-login', 'admin-dash', 'admin-users-all'];
-        if (!adminPages.includes(pageId)) pageId = 'admin-login';
-        if ((pageId === 'admin-dash' || pageId === 'admin-users-all') && !getAdminToken()) pageId = 'admin-login';
+        if (!ADMIN_PAGES.includes(pageId)) pageId = 'admin-login';
+        if (pageId !== 'admin-login' && !getAdminToken()) pageId = 'admin-login';
       } else {
         // Main site: never show admin pages; require user login for app pages
-        if (pageId === 'admin-login' || pageId === 'admin-dash' || pageId === 'admin-users-all') pageId = 'login';
+        if (ADMIN_PAGES.includes(pageId)) pageId = 'login';
         if (!AUTH_PAGES.includes(pageId) && !getToken()) {
           pageId = 'login';
         }
@@ -1749,9 +1857,14 @@
         if (pageId === 'admin-users-all') {
           renderAdminAllUsers(adminUsersCache);
         }
+        if (pageId === 'admin-active') renderAdminActivePage();
+        if (pageId === 'admin-logins') renderAdminLoginsPage();
+        if (pageId === 'admin-earnings') renderAdminMoneyPage('earnings');
+        if (pageId === 'admin-deposits') renderAdminMoneyPage('deposits');
+        if (pageId === 'admin-withdrawals') renderAdminMoneyPage('withdrawals');
 
         const bottomNav = document.getElementById('bottom-nav');
-        if (AUTH_PAGES.includes(pageId) || pageId === 'admin-login' || pageId === 'admin-dash' || pageId === 'admin-users-all') {
+        if (AUTH_PAGES.includes(pageId) || ADMIN_PAGES.includes(pageId)) {
           bottomNav.classList.add('hidden');
         } else {
           bottomNav.classList.remove('hidden');
@@ -1865,18 +1978,37 @@
       </span>`;
     }
 
+    function isCreatedTodayPH(iso) {
+      if (!iso) return false;
+      try {
+        const d = new Date(iso);
+        const ph = new Date(d.toLocaleString('en-US', { timeZone: 'Asia/Manila' }));
+        const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Manila' }));
+        return ph.getFullYear() === now.getFullYear() &&
+          ph.getMonth() === now.getMonth() &&
+          ph.getDate() === now.getDate();
+      } catch {
+        return false;
+      }
+    }
+
     function renderAdminUsers(users) {
       const tbody = document.getElementById('admin-users-tbody');
       const mobile = document.getElementById('admin-users-mobile');
       const countEl = document.getElementById('admin-users-count');
       if (!tbody || !mobile) return;
 
-      if (!users.length) {
-        tbody.innerHTML = '<tr><td colspan="5" class="px-4 py-8 text-center text-xs text-pink-100/40">No users yet</td></tr>';
-        mobile.innerHTML = '<p class="px-4 py-8 text-center text-xs text-pink-100/40">No users yet</p>';
-        if (countEl) countEl.textContent = '0 users';
+      // Dashboard list = Users Today only
+      const todayUsers = (users || []).filter(u => isCreatedTodayPH(u.createdAt));
+
+      if (!todayUsers.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="px-4 py-8 text-center text-xs text-pink-100/40">No new users today</td></tr>';
+        mobile.innerHTML = '<p class="px-4 py-8 text-center text-xs text-pink-100/40">No new users today</p>';
+        if (countEl) countEl.textContent = '0 users today';
         return;
       }
+
+      users = todayUsers;
 
       tbody.innerHTML = users.map(u => `
         <tr class="border-b border-pink-200/5 hover:bg-white/5">
@@ -1904,13 +2036,48 @@
         </div>
       `).join('');
 
-      if (countEl) countEl.textContent = users.length + (users.length === 1 ? ' user' : ' users');
+      if (countEl) countEl.textContent = users.length + (users.length === 1 ? ' user today' : ' users today');
     }
 
     function filterAdminUsers() {
       const q = (document.getElementById('admin-search')?.value || '').toLowerCase().trim();
-      const filtered = !q ? adminUsersCache : adminUsersCache.filter(u => (u.email || '').toLowerCase().includes(q));
-      renderAdminUsers(filtered);
+      const todayOnly = (adminUsersCache || []).filter(u => isCreatedTodayPH(u.createdAt));
+      const filtered = !q ? todayOnly : todayOnly.filter(u => (u.email || '').toLowerCase().includes(q));
+      // Pass already-filtered list; renderAdminUsers will filter today again (safe)
+      const tbody = document.getElementById('admin-users-tbody');
+      const mobile = document.getElementById('admin-users-mobile');
+      const countEl = document.getElementById('admin-users-count');
+      if (!tbody || !mobile) return;
+      if (!filtered.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="px-4 py-8 text-center text-xs text-pink-100/40">No matches today</td></tr>';
+        mobile.innerHTML = '<p class="px-4 py-8 text-center text-xs text-pink-100/40">No matches today</p>';
+        if (countEl) countEl.textContent = '0 users today';
+        return;
+      }
+      tbody.innerHTML = filtered.map(u => `
+        <tr class="border-b border-pink-200/5 hover:bg-white/5">
+          <td class="px-4 py-3 text-sm">${u.email}</td>
+          <td class="px-4 py-3 text-xs text-pink-100/55">${formatAdminDate(u.createdAt)}</td>
+          <td class="px-4 py-3 text-xs text-pink-100/55">${formatAdminDate(u.lastLogin)}</td>
+          <td class="px-4 py-3">${statusBadge(u.isActive)}</td>
+          <td class="px-4 py-3">
+            <button type="button" onclick="deleteAdminUser('${u.id}', '${(u.email || '').replace(/'/g, "\\'")}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-rose-400/15 text-rose-300 hover:bg-rose-400/25">Delete</button>
+          </td>
+        </tr>
+      `).join('');
+      mobile.innerHTML = filtered.map(u => `
+        <div class="px-4 py-3 flex items-center justify-between gap-3">
+          <div class="min-w-0">
+            <p class="text-sm font-medium truncate">${u.email}</p>
+            <p class="text-[10px] text-pink-100/40 mt-0.5">Created ${formatAdminDate(u.createdAt)}</p>
+          </div>
+          <div class="flex flex-col items-end gap-2 shrink-0">
+            ${statusBadge(u.isActive)}
+            <button type="button" onclick="deleteAdminUser('${u.id}', '${(u.email || '').replace(/'/g, "\\'")}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-rose-400/15 text-rose-300">Delete</button>
+          </div>
+        </div>
+      `).join('');
+      if (countEl) countEl.textContent = filtered.length + (filtered.length === 1 ? ' user today' : ' users today');
     }
 
     function renderAdminAllUsers(users) {
@@ -1962,6 +2129,64 @@
       const q = (document.getElementById('admin-all-search')?.value || '').toLowerCase().trim();
       const filtered = !q ? adminUsersCache : adminUsersCache.filter(u => (u.email || '').toLowerCase().includes(q));
       renderAdminAllUsers(filtered);
+    }
+
+    let adminActivityCache = [];
+
+    function renderAdminActivePage() {
+      const el = document.getElementById('admin-active-list');
+      if (!el) return;
+      const active = (adminUsersCache || []).filter(u => u.isActive);
+      if (!active.length) {
+        el.innerHTML = '<p class="px-4 py-8 text-center text-xs text-pink-100/40">No active users right now</p>';
+        return;
+      }
+      el.innerHTML = active.map(u => `
+        <div class="px-4 py-3 flex items-center justify-between gap-3">
+          <div class="min-w-0">
+            <p class="text-sm font-medium truncate">${u.email}</p>
+            <p class="text-[10px] text-pink-100/40">Last seen ${formatAdminDate(u.lastSeen)}</p>
+          </div>
+          ${statusBadge(true)}
+        </div>
+      `).join('');
+    }
+
+    function renderAdminLoginsPage() {
+      const el = document.getElementById('admin-logins-list');
+      if (!el) return;
+      const now = new Date();
+      const phToday = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' }); // YYYY-MM-DD
+      const logins = (adminActivityCache || []).filter(a => {
+        if (a.type !== 'login') return false;
+        try {
+          const d = new Date(a.time).toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' });
+          return d === phToday;
+        } catch { return false; }
+      });
+      if (!logins.length) {
+        el.innerHTML = '<p class="px-4 py-8 text-center text-xs text-pink-100/40">No logins today yet</p>';
+        return;
+      }
+      el.innerHTML = logins.map(a => `
+        <div class="px-4 py-3 flex items-center justify-between gap-3">
+          <div class="min-w-0">
+            <p class="text-sm font-medium truncate">${a.email || '—'}</p>
+            <p class="text-[10px] text-pink-100/40">Login</p>
+          </div>
+          <p class="text-[10px] text-pink-100/45 shrink-0">${formatAdminDate(a.time)}</p>
+        </div>
+      `).join('');
+    }
+
+    function renderAdminMoneyPage(kind) {
+      // kind: earnings | deposits | withdrawals — empty until real transactions exist
+      const totalEl = document.getElementById(kind + '-page-total');
+      const emptyEl = document.getElementById(kind + '-page-empty');
+      const listEl = document.getElementById('admin-' + kind + '-list');
+      if (totalEl) totalEl.textContent = '₱0';
+      if (emptyEl) emptyEl.style.display = '';
+      if (listEl) listEl.innerHTML = '';
     }
 
     async function deleteAdminUser(id, email) {
@@ -2070,7 +2295,10 @@
           if (elWd) elWd.textContent = formatPeso(s.withdrawalsToday);
         }
         if (actData.success) {
-          renderAdminActivity(actData.activity || []);
+          adminActivityCache = actData.activity || [];
+          renderAdminActivity(adminActivityCache);
+          if (document.getElementById('admin-active')?.classList.contains('active')) renderAdminActivePage();
+          if (document.getElementById('admin-logins')?.classList.contains('active')) renderAdminLoginsPage();
         }
       } catch (err) {
         showToast('Failed to load admin data', 'error');
