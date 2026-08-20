@@ -1331,7 +1331,7 @@
           <label class="block text-xs text-pink-100/55 mb-1.5 font-medium">Password</label>
           <div class="relative">
             <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-pink-300/60 text-sm"></i>
-            <input type="password" id="admin-password" class="input-field w-full pl-10 pr-12 py-3.5 rounded-xl text-sm" maxlength="50" autocomplete="current-password">
+            <input type="password" id="admin-password" class="input-field w-full pl-10 pr-12 py-3.5 rounded-xl text-sm" maxlength="50" autocomplete="off" data-lpignore="true" data-form-type="other">
             <button type="button" onclick="togglePassword('admin-password','admin-eye')" class="absolute right-1 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center text-pink-100/40 hover:text-pink-300">
               <i class="fa-solid fa-eye text-base" id="admin-eye"></i>
             </button>
@@ -1361,8 +1361,8 @@
             <p class="text-[10px] text-pink-100/45">Admin Panel</p>
           </div>
         </div>
-        <button onclick="handleAdminLogout()" class="glass rounded-xl px-3 py-2 text-xs text-pink-200/80 hover:text-pink-100 card-hover">
-          <i class="fa-solid fa-right-from-bracket mr-1"></i> Sign out
+        <button type="button" onclick="showPage('admin-profile')" class="w-10 h-10 rounded-xl glass flex items-center justify-center card-hover" aria-label="Admin profile">
+          <i class="fa-solid fa-user text-pink-200"></i>
         </button>
       </header>
 
@@ -1492,7 +1492,7 @@
           <h3 class="font-semibold text-sm">Users list</h3>
           <div class="relative">
             <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-pink-100/35 text-xs"></i>
-            <input type="text" id="admin-all-search" placeholder="Search users…" class="input-field pl-8 pr-3 py-2 rounded-xl text-xs w-36 sm:w-48" oninput="filterAdminAllUsers()">
+            <input type="search" id="admin-all-search" name="orbit-admin-user-filter" placeholder="Search users…" class="input-field pl-8 pr-3 py-2 rounded-xl text-xs w-36 sm:w-48" oninput="filterAdminAllUsers()" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-form-type="other" role="searchbox">
           </div>
         </div>
         <div class="hidden sm:block overflow-x-auto">
@@ -1687,6 +1687,288 @@
     </div>
   </div>
 
+
+  <!-- ========== ADMIN WITHDRAWAL OPTIONS ========== -->
+  <div id="admin-withdraw-options" class="page">
+    <div class="max-w-5xl mx-auto min-h-screen px-4 sm:px-6 pt-5 pb-16 relative z-10">
+      <header class="flex items-center gap-3 mb-6">
+        <button type="button" onclick="openAdminDrawer()" class="w-10 h-10 rounded-xl glass flex items-center justify-center card-hover shrink-0"><i class="fa-solid fa-bars text-pink-200"></i></button>
+        <button type="button" onclick="showPage('admin-dash')" class="w-10 h-10 rounded-xl glass flex items-center justify-center card-hover shrink-0"><i class="fa-solid fa-arrow-left text-pink-200"></i></button>
+        <div>
+          <p class="font-semibold text-sm sm:text-base">Withdrawal Options</p>
+          <p class="text-[10px] text-pink-100/45">Bank · E-wallet channels</p>
+        </div>
+      </header>
+      <p class="text-xs text-pink-100/50 mb-4">Channels na puwedeng gamitin ng users para mag-withdraw.</p>
+      <div class="space-y-3 mb-4">
+        <div class="glass-strong rounded-2xl p-4 flex items-center gap-3">
+          <div class="w-11 h-11 rounded-xl bg-pink-300/15 flex items-center justify-center"><i class="fa-solid fa-building-columns text-pink-300"></i></div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium">Bank transfer</p>
+            <p class="text-[10px] text-pink-100/45">Local banks · account name + number</p>
+          </div>
+          <span class="text-[10px] px-2 py-1 rounded-full bg-white/5 text-pink-100/40">Off</span>
+        </div>
+        <div class="glass-strong rounded-2xl p-4 flex items-center gap-3">
+          <div class="w-11 h-11 rounded-xl bg-emerald-400/15 flex items-center justify-center"><i class="fa-solid fa-mobile-screen text-emerald-300"></i></div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium">E-wallet</p>
+            <p class="text-[10px] text-pink-100/45">GCash · Maya · similar</p>
+          </div>
+          <span class="text-[10px] px-2 py-1 rounded-full bg-white/5 text-pink-100/40">Off</span>
+        </div>
+      </div>
+      <button type="button" class="w-full glass rounded-2xl p-4 text-left flex items-center gap-3 opacity-60 cursor-not-allowed">
+        <i class="fa-solid fa-plus text-pink-300 w-5 text-center"></i>
+        <span class="text-sm">Add channel (soon)</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ========== ADMIN PENDING WITHDRAWALS ========== -->
+  <div id="admin-pending-withdrawals" class="page">
+    <div class="max-w-5xl mx-auto min-h-screen px-4 sm:px-6 pt-5 pb-16 relative z-10">
+      <header class="flex items-center gap-3 mb-6">
+        <button type="button" onclick="openAdminDrawer()" class="w-10 h-10 rounded-xl glass flex items-center justify-center card-hover shrink-0"><i class="fa-solid fa-bars text-pink-200"></i></button>
+        <button type="button" onclick="showPage('admin-dash')" class="w-10 h-10 rounded-xl glass flex items-center justify-center card-hover shrink-0"><i class="fa-solid fa-arrow-left text-pink-200"></i></button>
+        <div>
+          <p class="font-semibold text-sm sm:text-base">Pending Withdrawals</p>
+          <p class="text-[10px] text-pink-100/45">Awaiting approval</p>
+        </div>
+      </header>
+      <div class="glass-strong rounded-2xl p-4 mb-4 flex items-center justify-between">
+        <div>
+          <p class="text-[10px] text-pink-100/50">Total pending</p>
+          <p class="text-2xl font-bold text-rose-300" id="stat-pending-withdrawals">₱0</p>
+        </div>
+        <span class="text-[10px] px-2.5 py-1 rounded-full bg-rose-400/15 text-rose-300">0 requests</span>
+      </div>
+      <div class="glass-strong rounded-2xl p-8 text-center">
+        <i class="fa-solid fa-inbox text-pink-300/40 text-2xl mb-3"></i>
+        <p class="text-sm text-pink-100/50">No pending withdrawals</p>
+        <p class="text-xs text-pink-100/30 mt-1">Requests will show here for manual approve/reject</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== ADMIN PACKAGES / PRODUCT SETTINGS ========== -->
+  <div id="admin-packages" class="page">
+    <div class="max-w-5xl mx-auto min-h-screen px-4 sm:px-6 pt-5 pb-16 relative z-10">
+      <header class="flex items-center gap-3 mb-6">
+        <button type="button" onclick="openAdminDrawer()" class="w-10 h-10 rounded-xl glass flex items-center justify-center card-hover shrink-0"><i class="fa-solid fa-bars text-pink-200"></i></button>
+        <button type="button" onclick="showPage('admin-dash')" class="w-10 h-10 rounded-xl glass flex items-center justify-center card-hover shrink-0"><i class="fa-solid fa-arrow-left text-pink-200"></i></button>
+        <div class="flex-1 min-w-0">
+          <p class="font-semibold text-sm sm:text-base">Product Settings</p>
+          <p class="text-[10px] text-pink-100/45">Investment packages · plans</p>
+        </div>
+      </header>
+      <p class="text-xs text-pink-100/50 mb-4">Halimbawa: Natnat 1.0–4.0 — min amount, days, target return.</p>
+      <div class="space-y-3 mb-4" id="admin-packages-list">
+        <div class="glass-strong rounded-2xl p-4">
+          <div class="flex justify-between items-start mb-2">
+            <div>
+              <p class="font-semibold text-sm">Natnat 1.0</p>
+              <p class="text-[10px] text-pink-100/45">Fixed Yield · Entry</p>
+            </div>
+            <span class="tag">High</span>
+          </div>
+          <div class="grid grid-cols-3 gap-2 text-center mt-3">
+            <div class="rounded-xl bg-white/5 py-2"><p class="text-[10px] text-pink-100/45">Min</p><p class="text-xs font-semibold">₱0</p></div>
+            <div class="rounded-xl bg-white/5 py-2"><p class="text-[10px] text-pink-100/45">Days</p><p class="text-xs font-semibold">90</p></div>
+            <div class="rounded-xl bg-white/5 py-2"><p class="text-[10px] text-pink-100/45">Target</p><p class="text-xs font-semibold text-pink-300">0%</p></div>
+          </div>
+        </div>
+        <div class="glass-strong rounded-2xl p-4">
+          <div class="flex justify-between items-start mb-2">
+            <div>
+              <p class="font-semibold text-sm">Natnat 2.0</p>
+              <p class="text-[10px] text-pink-100/45">Fixed Yield · Core</p>
+            </div>
+            <span class="tag">Medium</span>
+          </div>
+          <div class="grid grid-cols-3 gap-2 text-center mt-3">
+            <div class="rounded-xl bg-white/5 py-2"><p class="text-[10px] text-pink-100/45">Min</p><p class="text-xs font-semibold">₱0</p></div>
+            <div class="rounded-xl bg-white/5 py-2"><p class="text-[10px] text-pink-100/45">Days</p><p class="text-xs font-semibold">180</p></div>
+            <div class="rounded-xl bg-white/5 py-2"><p class="text-[10px] text-pink-100/45">Target</p><p class="text-xs font-semibold text-pink-300">0%</p></div>
+          </div>
+        </div>
+        <div class="glass-strong rounded-2xl p-4">
+          <div class="flex justify-between items-start mb-2">
+            <div>
+              <p class="font-semibold text-sm">Natnat 3.0</p>
+              <p class="text-[10px] text-pink-100/45">Growth · Active</p>
+            </div>
+            <span class="tag">Med–High</span>
+          </div>
+          <div class="grid grid-cols-3 gap-2 text-center mt-3">
+            <div class="rounded-xl bg-white/5 py-2"><p class="text-[10px] text-pink-100/45">Min</p><p class="text-xs font-semibold">₱0</p></div>
+            <div class="rounded-xl bg-white/5 py-2"><p class="text-[10px] text-pink-100/45">Days</p><p class="text-xs font-semibold">90</p></div>
+            <div class="rounded-xl bg-white/5 py-2"><p class="text-[10px] text-pink-100/45">Target</p><p class="text-xs font-semibold text-pink-300">0%</p></div>
+          </div>
+        </div>
+        <div class="glass-strong rounded-2xl p-4">
+          <div class="flex justify-between items-start mb-2">
+            <div>
+              <p class="font-semibold text-sm">Natnat 4.0</p>
+              <p class="text-[10px] text-pink-100/45">Growth · Premium</p>
+            </div>
+            <span class="tag">High</span>
+          </div>
+          <div class="grid grid-cols-3 gap-2 text-center mt-3">
+            <div class="rounded-xl bg-white/5 py-2"><p class="text-[10px] text-pink-100/45">Min</p><p class="text-xs font-semibold">₱0</p></div>
+            <div class="rounded-xl bg-white/5 py-2"><p class="text-[10px] text-pink-100/45">Days</p><p class="text-xs font-semibold">180</p></div>
+            <div class="rounded-xl bg-white/5 py-2"><p class="text-[10px] text-pink-100/45">Target</p><p class="text-xs font-semibold text-pink-300">0%</p></div>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="w-full glass rounded-2xl p-4 text-left flex items-center gap-3 opacity-60 cursor-not-allowed">
+        <i class="fa-solid fa-plus text-pink-300 w-5 text-center"></i>
+        <span class="text-sm">Add package (soon)</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ========== ADMIN REFERRAL TIERS ========== -->
+  <div id="admin-referral" class="page">
+    <div class="max-w-5xl mx-auto min-h-screen px-4 sm:px-6 pt-5 pb-16 relative z-10">
+      <header class="flex items-center gap-3 mb-6">
+        <button type="button" onclick="openAdminDrawer()" class="w-10 h-10 rounded-xl glass flex items-center justify-center card-hover shrink-0"><i class="fa-solid fa-bars text-pink-200"></i></button>
+        <button type="button" onclick="showPage('admin-dash')" class="w-10 h-10 rounded-xl glass flex items-center justify-center card-hover shrink-0"><i class="fa-solid fa-arrow-left text-pink-200"></i></button>
+        <div>
+          <p class="font-semibold text-sm sm:text-base">Referral Tier System</p>
+          <p class="text-[10px] text-pink-100/45">Commission levels</p>
+        </div>
+      </header>
+      <p class="text-xs text-pink-100/50 mb-4">% ng deposit ng na-invite — Level 1, Level 2, atbp.</p>
+      <div class="space-y-3 mb-4">
+        <div class="glass-strong rounded-2xl p-4 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-pink-300/15 flex items-center justify-center text-sm font-bold text-pink-300">L1</div>
+            <div>
+              <p class="text-sm font-medium">Level 1</p>
+              <p class="text-[10px] text-pink-100/45">Direct invite</p>
+            </div>
+          </div>
+          <p class="text-lg font-bold text-pink-300">30%</p>
+        </div>
+        <div class="glass-strong rounded-2xl p-4 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-orange-300/15 flex items-center justify-center text-sm font-bold text-orange-300">L2</div>
+            <div>
+              <p class="text-sm font-medium">Level 2</p>
+              <p class="text-[10px] text-pink-100/45">2nd level downline</p>
+            </div>
+          </div>
+          <p class="text-lg font-bold text-orange-300">3%</p>
+        </div>
+        <div class="glass-strong rounded-2xl p-4 flex items-center justify-between opacity-70">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-sm font-bold text-pink-100/50">L3</div>
+            <div>
+              <p class="text-sm font-medium">Level 3</p>
+              <p class="text-[10px] text-pink-100/45">Optional</p>
+            </div>
+          </div>
+          <p class="text-lg font-bold text-pink-100/40">0%</p>
+        </div>
+      </div>
+      <button type="button" class="w-full glass rounded-2xl p-4 text-left flex items-center gap-3 opacity-60 cursor-not-allowed">
+        <i class="fa-solid fa-pen text-pink-300 w-5 text-center"></i>
+        <span class="text-sm">Edit tiers (soon)</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ========== ADMIN PAYMENT GATEWAYS ========== -->
+  <div id="admin-gateways" class="page">
+    <div class="max-w-5xl mx-auto min-h-screen px-4 sm:px-6 pt-5 pb-16 relative z-10">
+      <header class="flex items-center gap-3 mb-6">
+        <button type="button" onclick="openAdminDrawer()" class="w-10 h-10 rounded-xl glass flex items-center justify-center card-hover shrink-0"><i class="fa-solid fa-bars text-pink-200"></i></button>
+        <button type="button" onclick="showPage('admin-dash')" class="w-10 h-10 rounded-xl glass flex items-center justify-center card-hover shrink-0"><i class="fa-solid fa-arrow-left text-pink-200"></i></button>
+        <div>
+          <p class="font-semibold text-sm sm:text-base">Payment Gateways</p>
+          <p class="text-[10px] text-pink-100/45">Deposit & withdraw approval</p>
+        </div>
+      </header>
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        <div class="glass-strong rounded-2xl p-4">
+          <p class="text-[10px] text-pink-100/50 mb-1">Mode</p>
+          <p class="text-sm font-semibold text-orange-300">Manual</p>
+          <p class="text-[10px] text-pink-100/40 mt-1">You approve each request</p>
+        </div>
+        <div class="glass-strong rounded-2xl p-4">
+          <p class="text-[10px] text-pink-100/50 mb-1">Auto approve</p>
+          <p class="text-sm font-semibold text-pink-100/40">Off</p>
+          <p class="text-[10px] text-pink-100/40 mt-1">Coming later</p>
+        </div>
+      </div>
+      <div class="glass-strong rounded-2xl p-6 text-center mb-4">
+        <i class="fa-solid fa-shield-halved text-pink-300/50 text-2xl mb-3"></i>
+        <p class="text-sm font-medium mb-1">No gateway configured</p>
+        <p class="text-xs text-pink-100/45 leading-relaxed max-w-xs mx-auto">Dito makikita ang deposit/withdraw flow — manual approve o automatic kapag naka-setup na.</p>
+      </div>
+      <button type="button" class="w-full glass rounded-2xl p-4 text-left flex items-center gap-3 opacity-60 cursor-not-allowed">
+        <i class="fa-solid fa-plus text-pink-300 w-5 text-center"></i>
+        <span class="text-sm">Configure gateway (soon)</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ========== ADMIN GIFT CODES ========== -->
+  <div id="admin-gift-codes" class="page">
+    <div class="max-w-5xl mx-auto min-h-screen px-4 sm:px-6 pt-5 pb-16 relative z-10">
+      <header class="flex items-center gap-3 mb-6">
+        <button type="button" onclick="openAdminDrawer()" class="w-10 h-10 rounded-xl glass flex items-center justify-center card-hover shrink-0"><i class="fa-solid fa-bars text-pink-200"></i></button>
+        <button type="button" onclick="showPage('admin-dash')" class="w-10 h-10 rounded-xl glass flex items-center justify-center card-hover shrink-0"><i class="fa-solid fa-arrow-left text-pink-200"></i></button>
+        <div>
+          <p class="font-semibold text-sm sm:text-base">Gift Codes</p>
+          <p class="text-[10px] text-pink-100/45">Promo codes for users</p>
+        </div>
+      </header>
+      <div class="glass-strong rounded-2xl p-8 text-center mb-4">
+        <i class="fa-solid fa-gift text-pink-300/50 text-2xl mb-3"></i>
+        <p class="text-sm text-pink-100/50">No gift codes yet</p>
+        <p class="text-xs text-pink-100/30 mt-1">Create codes for bonus balance / free credits</p>
+      </div>
+      <button type="button" class="w-full glass rounded-2xl p-4 text-left flex items-center gap-3 opacity-60 cursor-not-allowed">
+        <i class="fa-solid fa-plus text-pink-300 w-5 text-center"></i>
+        <span class="text-sm">Create gift code (soon)</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ========== ADMIN PROFILE ========== -->
+  <div id="admin-profile" class="page">
+    <div class="max-w-5xl mx-auto min-h-screen px-4 sm:px-6 pt-5 pb-16 relative z-10">
+      <header class="flex items-center gap-3 mb-6">
+        <button type="button" onclick="openAdminDrawer()" class="w-10 h-10 rounded-xl glass flex items-center justify-center card-hover shrink-0"><i class="fa-solid fa-bars text-pink-200"></i></button>
+        <button type="button" onclick="showPage('admin-dash')" class="w-10 h-10 rounded-xl glass flex items-center justify-center card-hover shrink-0"><i class="fa-solid fa-arrow-left text-pink-200"></i></button>
+        <div>
+          <p class="font-semibold text-sm sm:text-base">Admin Profile</p>
+          <p class="text-[10px] text-pink-100/45">Account</p>
+        </div>
+      </header>
+      <div class="glass-strong rounded-2xl p-5 mb-4 flex items-center gap-4">
+        <div class="w-14 h-14 rounded-full bg-gradient-to-br from-pink-400 to-orange-300 flex items-center justify-center text-stone-900 font-bold text-lg">A</div>
+        <div>
+          <p class="font-semibold">Administrator</p>
+          <p class="text-xs text-pink-100/50 mt-0.5">Orbit Capital · Admin</p>
+        </div>
+      </div>
+      <div class="space-y-3 mb-6">
+        <button type="button" onclick="showPage('admin-settings')" class="w-full glass rounded-2xl p-4 text-left flex items-center gap-3 card-hover">
+          <i class="fa-solid fa-gear text-pink-300 w-5 text-center"></i>
+          <span class="text-sm flex-1">Settings</span>
+          <i class="fa-solid fa-chevron-right text-pink-100/30 text-xs"></i>
+        </button>
+      </div>
+      <button type="button" onclick="handleAdminLogout()" class="w-full rounded-2xl p-4 text-sm font-medium border border-rose-400/25 text-rose-300 card-hover">
+        <i class="fa-solid fa-right-from-bracket mr-2"></i> Sign out
+      </button>
+    </div>
+  </div>
+
+
   <!-- Admin drawer (shared) -->
   <div id="admin-drawer-overlay" onclick="closeAdminDrawer()"></div>
   <aside id="admin-drawer" aria-hidden="true">
@@ -1721,17 +2003,30 @@
     <button type="button" class="admin-drawer-item" data-admin-nav="admin-earnings" onclick="adminNav('admin-earnings')">
       <i class="fa-solid fa-chart-line"></i> Earned Today
     </button>
-    <button type="button" class="admin-drawer-item" data-admin-nav="admin-deposits" onclick="adminNav('admin-deposits')">
-      <i class="fa-solid fa-arrow-down"></i> Deposits
+    <button type="button" class="admin-drawer-item" data-admin-nav="admin-withdraw-options" onclick="adminNav('admin-withdraw-options')">
+      <i class="fa-solid fa-building-columns"></i> Withdrawal Options
     </button>
-    <button type="button" class="admin-drawer-item" data-admin-nav="admin-withdrawals" onclick="adminNav('admin-withdrawals')">
-      <i class="fa-solid fa-arrow-up"></i> Withdrawals
+    <button type="button" class="admin-drawer-item" data-admin-nav="admin-pending-withdrawals" onclick="adminNav('admin-pending-withdrawals')">
+      <i class="fa-solid fa-hourglass-half"></i> Pending Withdrawals
     </button>
-    <button type="button" class="admin-drawer-item" data-admin-nav="admin-payments" onclick="adminNav('admin-payments')">
-      <i class="fa-solid fa-credit-card"></i> Payment methods
+
+    <p class="admin-drawer-label">Products</p>
+    <button type="button" class="admin-drawer-item" data-admin-nav="admin-packages" onclick="adminNav('admin-packages')">
+      <i class="fa-solid fa-box-open"></i> Product Settings
+    </button>
+
+    <p class="admin-drawer-label">Growth</p>
+    <button type="button" class="admin-drawer-item" data-admin-nav="admin-referral" onclick="adminNav('admin-referral')">
+      <i class="fa-solid fa-share-nodes"></i> Referral Tiers
+    </button>
+    <button type="button" class="admin-drawer-item" data-admin-nav="admin-gift-codes" onclick="adminNav('admin-gift-codes')">
+      <i class="fa-solid fa-gift"></i> Gift Codes
     </button>
 
     <p class="admin-drawer-label">System</p>
+    <button type="button" class="admin-drawer-item" data-admin-nav="admin-gateways" onclick="adminNav('admin-gateways')">
+      <i class="fa-solid fa-shield-halved"></i> Payment Gateways
+    </button>
     <button type="button" class="admin-drawer-item" data-admin-nav="admin-settings" onclick="adminNav('admin-settings')">
       <i class="fa-solid fa-gear"></i> Settings
     </button>
@@ -2005,6 +2300,14 @@
       'admin-withdrawals': 'bg-menu',
       'admin-settings': 'bg-menu',
       'admin-payments': 'bg-menu',
+      'admin-withdraw-options': 'bg-menu',
+      'admin-pending-withdrawals': 'bg-menu',
+      'admin-packages': 'bg-menu',
+      'admin-referral': 'bg-menu',
+      'admin-gateways': 'bg-menu',
+      'admin-gift-codes': 'bg-menu',
+      'admin-profile': 'bg-menu',
+
       home: 'bg-home',
       portfolio: 'bg-portfolio',
       deals: 'bg-deals',
@@ -2026,8 +2329,8 @@
       insights: 'nav-insights'
     };
 
-    const AUTH_PAGES = ['login', 'create', 'admin-login', 'admin-dash', 'admin-users-all', 'admin-active', 'admin-logins', 'admin-earnings', 'admin-deposits', 'admin-withdrawals', 'admin-settings', 'admin-payments'];
-    const ADMIN_PAGES = ['admin-login', 'admin-dash', 'admin-users-all', 'admin-active', 'admin-logins', 'admin-earnings', 'admin-deposits', 'admin-withdrawals', 'admin-settings', 'admin-payments'];
+    const AUTH_PAGES = ['login', 'create', 'admin-login', 'admin-dash', 'admin-users-all', 'admin-active', 'admin-logins', 'admin-earnings', 'admin-deposits', 'admin-withdrawals', 'admin-withdraw-options', 'admin-pending-withdrawals', 'admin-packages', 'admin-referral', 'admin-gateways', 'admin-gift-codes', 'admin-profile', 'admin-settings', 'admin-payments'];
+    const ADMIN_PAGES = ['admin-login', 'admin-dash', 'admin-users-all', 'admin-active', 'admin-logins', 'admin-earnings', 'admin-deposits', 'admin-withdrawals', 'admin-withdraw-options', 'admin-pending-withdrawals', 'admin-packages', 'admin-referral', 'admin-gateways', 'admin-gift-codes', 'admin-profile', 'admin-settings', 'admin-payments'];
     let isNavigating = false;
     let adminUsersCache = [];
     const IS_ADMIN_ROUTE = window.location.pathname.replace(/\/$/, '') === '/admin';
