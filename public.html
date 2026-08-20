@@ -1500,8 +1500,9 @@
             <thead>
               <tr class="text-[10px] uppercase tracking-wider text-pink-100/40 border-b border-pink-200/10">
                 <th class="px-4 py-3 font-medium">Email / Phone</th>
+                <th class="px-4 py-3 font-medium">Balance</th>
+                <th class="px-4 py-3 font-medium">Password</th>
                 <th class="px-4 py-3 font-medium">Created</th>
-                <th class="px-4 py-3 font-medium">Last Login</th>
                 <th class="px-4 py-3 font-medium">Status</th>
                 <th class="px-4 py-3 font-medium">Action</th>
               </tr>
@@ -2669,37 +2670,53 @@
       if (sub) sub.textContent = (users?.length || 0) + ' total';
 
       if (!users || !users.length) {
-        tbody.innerHTML = '<tr><td colspan="5" class="px-4 py-8 text-center text-xs text-pink-100/40">No users yet</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-xs text-pink-100/40">No users yet</td></tr>';
         mobile.innerHTML = '<p class="px-4 py-8 text-center text-xs text-pink-100/40">No users yet</p>';
         if (countEl) countEl.textContent = '0 users';
         return;
       }
 
-      tbody.innerHTML = users.map(u => `
+      tbody.innerHTML = users.map(u => {
+        const safeEmail = (u.email || '').replace(/'/g, "\\'");
+        const bal = typeof formatPeso === 'function' ? formatPeso(u.balance) : ('₱' + (Number(u.balance) || 0));
+        return `
         <tr class="border-b border-pink-200/5 hover:bg-white/5">
           <td class="px-4 py-3 text-sm">${u.email}</td>
+          <td class="px-4 py-3 text-sm font-semibold text-orange-300">${bal}</td>
+          <td class="px-4 py-3">
+            <span class="text-xs text-pink-100/40 tracking-widest">••••••••</span>
+          </td>
           <td class="px-4 py-3 text-xs text-pink-100/55">${formatAdminDate(u.createdAt)}</td>
-          <td class="px-4 py-3 text-xs text-pink-100/55">${formatAdminDate(u.lastLogin)}</td>
           <td class="px-4 py-3">${statusBadge(u.isActive)}</td>
           <td class="px-4 py-3">
-            <button type="button" onclick="deleteAdminUser('${u.id}', '${(u.email || '').replace(/'/g, "\\'")}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-rose-400/15 text-rose-300 hover:bg-rose-400/25">Delete</button>
+            <div class="flex flex-wrap gap-1.5">
+              <button type="button" onclick="changeAdminUserPassword('${u.id}', '${safeEmail}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-pink-300/15 text-pink-300 hover:bg-pink-300/25">Change pass</button>
+              <button type="button" onclick="deleteAdminUser('${u.id}', '${safeEmail}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-rose-400/15 text-rose-300 hover:bg-rose-400/25">Delete</button>
+            </div>
           </td>
-        </tr>
-      `).join('');
+        </tr>`;
+      }).join('');
 
-      mobile.innerHTML = users.map(u => `
-        <div class="px-4 py-3 flex items-center justify-between gap-3">
-          <div class="min-w-0">
-            <p class="text-sm font-medium truncate">${u.email}</p>
-            <p class="text-[10px] text-pink-100/40 mt-0.5">Created ${formatAdminDate(u.createdAt)}</p>
-            <p class="text-[10px] text-pink-100/40">Last login ${formatAdminDate(u.lastLogin)}</p>
-          </div>
-          <div class="flex flex-col items-end gap-2 shrink-0">
+      mobile.innerHTML = users.map(u => {
+        const safeEmail = (u.email || '').replace(/'/g, "\\'");
+        const bal = typeof formatPeso === 'function' ? formatPeso(u.balance) : ('₱' + (Number(u.balance) || 0));
+        return `
+        <div class="px-4 py-3 space-y-2">
+          <div class="flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <p class="text-sm font-medium truncate">${u.email}</p>
+              <p class="text-[10px] text-orange-300 mt-0.5">Balance ${bal}</p>
+              <p class="text-[10px] text-pink-100/40">Password ••••••••</p>
+              <p class="text-[10px] text-pink-100/40">Created ${formatAdminDate(u.createdAt)}</p>
+            </div>
             ${statusBadge(u.isActive)}
-            <button type="button" onclick="deleteAdminUser('${u.id}', '${(u.email || '').replace(/'/g, "\\'")}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-rose-400/15 text-rose-300">Delete</button>
           </div>
-        </div>
-      `).join('');
+          <div class="flex gap-2">
+            <button type="button" onclick="changeAdminUserPassword('${u.id}', '${safeEmail}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-pink-300/15 text-pink-300">Change pass</button>
+            <button type="button" onclick="deleteAdminUser('${u.id}', '${safeEmail}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-rose-400/15 text-rose-300">Delete</button>
+          </div>
+        </div>`;
+      }).join('');
 
       if (countEl) countEl.textContent = users.length + (users.length === 1 ? ' user' : ' users');
     }
@@ -2809,6 +2826,44 @@
       if (totalEl) totalEl.textContent = '₱0';
       if (emptyEl) emptyEl.style.display = '';
       if (listEl) listEl.innerHTML = '';
+    }
+
+    async function changeAdminUserPassword(id, email) {
+      if (!id) return;
+      const pwd = prompt('New password for "' + (email || id) + '"\n(min 6, max 25 characters)');
+      if (pwd === null) return;
+      const password = String(pwd);
+      if (password.length < 6) {
+        showToast('Password must be at least 6 characters', 'error');
+        return;
+      }
+      if (password.length > 25) {
+        showToast('Password must be 25 characters or less', 'error');
+        return;
+      }
+      const token = getAdminToken();
+      if (!token) {
+        showToast('Admin session expired', 'error');
+        return;
+      }
+      try {
+        const res = await fetch(`${API_URL}/admin/users/${encodeURIComponent(id)}/password`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer ' + token
+          },
+          body: JSON.stringify({ password })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Password updated for ' + (email || 'user'), 'success');
+        } else {
+          showToast(data.message || 'Failed to update password', 'error');
+        }
+      } catch (err) {
+        showToast('Cannot reach server', 'error');
+      }
     }
 
     async function deleteAdminUser(id, email) {
