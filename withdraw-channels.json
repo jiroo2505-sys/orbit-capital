@@ -1,0 +1,57 @@
+[
+  {
+    "id": "gcash",
+    "name": "GCash",
+    "type": "ewallet",
+    "description": "Mobile number + account name",
+    "enabled": true,
+    "sort": 1,
+    "taxPercent": 0,
+    "minAmount": 0,
+    "maxAmount": 0
+  },
+  {
+    "id": "maya",
+    "name": "Maya",
+    "type": "ewallet",
+    "description": "Mobile number + account name",
+    "enabled": true,
+    "sort": 2,
+    "taxPercent": 0,
+    "minAmount": 0,
+    "maxAmount": 0
+  },
+  {
+    "id": "gotyme",
+    "name": "GoTyme",
+    "type": "bank",
+    "description": "GoTyme Bank · account name + number",
+    "enabled": true,
+    "sort": 3,
+    "taxPercent": 0,
+    "minAmount": 0,
+    "maxAmount": 0
+  },
+  {
+    "id": "cimb",
+    "name": "CIMB",
+    "type": "bank",
+    "description": "CIMB Bank PH · account name + number",
+    "enabled": true,
+    "sort": 4,
+    "taxPercent": 0,
+    "minAmount": 0,
+    "maxAmount": 0
+  },
+  {
+    "id": "seabank",
+    "name": "SeaBank PH",
+    "type": "bank",
+    "description": "SeaBank · account name + number",
+    "enabled": true,
+    "sort": 5,
+    "taxPercent": 0,
+    "minAmount": 0,
+    "maxAmount": 0
+  }
+]
