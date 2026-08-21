@@ -484,116 +484,6 @@
       box-shadow: 0 0 0 3px rgba(249, 168, 212, 0.18) !important;
     }
 
-    /* ===== Custom confirm modal (Ban / Unban) ===== */
-    #confirm-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 10050;
-      background: rgba(12, 4, 10, 0.62);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.22s ease;
-    }
-    #confirm-overlay.open {
-      opacity: 1;
-      pointer-events: auto;
-    }
-    #confirm-modal {
-      width: min(340px, 100%);
-      border-radius: 24px;
-      background: linear-gradient(165deg, rgba(55, 18, 38, 0.97), rgba(28, 8, 20, 0.98));
-      border: 1px solid rgba(249, 168, 212, 0.28);
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), 0 0 40px rgba(249, 168, 212, 0.08);
-      padding: 22px 20px 18px;
-      transform: scale(0.88) translateY(12px);
-      opacity: 0;
-      transition: transform 0.28s cubic-bezier(0.34, 1.45, 0.64, 1), opacity 0.22s ease;
-    }
-    #confirm-overlay.open #confirm-modal {
-      transform: scale(1) translateY(0);
-      opacity: 1;
-    }
-    #confirm-modal .confirm-icon-wrap {
-      width: 52px;
-      height: 52px;
-      border-radius: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 14px;
-      font-size: 22px;
-    }
-    #confirm-modal.mode-ban .confirm-icon-wrap {
-      background: rgba(244, 63, 94, 0.15);
-      color: #fda4af;
-      box-shadow: 0 0 24px rgba(244, 63, 94, 0.2);
-    }
-    #confirm-modal.mode-unban .confirm-icon-wrap {
-      background: rgba(52, 211, 153, 0.15);
-      color: #6ee7b7;
-      box-shadow: 0 0 24px rgba(52, 211, 153, 0.18);
-    }
-    #confirm-modal .confirm-title {
-      text-align: center;
-      font-size: 16px;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: 6px;
-    }
-    #confirm-modal .confirm-email {
-      text-align: center;
-      font-size: 13px;
-      font-weight: 600;
-      color: #f9a8d4;
-      margin-bottom: 8px;
-      word-break: break-all;
-    }
-    #confirm-modal .confirm-desc {
-      text-align: center;
-      font-size: 12px;
-      line-height: 1.45;
-      color: rgba(255, 230, 240, 0.55);
-      margin-bottom: 20px;
-    }
-    #confirm-modal .confirm-actions {
-      display: flex;
-      gap: 10px;
-    }
-    #confirm-modal .confirm-btn {
-      flex: 1;
-      border: none;
-      border-radius: 14px;
-      padding: 12px 14px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
-    }
-    #confirm-modal .confirm-btn:active {
-      transform: scale(0.96);
-    }
-    #confirm-modal .confirm-btn-cancel {
-      background: rgba(255, 220, 230, 0.1);
-      border: 1px solid rgba(255, 190, 205, 0.2);
-      color: rgba(255, 230, 240, 0.85);
-    }
-    #confirm-modal .confirm-btn-ok {
-      color: #1c1917;
-    }
-    #confirm-modal.mode-ban .confirm-btn-ok {
-      background: linear-gradient(to right, #fb7185, #f43f5e);
-      box-shadow: 0 8px 22px rgba(244, 63, 94, 0.35);
-    }
-    #confirm-modal.mode-unban .confirm-btn-ok {
-      background: linear-gradient(to right, #f9a8d4, #fdba74);
-      box-shadow: 0 8px 22px rgba(249, 168, 212, 0.35);
-    }
 
     /* ===== Ban / access toggle switch (compact + smooth) ===== */
     .ban-toggle {
@@ -752,22 +642,6 @@
   <div id="toast">
     <i class="toast-icon fa-solid fa-circle-exclamation"></i>
     <span class="toast-msg"></span>
-  </div>
-
-  <!-- Custom confirm modal (Ban / Unban) -->
-  <div id="confirm-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-title" onclick="if(event.target===this)closeConfirmModal(false)">
-    <div id="confirm-modal" class="mode-ban">
-      <div class="confirm-icon-wrap">
-        <i id="confirm-icon" class="fa-solid fa-user-slash"></i>
-      </div>
-      <p id="confirm-title" class="confirm-title">Deactivate user?</p>
-      <p id="confirm-email" class="confirm-email"></p>
-      <p id="confirm-desc" class="confirm-desc">They will not be able to log in. Account data is kept.</p>
-      <div class="confirm-actions">
-        <button type="button" class="confirm-btn confirm-btn-cancel" onclick="closeConfirmModal(false)">Cancel</button>
-        <button type="button" id="confirm-ok-btn" class="confirm-btn confirm-btn-ok" onclick="closeConfirmModal(true)">Deactivate</button>
-      </div>
-    </div>
   </div>
 
   <!-- ========== LOGIN ========== -->
@@ -2993,45 +2867,6 @@
       if (countEl) countEl.textContent = users.length + (users.length === 1 ? ' user today' : ' users today');
     }
 
-    function filterAdminUsers() {
-      const q = (document.getElementById('admin-search')?.value || '').toLowerCase().trim();
-      const todayOnly = (adminUsersCache || []).filter(u => isCreatedTodayPH(u.createdAt));
-      const filtered = !q ? todayOnly : todayOnly.filter(u => (u.email || '').toLowerCase().includes(q));
-      // Pass already-filtered list; renderAdminUsers will filter today again (safe)
-      const tbody = document.getElementById('admin-users-tbody');
-      const mobile = document.getElementById('admin-users-mobile');
-      const countEl = document.getElementById('admin-users-count');
-      if (!tbody || !mobile) return;
-      if (!filtered.length) {
-        tbody.innerHTML = '<tr><td colspan="5" class="px-4 py-8 text-center text-xs text-pink-100/40">No matches today</td></tr>';
-        mobile.innerHTML = '<p class="px-4 py-8 text-center text-xs text-pink-100/40">No matches today</p>';
-        if (countEl) countEl.textContent = '0 users today';
-        return;
-      }
-      tbody.innerHTML = filtered.map(u => `
-        <tr class="border-b border-pink-200/5 hover:bg-white/5">
-          <td class="px-4 py-3 text-sm">${u.email}</td>
-          <td class="px-4 py-3 text-xs text-pink-100/55">${formatAdminDate(u.createdAt)}</td>
-          <td class="px-4 py-3 text-xs text-pink-100/55">${formatAdminDate(u.lastLogin)}</td>
-          <td class="px-4 py-3">${statusBadge(u.isActive, u.status)}</td>
-          <td class="px-4 py-3">${banToggleHtml(u.id, u.email, u.status === 'banned')}</td>
-        </tr>
-      `).join('');
-      mobile.innerHTML = filtered.map(u => `
-        <div class="px-4 py-3 flex items-center justify-between gap-3">
-          <div class="min-w-0">
-            <p class="text-sm font-medium truncate">${u.email}</p>
-            <p class="text-[10px] text-pink-100/40 mt-0.5">Created ${formatAdminDate(u.createdAt)}</p>
-          </div>
-          <div class="flex flex-col items-end gap-2 shrink-0">
-            ${statusBadge(u.isActive, u.status)}
-            ${banToggleHtml(u.id, u.email, u.status === 'banned')}
-          </div>
-        </div>
-      `).join('');
-      if (countEl) countEl.textContent = filtered.length + (filtered.length === 1 ? ' user today' : ' users today');
-    }
-
     function renderAdminAllUsers(users) {
       const tbody = document.getElementById('admin-all-users-tbody');
       const mobile = document.getElementById('admin-all-users-mobile');
@@ -3102,17 +2937,6 @@
     }
 
     let adminActivityCache = [];
-
-    function buildLast7DaysPH() {
-      const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Manila', year: 'numeric', month: '2-digit', day: '2-digit' });
-      const labelFmt = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Manila', month: 'short', day: 'numeric' });
-      const days = [];
-      for (let i = 6; i >= 0; i--) {
-        const d = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
-        days.push({ key: fmt.format(d), label: labelFmt.format(d) });
-      }
-      return days;
-    }
 
     function renderAdminChart() {
       const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Manila', year: 'numeric', month: '2-digit', day: '2-digit' });
@@ -3252,51 +3076,6 @@
       }
     }
 
-    // ===== Custom confirm modal (theme-matched, animated) =====
-    let confirmModalResolve = null;
-
-    function openConfirmModal(opts) {
-      const overlay = document.getElementById('confirm-overlay');
-      const modal = document.getElementById('confirm-modal');
-      const icon = document.getElementById('confirm-icon');
-      const title = document.getElementById('confirm-title');
-      const emailEl = document.getElementById('confirm-email');
-      const desc = document.getElementById('confirm-desc');
-      const okBtn = document.getElementById('confirm-ok-btn');
-      if (!overlay || !modal) return Promise.resolve(false);
-
-      const mode = opts.mode === 'unban' ? 'unban' : 'ban';
-      modal.classList.remove('mode-ban', 'mode-unban');
-      modal.classList.add(mode === 'unban' ? 'mode-unban' : 'mode-ban');
-
-      if (icon) {
-        icon.className = 'fa-solid ' + (mode === 'unban' ? 'fa-user-check' : 'fa-user-slash');
-      }
-      if (title) title.textContent = opts.title || (mode === 'unban' ? 'Reactivate user?' : 'Deactivate user?');
-      if (emailEl) emailEl.textContent = opts.email || '';
-      if (desc) {
-        desc.textContent = opts.desc || (mode === 'unban'
-          ? 'They will be able to log in again.'
-          : 'They will not be able to log in. Account data is kept.');
-      }
-      if (okBtn) okBtn.textContent = opts.okLabel || (mode === 'unban' ? 'Reactivate' : 'Deactivate');
-
-      overlay.classList.add('open');
-      return new Promise((resolve) => {
-        confirmModalResolve = resolve;
-      });
-    }
-
-    function closeConfirmModal(result) {
-      const overlay = document.getElementById('confirm-overlay');
-      if (overlay) overlay.classList.remove('open');
-      if (confirmModalResolve) {
-        const r = confirmModalResolve;
-        confirmModalResolve = null;
-        r(!!result);
-      }
-    }
-
     // ========== WITHDRAW CHANNELS (admin) ==========
     let adminChannelsCache = [];
 
@@ -3324,15 +3103,6 @@
       }
       if (key.includes('seabank') || key.includes('sea bank')) {
         return { id: 'seabank', domain: 'seabank.ph', bg: '#FFFFFF', alt: 'SeaBank PH', fb: 'SeaBank', fbColor: '#EE4D2D', img: 'data:image/jpeg;base64,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' };
-      }
-      if (key.includes('tonik')) {
-        return { id: 'tonik', domain: 'tonikbank.com', bg: '#FFFFFF', alt: 'Tonik', fb: 'Tonik', fbColor: '#6C3CE1' };
-      }
-      if (key.includes('komo')) {
-        return { id: 'komo', domain: 'komo.com.ph', bg: '#FFFFFF', alt: 'Komo', fb: 'Komo', fbColor: '#00A651' };
-      }
-      if (key.includes('unionbank') || key.includes('union bank')) {
-        return { id: 'unionbank', domain: 'unionbankph.com', bg: '#FFFFFF', alt: 'UnionBank', fb: 'UB', fbColor: '#E31837' };
       }
       return null;
     }
@@ -4003,11 +3773,9 @@
             activeEl &&
             activeEl.tagName === 'INPUT' &&
             (activeEl.id === 'admin-all-search' ||
-              activeEl.id === 'admin-search' ||
               (activeEl.id && activeEl.id.indexOf('pwd-input') === 0));
-          const modalOpen = document.getElementById('confirm-overlay')?.classList.contains('open');
 
-          if (!adminActionBusy && !typingInAdmin && !modalOpen) {
+          if (!adminActionBusy && !typingInAdmin) {
             renderAdminUsers(adminUsersCache);
             if (document.getElementById('admin-users-all')?.classList.contains('active')) {
               const q = (document.getElementById('admin-all-search')?.value || '').trim().toLowerCase();
