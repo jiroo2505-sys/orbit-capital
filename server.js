@@ -12,6 +12,7 @@ const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH || '$2a$10$MfigfcUcx
 const USERS_FILE = path.join(__dirname, 'users.json');
 const ACTIVITY_FILE = path.join(__dirname, 'activity.json');
 const CHANNELS_FILE = path.join(__dirname, 'withdraw-channels.json');
+const PRODUCTS_FILE = path.join(__dirname, 'products.json');
 
 // Middleware
 app.use(cors({ origin: true, credentials: true }));
@@ -168,6 +169,49 @@ function defaultChannels() {
       ...base
     }
   ];
+}
+
+function loadProducts() {
+  try {
+    if (fs.existsSync(PRODUCTS_FILE)) {
+      return JSON.parse(fs.readFileSync(PRODUCTS_FILE, 'utf8'));
+    }
+  } catch (err) {
+    console.error('Error loading products:', err.message);
+  }
+  return null;
+}
+
+function saveProducts(products) {
+  fs.writeFileSync(PRODUCTS_FILE, JSON.stringify(products, null, 2));
+}
+
+function defaultProducts() {
+  // No sample data — Deals page starts empty until admin adds packages
+  // in Product Settings. Products only appear once created there.
+  return [];
+}
+
+function ensureProducts() {
+  let products = loadProducts();
+  if (!products || !Array.isArray(products)) {
+    // File missing/corrupt only — start empty, do NOT re-seed if admin
+    // legitimately deleted everything (an empty array is a valid state).
+    products = defaultProducts();
+    saveProducts(products);
+    return products;
+  }
+  // Backfill any missing fields on older records
+  let changed = false;
+  for (const p of products) {
+    if (typeof p.enabled !== 'boolean') { p.enabled = true; changed = true; }
+    if (typeof p.sort !== 'number') { p.sort = 0; changed = true; }
+    if (typeof p.minAmount !== 'number' || Number.isNaN(p.minAmount)) { p.minAmount = 0; changed = true; }
+    if (typeof p.days !== 'number' || Number.isNaN(p.days)) { p.days = 0; changed = true; }
+    if (typeof p.targetPercent !== 'number' || Number.isNaN(p.targetPercent)) { p.targetPercent = 0; changed = true; }
+  }
+  if (changed) saveProducts(products);
+  return products;
 }
 
 function ensureChannels() {
@@ -833,6 +877,140 @@ app.delete('/api/admin/withdraw-channels/:id', adminMiddleware, (req, res) => {
   }
 });
 
+// ========== PRODUCTS / PACKAGES (admin-managed, shown on main-site Deals page) ==========
+// Public: only enabled products, for the Deals page
+app.get('/api/products', (req, res) => {
+  try {
+    const products = ensureProducts()
+      .filter(p => p.enabled)
+      .sort((a, b) => (a.sort || 0) - (b.sort || 0));
+    res.json({ success: true, products });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+app.get('/api/admin/products', adminMiddleware, (req, res) => {
+  try {
+    const products = ensureProducts().sort((a, b) => (a.sort || 0) - (b.sort || 0));
+    res.json({ success: true, products });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+function validateProductBody(body) {
+  const name = (body.name || '').toString().trim();
+  if (!name) return 'Product name is required';
+  const minAmount = Number(body.minAmount);
+  const days = Number(body.days);
+  const targetPercent = Number(body.targetPercent);
+  if (!Number.isFinite(minAmount) || minAmount < 0) return 'Min amount must be ≥ 0';
+  if (!Number.isFinite(days) || days < 0) return 'Days must be ≥ 0';
+  if (!Number.isFinite(targetPercent) || targetPercent < 0 || targetPercent > 100) return 'Target % must be 0–100';
+  return null;
+}
+
+app.post('/api/admin/products', adminMiddleware, (req, res) => {
+  try {
+    const body = req.body || {};
+    const err = validateProductBody(body);
+    if (err) return res.status(400).json({ success: false, message: err });
+
+    const products = ensureProducts();
+    const name = String(body.name).trim();
+    const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + Date.now().toString(36);
+    const product = {
+      id,
+      name,
+      subtitle: (body.subtitle || '').toString().trim(),
+      tag: (body.tag || '').toString().trim() || 'Medium',
+      description: (body.description || '').toString().trim(),
+      minAmount: Math.floor(Number(body.minAmount)),
+      days: Math.floor(Number(body.days)),
+      targetPercent: Math.round(Number(body.targetPercent) * 100) / 100,
+      image: (body.image || '').toString().trim(),
+      enabled: body.enabled !== false,
+      sort: products.length + 1
+    };
+    products.push(product);
+    saveProducts(products);
+    logActivity('admin_product_add', 'admin', { productId: id, name: product.name });
+    notifyAdmins('update', { productsChanged: true });
+    res.status(201).json({ success: true, product, products });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+app.put('/api/admin/products/:id', adminMiddleware, (req, res) => {
+  try {
+    const id = req.params.id;
+    const products = ensureProducts();
+    const p = products.find(x => x.id === id);
+    if (!p) return res.status(404).json({ success: false, message: 'Product not found' });
+
+    const body = req.body || {};
+    const err = validateProductBody(body);
+    if (err) return res.status(400).json({ success: false, message: err });
+
+    p.name = String(body.name).trim();
+    p.subtitle = (body.subtitle || '').toString().trim();
+    p.tag = (body.tag || '').toString().trim() || 'Medium';
+    p.description = (body.description || '').toString().trim();
+    p.minAmount = Math.floor(Number(body.minAmount));
+    p.days = Math.floor(Number(body.days));
+    p.targetPercent = Math.round(Number(body.targetPercent) * 100) / 100;
+    p.image = (body.image || '').toString().trim();
+    if (typeof body.enabled === 'boolean') p.enabled = body.enabled;
+
+    saveProducts(products);
+    logActivity('admin_product_update', 'admin', { productId: id, name: p.name });
+    notifyAdmins('update', { productsChanged: true });
+    res.json({ success: true, product: p, products });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+app.post('/api/admin/products/:id/toggle', adminMiddleware, (req, res) => {
+  try {
+    const id = req.params.id;
+    const products = ensureProducts();
+    const p = products.find(x => x.id === id);
+    if (!p) return res.status(404).json({ success: false, message: 'Product not found' });
+    p.enabled = !p.enabled;
+    saveProducts(products);
+    logActivity('admin_product_toggle', 'admin', { productId: id, enabled: p.enabled });
+    notifyAdmins('update', { productsChanged: true });
+    res.json({ success: true, product: p, products });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+app.delete('/api/admin/products/:id', adminMiddleware, (req, res) => {
+  try {
+    const id = req.params.id;
+    let products = ensureProducts();
+    const before = products.length;
+    products = products.filter(p => p.id !== id);
+    if (products.length === before) return res.status(404).json({ success: false, message: 'Product not found' });
+    saveProducts(products);
+    logActivity('admin_product_delete', 'admin', { productId: id });
+    notifyAdmins('update', { productsChanged: true });
+    res.json({ success: true, products });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // Start server — listen on 0.0.0.0 so phone / other devices can connect
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n🚀 Orbit Capital running!`);
@@ -850,5 +1028,10 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`   GET  /api/admin/stats`);
   console.log(`   GET  /api/admin/activity`);
   console.log(`   GET  /api/admin/withdraw-channels`);
+  console.log(`   GET  /api/products`);
+  console.log(`   GET  /api/admin/products`);
+  console.log(`   POST /api/admin/products`);
+  console.log(`   PUT  /api/admin/products/:id`);
+  console.log(`   DELETE /api/admin/products/:id`);
   console.log(`   POST /api/admin/users/:id/password\n`);
 });
