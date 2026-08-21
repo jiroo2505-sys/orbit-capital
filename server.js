@@ -8,7 +8,7 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'orbit-capital-secret-change-this-in-production';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'honda12345';
+const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH || '$2a$10$MfigfcUcx/Lh3Jl3gEza..U5RY32128wY1lkNvWPh/zk3jS.Ynmv6';
 const USERS_FILE = path.join(__dirname, 'users.json');
 const ACTIVITY_FILE = path.join(__dirname, 'activity.json');
 const CHANNELS_FILE = path.join(__dirname, 'withdraw-channels.json');
@@ -479,13 +479,14 @@ app.get('/api/notifications/count', authMiddleware, (req, res) => {
 });
 
 // ========== ADMIN ==========
-app.post('/api/admin/login', (req, res) => {
+app.post('/api/admin/login', async (req, res) => {
   try {
     const { password } = req.body;
     if (!password) {
       return res.status(400).json({ success: false, message: 'Password is required' });
     }
-    if (password !== ADMIN_PASSWORD) {
+    const passwordMatches = await bcrypt.compare(password, ADMIN_PASSWORD_HASH);
+    if (!passwordMatches) {
       logActivity('admin_login_failed', null);
       return res.status(401).json({ success: false, message: 'Invalid admin password' });
     }
