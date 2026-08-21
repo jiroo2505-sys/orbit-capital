@@ -271,6 +271,17 @@
     input[type="password"]::-ms-clear {
       display: none !important;
     }
+
+    /* Hide number input spinner arrows (white +/- controls) */
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none !important;
+      margin: 0;
+    }
+    input[type="number"] {
+      -moz-appearance: textfield;
+      appearance: textfield;
+    }
     input[type="password"]::-webkit-credentials-auto-fill-button,
     input[type="password"]::-webkit-contacts-auto-fill-button {
       visibility: hidden;
@@ -472,6 +483,241 @@
       border-color: rgba(249, 168, 212, 0.75) !important;
       box-shadow: 0 0 0 3px rgba(249, 168, 212, 0.18) !important;
     }
+
+    /* ===== Custom confirm modal (Ban / Unban) ===== */
+    #confirm-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 10050;
+      background: rgba(12, 4, 10, 0.62);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s ease;
+    }
+    #confirm-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #confirm-modal {
+      width: min(340px, 100%);
+      border-radius: 24px;
+      background: linear-gradient(165deg, rgba(55, 18, 38, 0.97), rgba(28, 8, 20, 0.98));
+      border: 1px solid rgba(249, 168, 212, 0.28);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), 0 0 40px rgba(249, 168, 212, 0.08);
+      padding: 22px 20px 18px;
+      transform: scale(0.88) translateY(12px);
+      opacity: 0;
+      transition: transform 0.28s cubic-bezier(0.34, 1.45, 0.64, 1), opacity 0.22s ease;
+    }
+    #confirm-overlay.open #confirm-modal {
+      transform: scale(1) translateY(0);
+      opacity: 1;
+    }
+    #confirm-modal .confirm-icon-wrap {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 14px;
+      font-size: 22px;
+    }
+    #confirm-modal.mode-ban .confirm-icon-wrap {
+      background: rgba(244, 63, 94, 0.15);
+      color: #fda4af;
+      box-shadow: 0 0 24px rgba(244, 63, 94, 0.2);
+    }
+    #confirm-modal.mode-unban .confirm-icon-wrap {
+      background: rgba(52, 211, 153, 0.15);
+      color: #6ee7b7;
+      box-shadow: 0 0 24px rgba(52, 211, 153, 0.18);
+    }
+    #confirm-modal .confirm-title {
+      text-align: center;
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+    #confirm-modal .confirm-email {
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: #f9a8d4;
+      margin-bottom: 8px;
+      word-break: break-all;
+    }
+    #confirm-modal .confirm-desc {
+      text-align: center;
+      font-size: 12px;
+      line-height: 1.45;
+      color: rgba(255, 230, 240, 0.55);
+      margin-bottom: 20px;
+    }
+    #confirm-modal .confirm-actions {
+      display: flex;
+      gap: 10px;
+    }
+    #confirm-modal .confirm-btn {
+      flex: 1;
+      border: none;
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+    }
+    #confirm-modal .confirm-btn:active {
+      transform: scale(0.96);
+    }
+    #confirm-modal .confirm-btn-cancel {
+      background: rgba(255, 220, 230, 0.1);
+      border: 1px solid rgba(255, 190, 205, 0.2);
+      color: rgba(255, 230, 240, 0.85);
+    }
+    #confirm-modal .confirm-btn-ok {
+      color: #1c1917;
+    }
+    #confirm-modal.mode-ban .confirm-btn-ok {
+      background: linear-gradient(to right, #fb7185, #f43f5e);
+      box-shadow: 0 8px 22px rgba(244, 63, 94, 0.35);
+    }
+    #confirm-modal.mode-unban .confirm-btn-ok {
+      background: linear-gradient(to right, #f9a8d4, #fdba74);
+      box-shadow: 0 8px 22px rgba(249, 168, 212, 0.35);
+    }
+
+    /* ===== Ban / access toggle switch (compact + smooth) ===== */
+    .ban-toggle {
+      position: relative;
+      width: 40px;
+      height: 22px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      flex-shrink: 0;
+      vertical-align: middle;
+      transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                  box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .ban-toggle:active {
+      transform: scale(0.97);
+    }
+    /* Access ON — can log in */
+    .ban-toggle.is-on {
+      background: linear-gradient(90deg, #f9a8d4 0%, #fdba74 100%);
+      box-shadow: 0 0 12px rgba(249, 168, 212, 0.35);
+    }
+    /* Banned OFF */
+    .ban-toggle.is-off {
+      background: #3b1a2e;
+      box-shadow: inset 0 0 0 1px rgba(249, 168, 212, 0.18);
+    }
+    .ban-toggle-knob {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      box-shadow: 0 1px 5px rgba(0, 0, 0, 0.28);
+      transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+                  background 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                  color 0.35s ease;
+      pointer-events: none;
+      will-change: transform;
+    }
+    .ban-toggle.is-on .ban-toggle-knob {
+      transform: translateX(18px);
+      background: #1c1917;
+      color: #f9a8d4;
+    }
+    .ban-toggle.is-off .ban-toggle-knob {
+      transform: translateX(0);
+      background: #5c2a45;
+      color: #fda4af;
+    }
+    .ban-toggle:disabled {
+      opacity: 0.55;
+      cursor: wait;
+    }
+
+    /* Admin withdraw channel picker */
+    .admin-wd-ch {
+      background: rgba(255, 220, 230, 0.06);
+      border-color: rgba(255, 190, 205, 0.12);
+    }
+    .admin-wd-ch.is-selected {
+      background: rgba(249, 168, 212, 0.14);
+      border-color: rgba(249, 168, 212, 0.55);
+      box-shadow: 0 0 0 3px rgba(249, 168, 212, 0.12), 0 8px 24px rgba(249, 168, 212, 0.12);
+      transform: translateY(-1px);
+    }
+    .admin-wd-ch.is-selected span:last-child {
+      color: #f9a8d4 !important;
+    }
+    .admin-wd-ch:not(.is-selected):hover {
+      border-color: rgba(249, 168, 212, 0.28);
+      background: rgba(255, 220, 230, 0.09);
+    }
+
+    /* Smooth show/hide for bank list */
+    .admin-wd-reveal {
+      overflow: hidden;
+      max-height: 0;
+      opacity: 0;
+      margin-top: 0;
+      margin-bottom: 0;
+      transition: max-height 0.35s cubic-bezier(0.32, 0.72, 0, 1),
+                  opacity 0.28s ease,
+                  margin 0.3s ease;
+    }
+    .admin-wd-reveal.is-open {
+      max-height: 160px;
+      opacity: 1;
+      margin-bottom: 0;
+    }
+    .admin-wd-bank-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 8px 12px;
+      text-align: left;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .admin-wd-bank-row:hover,
+    .admin-wd-bank-row:active {
+      background: rgba(249, 168, 212, 0.08);
+    }
+    .admin-wd-bank-row.is-selected {
+      background: rgba(249, 168, 212, 0.12);
+    }
+    .admin-wd-bank-row .bank-check {
+      margin-left: auto;
+      opacity: 0;
+      color: #f9a8d4;
+      transition: opacity 0.2s ease;
+    }
+    .admin-wd-bank-row.is-selected .bank-check {
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
@@ -506,6 +752,22 @@
   <div id="toast">
     <i class="toast-icon fa-solid fa-circle-exclamation"></i>
     <span class="toast-msg"></span>
+  </div>
+
+  <!-- Custom confirm modal (Ban / Unban) -->
+  <div id="confirm-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-title" onclick="if(event.target===this)closeConfirmModal(false)">
+    <div id="confirm-modal" class="mode-ban">
+      <div class="confirm-icon-wrap">
+        <i id="confirm-icon" class="fa-solid fa-user-slash"></i>
+      </div>
+      <p id="confirm-title" class="confirm-title">Deactivate user?</p>
+      <p id="confirm-email" class="confirm-email"></p>
+      <p id="confirm-desc" class="confirm-desc">They will not be able to log in. Account data is kept.</p>
+      <div class="confirm-actions">
+        <button type="button" class="confirm-btn confirm-btn-cancel" onclick="closeConfirmModal(false)">Cancel</button>
+        <button type="button" id="confirm-ok-btn" class="confirm-btn confirm-btn-ok" onclick="closeConfirmModal(true)">Deactivate</button>
+      </div>
+    </div>
   </div>
 
   <!-- ========== LOGIN ========== -->
@@ -1676,13 +1938,11 @@
           <i class="fa-solid fa-wallet text-pink-300 text-xl"></i>
         </div>
         <p class="text-sm font-medium mb-1">No payment methods yet</p>
-        <p class="text-xs text-pink-100/45 leading-relaxed max-w-xs mx-auto">
-          Dito mo ilalagay ang GCash, bank, crypto, at iba pang methods para sa users. Idadagdag natin kapag ready na.
-        </p>
+        <p class="text-xs text-pink-100/45 leading-relaxed max-w-xs mx-auto">Coming soon</p>
       </div>
       <button type="button" class="w-full glass rounded-2xl p-4 text-left flex items-center gap-3 opacity-60 cursor-not-allowed">
         <i class="fa-solid fa-plus text-pink-300 w-5 text-center"></i>
-        <span class="text-sm">Add payment method (soon)</span>
+        <span class="text-sm">Add payment method</span>
       </button>
     </div>
   </div>
@@ -1696,32 +1956,12 @@
         <button type="button" onclick="showPage('admin-dash')" class="w-10 h-10 rounded-xl glass flex items-center justify-center card-hover shrink-0"><i class="fa-solid fa-arrow-left text-pink-200"></i></button>
         <div>
           <p class="font-semibold text-sm sm:text-base">Withdrawal Options</p>
-          <p class="text-[10px] text-pink-100/45">Bank · E-wallet channels</p>
+          <p class="text-[10px] text-pink-100/45">Channels available to users</p>
         </div>
       </header>
-      <p class="text-xs text-pink-100/50 mb-4">Channels na puwedeng gamitin ng users para mag-withdraw.</p>
-      <div class="space-y-3 mb-4">
-        <div class="glass-strong rounded-2xl p-4 flex items-center gap-3">
-          <div class="w-11 h-11 rounded-xl bg-pink-300/15 flex items-center justify-center"><i class="fa-solid fa-building-columns text-pink-300"></i></div>
-          <div class="flex-1 min-w-0">
-            <p class="text-sm font-medium">Bank transfer</p>
-            <p class="text-[10px] text-pink-100/45">Local banks · account name + number</p>
-          </div>
-          <span class="text-[10px] px-2 py-1 rounded-full bg-white/5 text-pink-100/40">Off</span>
-        </div>
-        <div class="glass-strong rounded-2xl p-4 flex items-center gap-3">
-          <div class="w-11 h-11 rounded-xl bg-emerald-400/15 flex items-center justify-center"><i class="fa-solid fa-mobile-screen text-emerald-300"></i></div>
-          <div class="flex-1 min-w-0">
-            <p class="text-sm font-medium">E-wallet</p>
-            <p class="text-[10px] text-pink-100/45">GCash · Maya · similar</p>
-          </div>
-          <span class="text-[10px] px-2 py-1 rounded-full bg-white/5 text-pink-100/40">Off</span>
-        </div>
+      <div id="admin-channels-list" class="space-y-3 mb-4">
+        <p class="text-center text-xs text-pink-100/40 py-6">Loading channels…</p>
       </div>
-      <button type="button" class="w-full glass rounded-2xl p-4 text-left flex items-center gap-3 opacity-60 cursor-not-allowed">
-        <i class="fa-solid fa-plus text-pink-300 w-5 text-center"></i>
-        <span class="text-sm">Add channel (soon)</span>
-      </button>
     </div>
   </div>
 
@@ -1746,7 +1986,87 @@
       <div class="glass-strong rounded-2xl p-8 text-center">
         <i class="fa-solid fa-inbox text-pink-300/40 text-2xl mb-3"></i>
         <p class="text-sm text-pink-100/50">No pending withdrawals</p>
-        <p class="text-xs text-pink-100/30 mt-1">Requests will show here for manual approve/reject</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== ADMIN MY WITHDRAW (cash out) ========== -->
+  <div id="admin-my-withdraw" class="page">
+    <div class="max-w-5xl mx-auto min-h-screen px-4 sm:px-6 pt-5 pb-16 relative z-10">
+      <header class="flex items-center gap-3 mb-6">
+        <button type="button" onclick="openAdminDrawer()" class="w-10 h-10 rounded-xl glass flex items-center justify-center card-hover shrink-0"><i class="fa-solid fa-bars text-pink-200"></i></button>
+        <button type="button" onclick="showPage('admin-dash')" class="w-10 h-10 rounded-xl glass flex items-center justify-center card-hover shrink-0"><i class="fa-solid fa-arrow-left text-pink-200"></i></button>
+        <div>
+          <p class="font-semibold text-sm sm:text-base">Withdrawals</p>
+          <p class="text-[10px] text-pink-100/45">Admin cash out</p>
+        </div>
+      </header>
+
+      <div class="glass-strong rounded-2xl p-5 mb-4">
+        <p class="text-[10px] text-pink-100/50 mb-1">Available balance</p>
+        <p class="text-3xl font-bold tracking-tight" id="admin-my-withdraw-balance">₱0</p>
+      </div>
+
+      <div class="glass-strong rounded-2xl p-5 space-y-5">
+        <div>
+          <label class="block text-xs text-pink-100/55 mb-2.5 font-medium">Channel</label>
+          <input type="hidden" id="admin-wd-channel" value="gcash">
+          <input type="hidden" id="admin-wd-bank" value="">
+          <div class="grid grid-cols-3 gap-2.5" id="admin-wd-channel-picks"></div>
+        </div>
+
+        <!-- Bank picker — compact list (only while choosing a bank) -->
+        <div id="admin-wd-bank-wrap" class="admin-wd-reveal hidden">
+          <label class="block text-xs text-pink-100/55 mb-1.5 font-medium">Select bank</label>
+          <div id="admin-wd-bank-picks" class="glass rounded-xl max-h-[140px] overflow-y-auto divide-y divide-pink-200/10"></div>
+        </div>
+
+        <!-- Shown after a bank is chosen -->
+        <div id="admin-wd-selected-bank" class="hidden">
+          <button type="button" onclick="reopenAdminWdBankList()"
+            class="w-full glass rounded-xl px-3 py-2.5 flex items-center gap-2.5 text-left card-hover">
+            <span id="admin-wd-selected-bank-logo" class="shrink-0"></span>
+            <div class="min-w-0 flex-1">
+              <p class="text-[10px] text-pink-100/45">Selected bank</p>
+              <p id="admin-wd-selected-bank-name" class="text-sm font-medium truncate">—</p>
+            </div>
+            <span class="text-[10px] text-pink-300 font-medium shrink-0">Change</span>
+          </button>
+        </div>
+
+        <div id="admin-wd-fields" class="space-y-4">
+          <div>
+            <label class="block text-xs text-pink-100/55 mb-1.5 font-medium">Account name</label>
+            <div class="relative">
+              <i class="fa-solid fa-user absolute left-3.5 top-1/2 -translate-y-1/2 text-pink-300/50 text-sm"></i>
+              <input type="text" id="admin-wd-name" maxlength="60" class="input-field w-full pl-10 pr-4 py-3.5 rounded-xl text-sm" placeholder="Full name" autocomplete="off">
+            </div>
+          </div>
+          <div>
+            <label id="admin-wd-number-label" class="block text-xs text-pink-100/55 mb-1.5 font-medium">Mobile number</label>
+            <div class="relative">
+              <i id="admin-wd-number-icon" class="fa-solid fa-mobile-screen absolute left-3.5 top-1/2 -translate-y-1/2 text-pink-300/50 text-sm"></i>
+              <input type="text" id="admin-wd-number" maxlength="30" class="input-field w-full pl-10 pr-4 py-3.5 rounded-xl text-sm" placeholder="09XXXXXXXXX" autocomplete="off" inputmode="tel">
+            </div>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs text-pink-100/55 mb-1.5 font-medium">Amount</label>
+          <div class="relative">
+            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-pink-300 font-semibold text-sm">₱</span>
+            <input type="number" id="admin-wd-amount" min="0" step="1" class="input-field w-full pl-9 pr-4 py-3.5 rounded-xl text-sm font-semibold" placeholder="0" inputmode="numeric">
+          </div>
+        </div>
+        <button type="button" onclick="submitAdminWithdraw()" class="w-full btn-peach font-semibold py-3.5 rounded-full text-sm shadow-lg shadow-pink-400/25 active:scale-[0.98] transition-transform">
+          Submit withdrawal
+        </button>
+      </div>
+
+      <div class="mt-6">
+        <p class="text-xs font-medium text-pink-100/50 mb-2">Recent</p>
+        <div class="glass-strong rounded-2xl p-6 text-center" id="admin-my-withdraw-history">
+          <p class="text-xs text-pink-100/40">No withdrawals yet</p>
+        </div>
       </div>
     </div>
   </div>
@@ -1762,7 +2082,6 @@
           <p class="text-[10px] text-pink-100/45">Investment packages · plans</p>
         </div>
       </header>
-      <p class="text-xs text-pink-100/50 mb-4">Halimbawa: Natnat 1.0–4.0 — min amount, days, target return.</p>
       <div class="space-y-3 mb-4" id="admin-packages-list">
         <div class="glass-strong rounded-2xl p-4">
           <div class="flex justify-between items-start mb-2">
@@ -1839,7 +2158,6 @@
           <p class="text-[10px] text-pink-100/45">Commission levels</p>
         </div>
       </header>
-      <p class="text-xs text-pink-100/50 mb-4">% ng deposit ng na-invite — Level 1, Level 2, atbp.</p>
       <div class="space-y-3 mb-4">
         <div class="glass-strong rounded-2xl p-4 flex items-center justify-between">
           <div class="flex items-center gap-3">
@@ -2008,6 +2326,9 @@
     </button>
     <button type="button" class="admin-drawer-item" data-admin-nav="admin-pending-withdrawals" onclick="adminNav('admin-pending-withdrawals')">
       <i class="fa-solid fa-hourglass-half"></i> Pending Withdrawals
+    </button>
+    <button type="button" class="admin-drawer-item" data-admin-nav="admin-my-withdraw" onclick="adminNav('admin-my-withdraw')">
+      <i class="fa-solid fa-money-bill-transfer"></i> Withdrawals
     </button>
 
     <p class="admin-drawer-label">Products</p>
@@ -2302,6 +2623,7 @@
       'admin-payments': 'bg-menu',
       'admin-withdraw-options': 'bg-menu',
       'admin-pending-withdrawals': 'bg-menu',
+      'admin-my-withdraw': 'bg-menu',
       'admin-packages': 'bg-menu',
       'admin-referral': 'bg-menu',
       'admin-gateways': 'bg-menu',
@@ -2329,8 +2651,8 @@
       insights: 'nav-insights'
     };
 
-    const AUTH_PAGES = ['login', 'create', 'admin-login', 'admin-dash', 'admin-users-all', 'admin-active', 'admin-logins', 'admin-earnings', 'admin-deposits', 'admin-withdrawals', 'admin-withdraw-options', 'admin-pending-withdrawals', 'admin-packages', 'admin-referral', 'admin-gateways', 'admin-gift-codes', 'admin-profile', 'admin-settings', 'admin-payments'];
-    const ADMIN_PAGES = ['admin-login', 'admin-dash', 'admin-users-all', 'admin-active', 'admin-logins', 'admin-earnings', 'admin-deposits', 'admin-withdrawals', 'admin-withdraw-options', 'admin-pending-withdrawals', 'admin-packages', 'admin-referral', 'admin-gateways', 'admin-gift-codes', 'admin-profile', 'admin-settings', 'admin-payments'];
+    const AUTH_PAGES = ['login', 'create', 'admin-login', 'admin-dash', 'admin-users-all', 'admin-active', 'admin-logins', 'admin-earnings', 'admin-deposits', 'admin-withdrawals', 'admin-withdraw-options', 'admin-pending-withdrawals', 'admin-my-withdraw', 'admin-packages', 'admin-referral', 'admin-gateways', 'admin-gift-codes', 'admin-profile', 'admin-settings', 'admin-payments'];
+    const ADMIN_PAGES = ['admin-login', 'admin-dash', 'admin-users-all', 'admin-active', 'admin-logins', 'admin-earnings', 'admin-deposits', 'admin-withdrawals', 'admin-withdraw-options', 'admin-pending-withdrawals', 'admin-my-withdraw', 'admin-packages', 'admin-referral', 'admin-gateways', 'admin-gift-codes', 'admin-profile', 'admin-settings', 'admin-payments'];
     let isNavigating = false;
     let adminUsersCache = [];
     const IS_ADMIN_ROUTE = window.location.pathname.replace(/\/$/, '') === '/admin';
@@ -2370,6 +2692,13 @@
       if (pageId === 'admin-earnings') renderAdminMoneyPage('earnings');
       if (pageId === 'admin-deposits') renderAdminMoneyPage('deposits');
       if (pageId === 'admin-withdrawals') renderAdminMoneyPage('withdrawals');
+      if (pageId === 'admin-withdraw-options') loadAdminChannels();
+      if (pageId === 'admin-my-withdraw') {
+        const balEl = document.getElementById('admin-my-withdraw-balance');
+        const snap = document.getElementById('stat-balance');
+        if (balEl && snap) balEl.textContent = snap.textContent || '₱0';
+        if (typeof renderAdminWdChannelPicks === 'function') renderAdminWdChannelPicks();
+      }
 
       const bottomNav = document.getElementById('bottom-nav');
       if (AUTH_PAGES.includes(pageId) || ADMIN_PAGES.includes(pageId)) {
@@ -2643,9 +2972,7 @@
           <td class="px-4 py-3 text-xs text-pink-100/55">${formatAdminDate(u.createdAt)}</td>
           <td class="px-4 py-3 text-xs text-pink-100/55">${formatAdminDate(u.lastLogin)}</td>
           <td class="px-4 py-3">${statusBadge(u.isActive, u.status)}</td>
-          <td class="px-4 py-3">
-            <button type="button" onclick="banAdminUser('${u.id}', '${(u.email || '').replace(/'/g, "\\'")}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-rose-400/15 text-rose-300 hover:bg-rose-400/25">Ban</button>
-          </td>
+          <td class="px-4 py-3">${banToggleHtml(u.id, u.email, u.status === 'banned')}</td>
         </tr>
       `).join('');
 
@@ -2658,7 +2985,7 @@
           </div>
           <div class="flex flex-col items-end gap-2 shrink-0">
             ${statusBadge(u.isActive, u.status)}
-            <button type="button" onclick="banAdminUser('${u.id}', '${(u.email || '').replace(/'/g, "\\'")}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-rose-400/15 text-rose-300">Ban</button>
+            ${banToggleHtml(u.id, u.email, u.status === 'banned')}
           </div>
         </div>
       `).join('');
@@ -2687,9 +3014,7 @@
           <td class="px-4 py-3 text-xs text-pink-100/55">${formatAdminDate(u.createdAt)}</td>
           <td class="px-4 py-3 text-xs text-pink-100/55">${formatAdminDate(u.lastLogin)}</td>
           <td class="px-4 py-3">${statusBadge(u.isActive, u.status)}</td>
-          <td class="px-4 py-3">
-            <button type="button" onclick="banAdminUser('${u.id}', '${(u.email || '').replace(/'/g, "\\'")}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-rose-400/15 text-rose-300 hover:bg-rose-400/25">Ban</button>
-          </td>
+          <td class="px-4 py-3">${banToggleHtml(u.id, u.email, u.status === 'banned')}</td>
         </tr>
       `).join('');
       mobile.innerHTML = filtered.map(u => `
@@ -2700,7 +3025,7 @@
           </div>
           <div class="flex flex-col items-end gap-2 shrink-0">
             ${statusBadge(u.isActive, u.status)}
-            <button type="button" onclick="banAdminUser('${u.id}', '${(u.email || '').replace(/'/g, "\\'")}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-rose-400/15 text-rose-300">Ban</button>
+            ${banToggleHtml(u.id, u.email, u.status === 'banned')}
           </div>
         </div>
       `).join('');
@@ -2727,9 +3052,6 @@
         const safeEmail = (u.email || '').replace(/'/g, "\\'");
         const bal = typeof formatPeso === 'function' ? formatPeso(u.balance) : ('₱' + (Number(u.balance) || 0));
         const isBanned = u.status === 'banned';
-        const actionBtn = isBanned
-          ? `<button type="button" onclick="unbanAdminUser('${u.id}', '${safeEmail}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-emerald-400/15 text-emerald-300 hover:bg-emerald-400/25">Unban</button>`
-          : `<button type="button" onclick="banAdminUser('${u.id}', '${safeEmail}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-rose-400/15 text-rose-300 hover:bg-rose-400/25">Ban</button>`;
         return `
         <tr class="border-b border-pink-200/5 hover:bg-white/5 ${isBanned ? 'opacity-75' : ''}">
           <td class="px-4 py-3 text-sm">${u.email}</td>
@@ -2742,7 +3064,7 @@
           </td>
           <td class="px-4 py-3 text-xs text-pink-100/55 whitespace-nowrap">${formatAdminDate(u.createdAt)}</td>
           <td class="px-4 py-3">${statusBadge(u.isActive, u.status)}</td>
-          <td class="px-4 py-3">${actionBtn}</td>
+          <td class="px-4 py-3">${banToggleHtml(u.id, u.email, isBanned)}</td>
         </tr>`;
       }).join('');
 
@@ -2750,9 +3072,6 @@
         const safeEmail = (u.email || '').replace(/'/g, "\\'");
         const bal = typeof formatPeso === 'function' ? formatPeso(u.balance) : ('₱' + (Number(u.balance) || 0));
         const isBanned = u.status === 'banned';
-        const actionBtn = isBanned
-          ? `<button type="button" onclick="unbanAdminUser('${u.id}', '${safeEmail}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-emerald-400/15 text-emerald-300">Unban</button>`
-          : `<button type="button" onclick="banAdminUser('${u.id}', '${safeEmail}')" class="text-[10px] px-2.5 py-1 rounded-lg bg-rose-400/15 text-rose-300">Ban</button>`;
         return `
         <div class="px-4 py-3 space-y-2.5 border-b border-pink-200/5 ${isBanned ? 'opacity-75' : ''}">
           <div class="flex items-center justify-between gap-3">
@@ -2761,13 +3080,15 @@
               <p class="text-[10px] text-orange-300 mt-0.5">Balance ${bal}</p>
               <p class="text-[10px] text-pink-100/40">Created ${formatAdminDate(u.createdAt)}</p>
             </div>
-            ${statusBadge(u.isActive, u.status)}
+            <div class="flex flex-col items-end gap-2 shrink-0">
+              ${statusBadge(u.isActive, u.status)}
+              ${banToggleHtml(u.id, u.email, isBanned)}
+            </div>
           </div>
           <div class="flex items-center gap-2">
             <input type="text" id="pwd-input-m-${u.id}" maxlength="25" placeholder="New password" autocomplete="off" data-lpignore="true" class="input-field flex-1 px-3 py-2 rounded-xl text-xs">
             <button type="button" onclick="saveAdminUserPassword('${u.id}', '${safeEmail}', true)" class="text-[10px] px-3 py-2 rounded-xl bg-pink-300/20 text-pink-300 font-medium shrink-0">Set</button>
           </div>
-          ${actionBtn}
         </div>`;
       }).join('');
 
@@ -2931,12 +3252,633 @@
       }
     }
 
+    // ===== Custom confirm modal (theme-matched, animated) =====
+    let confirmModalResolve = null;
+
+    function openConfirmModal(opts) {
+      const overlay = document.getElementById('confirm-overlay');
+      const modal = document.getElementById('confirm-modal');
+      const icon = document.getElementById('confirm-icon');
+      const title = document.getElementById('confirm-title');
+      const emailEl = document.getElementById('confirm-email');
+      const desc = document.getElementById('confirm-desc');
+      const okBtn = document.getElementById('confirm-ok-btn');
+      if (!overlay || !modal) return Promise.resolve(false);
+
+      const mode = opts.mode === 'unban' ? 'unban' : 'ban';
+      modal.classList.remove('mode-ban', 'mode-unban');
+      modal.classList.add(mode === 'unban' ? 'mode-unban' : 'mode-ban');
+
+      if (icon) {
+        icon.className = 'fa-solid ' + (mode === 'unban' ? 'fa-user-check' : 'fa-user-slash');
+      }
+      if (title) title.textContent = opts.title || (mode === 'unban' ? 'Reactivate user?' : 'Deactivate user?');
+      if (emailEl) emailEl.textContent = opts.email || '';
+      if (desc) {
+        desc.textContent = opts.desc || (mode === 'unban'
+          ? 'They will be able to log in again.'
+          : 'They will not be able to log in. Account data is kept.');
+      }
+      if (okBtn) okBtn.textContent = opts.okLabel || (mode === 'unban' ? 'Reactivate' : 'Deactivate');
+
+      overlay.classList.add('open');
+      return new Promise((resolve) => {
+        confirmModalResolve = resolve;
+      });
+    }
+
+    function closeConfirmModal(result) {
+      const overlay = document.getElementById('confirm-overlay');
+      if (overlay) overlay.classList.remove('open');
+      if (confirmModalResolve) {
+        const r = confirmModalResolve;
+        confirmModalResolve = null;
+        r(!!result);
+      }
+    }
+
+    // ========== WITHDRAW CHANNELS (admin) ==========
+    let adminChannelsCache = [];
+
+    function channelIcon(type) {
+      return type === 'bank' ? 'fa-building-columns' : 'fa-mobile-screen';
+    }
+    function channelIconBg(type) {
+      return type === 'bank' ? 'bg-pink-300/15 text-pink-300' : 'bg-emerald-400/15 text-emerald-300';
+    }
+
+    /** Brand logo config — balanced size, not over-zoomed */
+    function brandLogoMeta(idOrName) {
+      const key = String(idOrName || '').toLowerCase();
+      if (key.includes('gcash')) {
+        return { id: 'gcash', domain: 'gcash.com', bg: '#007DFE', alt: 'GCash', fb: 'GCash', fbColor: '#fff', img: 'data:image/jpeg;base64,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' };
+      }
+      if (key.includes('maya') || key.includes('paymaya')) {
+        return { id: 'maya', domain: 'maya.ph', bg: '#111111', alt: 'Maya', fb: 'maya', fbColor: '#00D46A', img: 'data:image/jpeg;base64,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' };
+      }
+      if (key.includes('gotyme') || key.includes('go tyme')) {
+        return { id: 'gotyme', domain: 'gotyme.com.ph', bg: '#FFFFFF', alt: 'GoTyme', fb: 'GoTyme', fbColor: '#00A3E0', img: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAAAAAAD/4QAqRXhpZgAASUkqAAgAAAABADEBAgAHAAAAGgAAAAAAAABQaWNhc2EAAP/bAEMABQMEBAQDBQQEBAUFBQYHDAgHBwcHDwsLCQwRDxISEQ8RERMWHBcTFBoVEREYIRgaHR0fHx8TFyIkIh4kHB4fHv/bAEMBBQUFBwYHDggIDh4UERQeHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHv/AABEIAMgAyAMBIgACEQEDEQH/xAAcAAEAAgIDAQAAAAAAAAAAAAAABgcFCAIDBAH/xABHEAABAwMBBAYGBAoJBQAAAAABAAIDBAURBgcSITETQVFhcYEUIjJCkaEIFzNSIyRUVWJygpKy0hUWJTZDRFOxwWN1k6LR/8QAHAEBAAIDAQEBAAAAAAAAAAAAAAUGAwQHCAIB/8QAOREAAQMDAgMFBwIFBAMAAAAAAQACAwQFESExBhJBB1FhcaETIjKBkbHwwdEUFSNCUhY0YnKy4fH/2gAMAwEAAhEDEQA/ALGREXRl46RERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERF0V9bR0FMamuq4KWEc5JpAxvxKidw2paJpHFv9LmpcPyaB8g+OAPmsck0cfxuAW/R2qtrf9tC5/kCfspmir1u2LRpdguuYHaaTh/EsrbNpOiq94ZHfYYHnk2pY6L5uGPmsbayBxwHj6rdm4Zu8LeZ9M/H/U/oFLUXCnmiqIWzU8sc0TvZfG4OafAjgua2BqoQtLTgoiIi/ERHOa1jnucGtaMucTgAd5UVvG0XRtre6Oe9wzSt4FlK0zEebeHzXw+VkYy84W3SW+qrXctNG558AT9lKkVcSbZ9IsJxBdntHvCnaP8AdykH9fdMtvUNnmrJYK2dsJjjfA7BMrQ5jcjIzhw81ibWQO2eFIzcM3aD46dw0J26DGTp3ZCk6Lrp6inqOk9Hnim6J5ZJ0bw7ccOBBxyPcV2LYBzsoVzS04IwiIiL5RERERERERERERERERVLtD2uRUUs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Twt9mOJga0eQ4LsUnSWuOE8ztSufcRdoFZdWGCAezjO+DknzPd4D5khFFNoOhbVq6lDpvxW4xt3YatjckD7rh7ze7mOoqVopCSNsrS14yFS6GvqKCds9M8teOo/NR4HRar6u0Zf9MSuFyonGnzhtVDl8Lv2vd8HYKj3VlbkuaHNLHAOa4YIIyCO8KK3jZ3o26PdJPZIYZXc30rjCfg3h8lCTWY5zE76rrVq7U4+UNr4jnvZ1+RIx9T5LWBFsI7Y1pAuJEt2aOwVIP+7V7bdso0VSPDn2+esI/Kalzh8BgLWFoqCeinJO0yzNbloeT3co/UrXm0224XasbR2yjnrKh3uQs3iPHqA7yrn2c7JYrfLFdNT9FU1LSHR0TTvRRnqLz757uXirPttBQ22mFNbqOnpIR/hwxhg+XNehSVLao4jzPOT6Ki3/ALRqy4MMNI32TDuc5cfn0+Wvivq+IilVzhERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERf/2Q==' };
+      }
+      if (key.includes('cimb')) {
+        return { id: 'cimb', domain: 'cimb.com', bg: '#FFFFFF', alt: 'CIMB', fb: 'CIMB', fbColor: '#79000F', img: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAAAAAAD/2wBDAAMCAgICAgMCAgIDAwMDBAYEBAQEBAgGBgUGCQgKCgkICQkKDA8MCgsOCwkJDRENDg8QEBEQCgwSExIQEw8QEBD/2wBDAQMDAwQDBAgEBAgQCwkLEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBD/wAARCADcANwDAREAAhEBAxEB/8QAHQABAAEFAQEBAAAAAAAAAAAAAAUDBgcICQQBAv/EAFEQAAAFAgIDCA4GCAQFBQAAAAABAgMEBQYHEQgSIRQVMTRBc7HRExYiOFFTVGF0kpOUs9IzUlVWcZEJFyMkMld2gTVCleE3Q3KytBhidbXD/8QAHQEBAAICAwEBAAAAAAAAAAAAAAQGAgcDBQgBCf/EAE0RAAIBAgIECwQIAwYEBAcAAAABAgMEBREGEiFRBxMUMTJBUmFxkdEVNLHBIjU2U3KBkrIjVKEIF0JzwuEkJ2LwMzeCsxZDRVV0tPH/2gAMAwEAAhEDEQA/ANf5cuXup796e+kV/wAw/CY0pOpLWe0/T+ysrd28G4LmXUty7iluuX5U97Qxjxkt5J5DbdheS9BuuX5U97Qw4yW8chtuwvJeg3XL8qe9oYcZLeOQ23YXkvQbrl+VPe0MOMlvHIbbsLyXoN1y/KnvaGHGS3jkNt2F5L0G65flT3tDDjJbxyG27C8l6Ddcvyp72hhxkt45DbdheS9BuuX5U97Qw4yW8chtuwvJeg3XL8qe9oYcZLeOQ23YXkvQbrl+VPe0MOMlvHIbbsLyXoN1y/KnvaGHGS3jkNt2F5L0G65flT3tDDjJbxyG27C8l6Ddcvyp72hhxkt45DbdheS9BuuX5U97Qw4yW8chtuwvJeg3XL8qe9oYcZLeOQ23YXkvQbrl+VPe0MOMlvHIbbsLyXoN1y/KnvaGHGS3jkNt2F5L0G65flT3tDDjJbxyG27C8l6Ddcvyp72hhxkt45DbdheS9BuuX5U97Qw4yW8chtuwvJeg3XL8qe9oYcZLeOQ23YXkvQbrl+VPe0MOMlvHIbbsLyXoN1y/KnvaGHGS3jkNt2F5L0G65flT3tDDjJbxyG27C8l6Ddcvyp72hhxkt45DbdheS9BuuX5U97Qw15bxyG27C8l6E1RJcrcq/wB5d+kP/OfgITLepJR5yqY5a0FcJKC5ty3vuISXxp7nFdJiFPpMtdj7tDwXwRSGJLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAm6JxVfOH0EJlDolQxz3leHzZEy+NPc4rpMRZ9JlksfdoeC+CKQxJYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE3ROKr5w+ghModEqGOe8rw+bImXxp7nFdJiLPpMslj7tDwXwRSGJLAAAAAAAAAAP2ll1ZayGlqLwkkzIfVFvmOGVeEXk3kfdzyPEOeoY+6stx85RS7S8xueR4hz1DDVluHKKXaXmNzyPEOeoYastw5RS7S8xueR4hz1DDVluHKKXaXmNzyPEOeoYastw5RS7S8xueR4hz1DDVluHKKXaXmNzyPEOeoYastw5RS7S8xueR4hz1DDVluHKKXaXmNzyPEOeoYastw5RS7S8xueR4hz1DDVluHKKXaXmfg0qSZpURkZcJGQxOWM1NZo+AZAAAAAAAAAAE3ROKr5w+ghModEqGOe8rw+bImXxp7nFdJiLPpMslj7tDwXwRSGJLAAAAAAAAAAOpGgTTKbK0b6O7Jp8Z5Zz52anGUqP6ZXKZDZ2jMIvDotrrfxPCPDlcVaemlxGEmlq0+Zvso2I3jov2PC93R1Dv+LhuRqLldx95LzY3jov2PC93R1BxcNyHK7j7yXmxvHRfseF7ujqDi4bkOV3H3kvNjeOi/Y8L3dHUHFw3IcruPvJebG8dF+x4Xu6OoOLhuQ5XcfeS82N46L9jwvd0dQcXDchyu4+8l5sbx0X7Hhe7o6g4uG5Dldx95LzY3jov2PC93R1BxcNyHK7j7yXmxvHRfseF7ujqDi4bkOV3H3kvNjeOi/ZEL3dHUDpw3IcruO2/NnJHS/ZaY0kb4ZYaQ2hM5vJKEkRF+wb5CGqsfSWI1Ut/yR+gPBBKU9C7GUnm9WX75GHR05soAAAAAAAAAAm6JxVfOH0EJlDolQxz3leHzZEy+NPc4rpMRZ9JlksfdoeC+CKQxJYAAAAAAAAAB1S0Au9so3p8746htDRj6th4v4ngzh1+2tx+Gn+1GxZmRcJkLAafGsn6xfmAGsn6xfmAGsn6xfmAGsn6xfmAGsn6xfmAGsXhIAfQAAAGDkNpid8rfXpzfwGxqjSD6yq+K+CP0H4HvsVY/hl++RhodMbMAAAAAAAAAAJuicVXzh9BCZQ6JUMc95Xh82RMvjT3OK6TEWfSZZLH3aHgvgikMSWAAAAAAAAAAdUtALvbKN6fO+OobQ0Y+rYeL+J4M4dftrcfhp/tRl3FbDuBinY1Ss2fMkwjmN5x5cZxSHYzxbUOJMjI9h8JcpZkO2vLWN5RlRk8s+vczXejmO1tG8TpYjRipaj2xaTUovnTz3ryZyKxDhYoYY3jU7Iuqv1lioUx421fvruq4jhS4g9balRZGR+caou43VlWlQqyea72foNo3VwHSfDaWKWNGm4TWfRjmn1xeznT2Mtztwu3701j3535hG5RW7b82d77Ewz+Xh+iPoO3C7fvTWPfnfmDlFbtvzY9iYZ/Lw/RH0Hbhdv3prHvzvzByit235sexMM/l4foj6Dtwu3701j3535g5RW7b82PYmGfy8P0R9DPWiPpR1fCW+U0i9axLm2rXXENS1SXlOHCd4EPpNWZkRZ5KLwbeEh3uBY1OyralZtwlz59Xeak4WuDC30mwzleFUlG5opuKiktddcXl19cXv2dZ1JjvsymG5MZ1DrTyCW2tB5pUkyzIyMuEjIbMTTWaPDsoSpycJrJrY13lQfTEAwchtMTvlb69Ob+A2NUaQfWVXxXwR+g/A99irH8Mv3yMNDpjZgAAAAAAAAABN0Tiq+cPoITKHRKhjnvK8PmyJl8ae5xXSYiz6TLJY+7Q8F8EUhiSwAAAAAAAAADqloBd7ZRvT53x1DaGjH1bDxfxPBnDr9tbj8NP9qNjBYDT5rPpq6NqMYLPO8bWhEd228ypbSUF3U6MW1TB+FRbVI8+ZcormkOE+0KPG0l/Ej/VbvQ3LwO8Ib0PxPkN7L/hKzSf/RLql4dUu7b1HLpaFtqU24hSVJM0qSosjIy4SMhrNrJ5M91wnGpFSi80z4PhmAAAAD41mb96BOk2c9ljA6+agZyWEH2vynVfSNltOKoz5UltR4SzLkIXzRnGNdKyrvaui/l6Hkbh04N+R1ZaTYXD6Ev/ABYrqfbXc/8AF37etm8Yuh5mAMHIbTE75W+vTm/gNjVGkH1lV8V8EfoPwPfYqx/DL98jDQ6Y2YAAAAAAAAAATdE4qvnD6CEyh0SoY57yvD5siZfGnucV0mIs+kyyWPu0PBfBFIYksAAAAAAAAAA6paAXe2Ub0+d8dQ2hox9Ww8X8TwZw6/bW4/DT/ajYwWA0+fDAHObTz0bO02trxis2Bq0SrPEVXjtJ7mJKUex0iLgQ4fD4Ff8AUQ19pNhHET5ZRX0Xz9z3/mev+AvhH9pUFo3ic/4tNfw2/wDFFf4fGPVvXgadioHpNPMAfQAAA9ECfNpc6PU6bKdjS4jqXmHmlaq23EnmlRGXAZGQyhOUJKUXk0R7q1pXlGVvXipQkmmnzNPY0dYNEzSLhY8WKluqPNNXXRUIZqsctnZS4EyEF9VeW3wKzLwDaeCYrHEqH0unHn9fzPAXCjwf1tBsVapJu2qZum92+De9f1W0zsO7ZrE5DaYnfK316c38Bsao0g+sqvivgj9B+B77FWP4ZfvkYaHTGzAAAAAAAAAACbonFV84fQQmUOiVDHPeV4fNkTL409ziukxFn0mWSx92h4L4IpDElgAAAAAAAAAHVLQC72yjenzvjqG0NGPq2Hi/ieDOHX7a3H4af7UbGCwGnwALUxVnWLTcObinYlrjIthmnuqqhyP4DY1dpedR7CTlt1ssto4biNOdKUavRa2nYYTWvLe+pVcPbVaMk4tc+fV/v3HCKt4kUw6zPOgUh8qZul3cRSXi7KTGsepr5FlrauWeXKNbTwWGs9WezwPblrwnXcaEFcW8XPJazUmk315bN54v1jr+yk+1/wBhj7Fj2/6Ej+8+r/LL9X+w/WOv7KT7X/YPYse3/Qf3n1f5Zfq/2H6x1/ZSfa/7B7Fj2/6D+8+r/LL9X+w/WOv7KT7X/YPYse3/AEH959X+WX6v9jOuhXdOK1waQNvQ8KqYTctLmvU3nHFHGbp+ZdmN7ItqcthFwmo05bR2WE4XVt7qNShPaufZ1d5RuETTywxjAatpilstV9HKX0lPqcdnOuvuzTO0Av7PIhyG0xO+Vvr05v4DY1RpB9ZVfFfBH6D8D32Ksfwy/fIw0OmNmAAAAAAAAAAE3ROKr5w+ghModEqGOe8rw+bImXxp7nFdJiLPpMslj7tDwXwRSGJLAAAAAAAAAAOqWgF3tlG9PnfHUNoaMfVsPF/E8GcOv21uPw0/2o2MFgNPnwzyLMAzk1+kj0tTxMudzBGw6jr2tb0jOqyWV5pqM5GzUIy4W2jzLwGvM+QhX8Su+MlxUHsXObd0J0e5JT9oXK+nJfRW5erNHR1RsMAAAAA9lFotVuOrwqBQoD06o1F9EaLGZTrLddWZElKS8JmY+xi5PJc5xVq0LenKrUeUVtbO3OhlouUrRow0bhTW2ZF31xKJNdmpIjyXl3MdB+LbzMvOrWPlLK02dqraGXW+c0JpHjlTG7tz5qcdkV3b/FmwYlsr5yG0xO+Vvr05v4DY1RpB9ZVfFfBH6D8D32Ksfwy/fIw0OmNmAAAAAAAAAAE3ROKr5w+ghModEqGOe8rw+bImXxp7nFdJiLPpMslj7tDwXwRSGJLAAAAAAAAAAOqWgF3tlG9PnfHUNoaMfVsPF/E8GcOv21uPw0/2o2MFgNPmnH6RDS0TgpZJ4Z2RUSTet0R1JU60ru6ZCVmSnvM4valHg7pXIWfXYhd8RDUj0n/QuWh+j/tW45RWX8KD83u9Tj8pSlKNSlGpSjzMzPMzMVs3akorJAD6AAAHwAdRf0amiF2r01jSExFperV6k0fa5DfRtiRlFkcpST4FuFsT4EHn/m2d9htpqLjZrb1GotNtIuVVHh1s/oR6T3vd4L4nQQdua8AMHIbTE75W+vTm/gNjVGkH1lV8V8EfoPwPfYqx/DL98jDQ6Y2YAAAAAAAAAATdE4qvnD6CEyh0SoY57yvD5siZfGnucV0mIs+kyyWPu0PBfBFIYksAAAAAAAAAA6paAXe2Ub0+d8dQ2hox9Ww8X8TwZw6/bW4/DT/ajKuM+JjeEeHVWvcqFUK3KhtasKmwI63npchWxtskoIzIjPhVwERGY7utU4qDllmarw+zd/cxoayinztvJJfmcQcSKBpCYrXvV8QLyw8vCXVqzIVIeWdFk6qC4EtoLU7lCUkSSLkIiFXqqtWm5yTzfcb3sLjC8Ot421GrFRj/ANS8+ctv9TuLn8rbu/0WT8g4+Jqdl+RN9rWH30f1L1H6ncXP5W3d/osn5A4mp2X5D2tYffR/UvUfqdxc/lbd3+iyfkDianZfkPa1h99H9S9R+p3Fz+Vt3f6LJ+QOJqdl+Q9rWH30f1L1NmNBrQnuTFTEQrpxWtSo0q0badQ89GqMVcdVSkcKGCSsiM2yyzWfgyTy7J1jZSqz1qi2IqmlelNKztuIspqVSfWnnkt+zr3HX5lpthpDDLaUNtpJKEpLIkpLYREXIQsZprNvaz9gADByG0xO+Vvr05v4DY1RpB9ZVfFfBH6D8D32Ksfwy/fIw0OmNmAAAAAAAAAAE3ROKr5w+ghModEqGOe8rw+bImXxp7nFdJiLPpMslj7tDwXwRSGJLAAAAAAAAAAOqWgF3tlG9PnfHUNoaMfVsPF/E8GcOv21uPw0/wBqNjBYDT4AAAAAAAAfAB9AAAAYOQ2mJ3yt9enN/AbGqNIPrKr4r4I/Qfge+xVj+GX75GGh0xswAAAAAAAAAAm6JxVfOH0EJlDolQxz3leHzZEy+NPc4rpMRZ9JlksfdoeC+CKQxJYAAAAAAAAAB0/0ELmtumaOlIiVK4aZEfTOnGbT8tttZEbyssyM8xszRqrThh0VKSTzfX3nhfhvw+7uNM7ipRpSktWntUW10V1pGwvbtZn3uovv7XzDv+PpdpeaNSeyMQ+4n+mXoO3azPvdRff2vmDj6XaXmh7IxD7if6Zeg7drM+91F9/a+YOPpdpeaHsjEPuJ/pl6Dt2sz73UX39r5g4+l2l5oeyMQ+4n+mXoO3azPvdRff2vmDj6XaXmh7IxD7if6Zeg7drM+91F9/a+YOPpdpeaHsjEPuJ/pl6Dt2sz73UX39r5g4+l2l5oeyMQ+4n+mXoO3azPvdRff2vmDj6XaXmh7IxD7if6Zeg7drM+91F9/a+YOPpdpeaHsjEPuJ/pl6Dt2sz73UX39r5h84+l2l5oeyMQ+4n+mXocm9LmXEn6Rt7y4MpmQw5NbNDrSyWhRdgb4DLYY1Zj0lLEari81n8ke++COlOjobY06kWmoy2NZPpy6jD46g2QAAAAAAAAAATdE4qvnD6CEyh0SoY57yvD5siZfGnucV0mIs+kyyWPu0PBfBFIYksAAAAAAAAAAZEPuZhqIBmNRAMxqIBmNRAMxqIBmNRAMxqIBmNRAMxqIBmNRAMxqIcA+H1RUeYAZAAAAAAAAAAE3ROKr5w+ghModEqGOe8rw+bImXxp7nFdJiLPpMslj7tDwXwRSGJLAAAAAAAAAAAHxvIyhYOjLjjiXARVrUw/nu090s25ck0RmnC8KVOGnWLzlmQ7O1we9vI61Km8t72IoeO8Jui2jlV299dxVRc8Y5ya8VFPL8yjiDo4Y1YXw1VO8bCnxoCP45jOrIYR/wBS2zUSf75D5dYRe2a1q1Npb+df0M8A4SdF9JaioYfdxdR80XnGT8FJLP8AItiyMO74xJqD9JsS2ZtbmRmd0PMxUEpSG8yLWPbwZmRf3Ea2tK95JxoRcmtx3uN6S4Vo3SjXxWuqUJPJOXM3z5Hiq1p3JQrlds6sUeRErTMhMVyE4nJ1LystVBl4T1i/Mcc6FSlU4maylzZd5JtMZsL6xWJ29RSotOSkubJc7/LInb5waxSw0hRqlflj1SiRZbpssvSmyJC3CLPVzIz25Zn/AGMc9zh91aRUq8HFPedXgmmmAaSVZUMKuo1ZxWbS58t+0swQy0Fy2PhtfmJc6RTbDtafW5MRonn24ret2NBnkRqM8iLMxJtrOveNxoRcmtx0OOaTYRo1TjVxavGlGTyTl1vn2HjrNnXRb1zuWZW6JJh1xp9EZcFxJdlJ1eWqnLwnrJ/MYVLerSq8TOOUtxJtMbw+/sFiltVUqDTesubJZ5v8smX9/wClTSL/AJQ3B7BPWJ/sTEfuWVL+9bQz/wC4U/N+hbV54OYqYeRUzr2sGtUeKtWqUiTFUTWfIWuWaSP+4jXGH3VqtatTaXgd3g+mmj+kFTicMu4VJbk9vlzlmiGWcAAAAAAAAAAACbonFV84fQQmUOiVDHPeV4fNkTL409ziukxFn0mWSx92h4L4IpDElgAAAAAAAAAG0ugjo/0jFe8Z15XfCRLoVsG3qRXE5typaszSlZcqUkWsZcpmnPYLPozhkL2s61VZxh1b2aD4c9PLnRrD6eF4dLVrV885LnjBbHl3yexPdmZS0hNPqrWddk2w8HqRTFNUZ04kipy2zcQp1GxSGW0mRaqTLLM+EyPIsh2mK6TytqroWiX0dmb+SKHwf8BNHG7CGK6Q1JJ1FrRhF5PJ7U5NpvN8+S/NmNah+kPxUrFg1a16lb1FKr1BvsDNUYbNKWmlEZOZsq1kqVlwHnkWe0jHXS0rualCVKUVrPr/ANi7UP7PeCWuLUb2jXnxMHm4N7W1zZSWTS39feSn6NEzVizc6lbTOgmZ+8NjPRD3uf4fmiH/AGjoqOA2kV97/oZjnHvvy61/VUPpZHX4p9cy/EvkW7QZf8taX+RU/wBZ0mxxwqpeM2GlYsSokhDkto3IT6izOPKRtacL++w/MZkNi4jZQv7aVCXXzdz6jxnodpNX0RxqjitDmi/pLtRfSXlzd+Rxur1CqttVydblZhrj1CmyVxJDKi7pLiFGky/MhqGrSnRqOlNbU8j9HbDEbfErOF9bSzpzipJ9zWZ1R0M8ECwdwnjP1WKTdw3ISKhUjMu6aSZfsmfNqpPaX1lKGz8Aw72fapyX05bX8l+R4N4XdM3phj8+Jlnb0c4Q3PtS/N/0SNJtIfv1Kl/UdM/7WBTMV+uX+KPyPTegK/5Y0/8AJq/6zcbTG0gr7wFptsS7HgU2SusPyWpBTGFukRNpQadXVUnL+IxcMfxWvhkYSoJPNvnPN/BFoHhWnNe6pYpOUVTjFrVaXO2nnmnuKmjRitXdJ3Cy5EYsWfBYiJeVT1LQypMeYytvNRklZnkaOUyPlLgMh9wm+njFtPlUElzdz8zj4RNF7Xg5x239hXMpSyU1tTlCSezbHLn6kcuq3FjQa1UIMJ0nY0eU80y4R566ErMkn/ciIayqxUJuMeZNnuzDa1S4tKVWsspSjFtd7SbPEOMnAAAAAAAAAAE3ROKr5w+ghModEqGOe8rw+bImXxp7nFdJiLPpMslj7tDwXwRSGJLAAAAAAAAAAOh/6NCrwJGHV3282+hM5irIkrTn3XY3GUpSr8M21DYGiE4u3qU1zp/FHjr+0ba1aeNWl3JfQlTaXjGTbXk0aK4lWxWrMv8AuC2bhjuMz4NQfbd1yPNfdmZLLPhJRGSiPlIxSb2hO3uJ06nOmz1LotilrjGD217ZtOEoRyy6tm1eKexltCKd+bgfo0P+LFzf/Af/ALti26Ie9T/D8zzp/aP+o7X/ADf9EjHWPffl1r+qofSyOvxP65l+JfItmg3/AJbUv8ip/rN39KDGmTgfeGGVyPPObzTahMg1hlO0lxlIb7vL6yDyUX4GXKLtjGIPDqtGo+i20/D/AGPMPBzofDTOwxOziv40IQlTf/UnLZ4SWz/+Edeuina2I+kBbWN0Z2K9Q1sJnVOOnI0zZDZJOM4XIaVEZGrw9jLwjjuMEp3d/C9XR533tcxKwfhPvsA0TutGJpqtnqwfYjLPjF4rq8XuPbY2ORYk6VtbsSgzNegWjQn2DNCs0yJvZ2idX5yT/AX4K8Iyt8S5XikqEOjCL/N5rM4cY0J/+HtBLfFrqOVe4qxaz5409WWqv/V0n+RpjpD9+rUv6jpn/awKdiv1y/xR+R6U0B/8saf+TV/1m9mkjpD2xgDCocy5bPkV5FYdeaaJlTZG0baUmZnrly6xcHgF4xfFaWGRjKpDW1s/+9p5X4O9Ab3TurXpWdwqTpKLeee3NtdXgQ2G2MFp6XeGd2WxaW/NnSmmdxPm2pCXGSdSrUWhSdhpPVURlsPLMuXMcVnfUsctqlOlnB83hmT9I9E7/gqxu0vMQ1LiLess88parWaae3NbMntXMctLhosq26/UrenKSqRS5b0N008BrbWaDMvNmQ1jWpOjUlTlzpteR7wwu+hidlSvaayjUjGS8JJP5keOIngAAAAAAAAAE3ROKr5w+ghModEqGOe8rw+bImXxp7nFdJiLPpMslj7tDwXwRSGJLAAAAAAAAAAMi4E413HgRfbF4UFBSWFp3PUIK1ZIlxzPM0mfIoj2pPkMvBmOxwzEamGV1VhtXWt6KTp5oVZ6c4VKwufozW2EuuMt/g+ZrrRvPULx0KdKaFFq16TaXArLbZJUU+SdPnNF9Q3MyJxJcm1RfgLvO4wbG4qVZpS79j8+s8q0MH4SeDCtKhh8JypN5/QjxlN9+WTcXv2Jll4pUzQJw5w1rFrUw6fVahObzYXSZO7agl9JHqKJ8zNLZEZ7SMyIyz2GId7HArS2lSWTb3PN5+PUWXRmvwraRY1Rv6mtCEHt4yOpT1XzpxyTk2ubJNrejEWgZiVYuGWJFwVe+7kiUWFJo+52XpRnktzsyFapZEe3IjP+w6jRm7oWdxOdeWqmuvxNi8OWjuLaR4PbW+F0JVZxqZtR6lqtZ7e8sfGS77ar2lHVb0o9XYl0R64ostua3mbamUm1rLLZnkWqfJyCFiFelVxSVaEs46yefkWfRDCL6x0Dp4bcUnGuqM4uL583rZL+qM1afuMuGOKdCs+LYF4Qq07T5kpySmOSyNpKkIJJnrEXCZGO40nxG2vadNW81LJs1rwE6IY5o1eXlTFraVJTjFRzy2tN58zZEYY6aU6y9Gqr2BJkvLuynEVPoD55nlFdI81mfhZLWIvxR4DGFnpE7fDZUJP+ItkfB+hN0l4GoYxprRxSnHK0qfTqr/qjls/9ezP8y3NBbEyzMNsVqzX8QLlYpMSXR3GEyZOsZOPG82rLYRnmZEZiLo3eUbS6lUuJZJrr35o73hu0axLH8CoWeD0HUlGonlHLZFRkt62cyLZxsvW1rj0qp170StMS6E7XIElE1GfYzaQTOsraWeRaquTkEbEbilWxR14SzjrJ5+R3eh2DX+HaAQwu5pONdUqkdR8+b1sl+eaN18U8R9CnGdinxsQ8QaPUW6WtxyKSZchnUUsiJX8BFnmSS4Rcr28wbEElcVE8ubazzLoxo5wl6HzqVMHtKlN1ElL6MXmlzc+e8tpjSH0RtG2y6nDwWcj1KfOzdRFgk86b75Fkg3nnOBJZ+Hw5FtEdYthOE0ZKz2t9Sz2vvbO6fB9wg8IWJU6mkcXCEdjlPVSjHPbqxjzt+HiznZWKrMrtXm1uoLJcqoSHJT6i4DcWo1KP8zMa+qVHVm5y528z2TYWdPD7WnaUujCKivBLJHjGBLAAAAAAAAAAJuicVXzh9BCZQ6JUMc95Xh82RMvjT3OK6TEWfSZZLH3aHgvgikMSWAAAAAAAAAAAAyzA+NZjg4ACWQA+gAAAAAAAAAAAAAAAAAAAAAAAAE3ROKr5w+ghModEqGOe8rw+bImXxp7nFdJiLPpMslj7tDwXwRSGJLAAAAAAAAC5bew1xDu6nrq1rWRXKvDbcNpT8KC48glkRGac0kZZkRls84k0bK4uI69KDa7kdDiOlGDYRX5NfXVOnPLPKUlF5Pr2vmIxm27hkVR6hs0OeuoxkuLeiFHX2ZtLaTUs1IyzLVSRmeZbCIcaoVHN01F5rq6ybPFrGnbxupVY8XJpKWa1W28lk+Z5vYihTKRVa3JOFR6dJmvpaceNphs1qJtCTUtWRciUkZmfIRDGFOVV5QWbOa7vrawpqrdTUItpZt5LNvJLxb2IKpVTRS0VtVPkFT3X1RkSjbPsSniSSjQSuA1ERkeXDkZBxctTXy2c2feOXW/KHaa64xLWcc9uq3knluz2ZiqUmqUOc5TKzT5EGW0STWxIbNC0kpJKTmk9pZkZGXmMgnTlSlqzWTMrS8t7+iri1mpweeTTzWx5Pb3PYVu16vGumo3mm61Z/wAOLsCv3vu9T9ls7vuyNOzlLIZKjUersf0ubv8AA4HitkuNzqx/hdPavo7M/pbtm3b1EpcWGeItoRCqF02LXqTFMyT2eZT3Wm8z4C1lFlmOWrZXFBa1WDS70QMP0pwTFqnE2N1TqS3RnFvyTzP3R8LcSrho6bgoNg1+o01etqS4tPddaVqnkrJSSMjyMjIwp2NzVhxlOm2t6Rjd6WYHh9y7O7u6cKi54ynFNZ82xshWKJWZRzij0qW4dMbN6aSWVHuZBKJJqc2dyRKMi28pkOFUpvPJPZz9x2c8StKfF69RLjHlDavpPLPJb9iz2H2TQa3CpUOuy6RMZptQU4iJLWypLL6kHkskLMslGR8OXAEqU4wVRrY+Z7xSxK0r3U7KnUTqwScoprOKfNmudZ9R+F0iqtwotSXTpKYk5xbMZ82z1HnEZayUK4FGWsnMi8JD5xc1FSy2PmMlf2zqzoKa14JOSz2pPPJtdSeTy8C5alg3izR6c/V6rhvccOFFbN5+Q9TXUNtoIszUpRlkRecSp4ddwi5yptJdeR0dvpro7d1o29C9pSnJ5JKcW29yWfOeW3cMMRrupq6xa9jVyqwW1GhUiJBcdb1i4SJSSyMy8BDClY3NeOvSptrekc+I6WYHhFdW1/dU6c31Skk/LPZ+ZbbzLsd1ceQ0tp1pRoWhaclJUR5GRkfAZGIzTi8md7SqwrQVSm809qe9bz8D4cgAAAAAAAATdE4qvnD6CEyh0SoY57yvD5siZfGnucV0mIs+kyyWPu0PBfBFIYksAAAAAAAANgbcocusaOFuKi4gUi1FR7tqa90VCe7G7J+7xv4OxpUajLLPLziwUaUqmHQyqKH05c7a6luNL4pfUrPTa6VSznc61vSWUIRnl9KfPrNJJlz2rd1uX1pCxnYVdcnR6fYk2kVCvLjq1p7zVNeS7L1DyWrhyLPJSiQWfCJVGvTucRWrLNKDTlvai82dFieEXuB6GyVWlqSndQqQpZr6EZVouNPPmXflsTZEYC2vhjTLxqEy28VHa3UEW1WibhqoD0UlkcF3M+yKWZFkWZ8G0cOF0LWFaTpVdZ6stmq11M7LTzFcdusOpU77D1Sp8dQzlxsZ5fxI5fRST2lh1DvYqJ/W87/wmBA/+mQ/zH8EW2l9u6//AOLD/wByZ+tKT/jfXuZgf+EyPmM++z/L4I5eC77LW/jU/wDcmXnHLOo6NWZZ7G//ALhwTo89j/3/AIyq1EnT0p/P/wDXRJ1msQMNq9ijLuXFWl12NX2atTYttwJb0tS5DzquxreSpJNtdiPus8zPNORDlnONnOvKrVUlLWSim3tfNn1LI62ztKukdrhNKww6VGVF0ZyryjGC1Ypayi09aWvzc2WTzZ4nqLNn4MYS1CJirSLNKIxVTNcue+w8r9+Ueu2hpJmvL889gw4pysreSqqGWtztrr7iS7yjb6T4xRqYfO6cnSyUYRkl/D5pOTSWZWkXhQr9uXHS57d13IUmzUNpkONdjXLW29EQuQpP+U3FJUvLh7rbtH2VxC5q3VSnzanPvycVn+Zx08GusCsMAsb1ZTjc56ueaipRqNQT69VNL8j1UKsUGq4LYc4RXk+1HpF2xqmcKe4X+GVVE1RR38+RCtY23P8A2qz5BnSqU6lnRtKzyjNSye6Wex/JnBiNneWmk+J6RYYnKrbSpa0F/wDMpOmtePistaPesuss696BVrUwxw5tqvQlxKjTLqrcaSyvhQ4lyKR/iXKR8pGRiHcUp0LahTqbGpyX9UWPBMRt8XxzFL61lrU6lvQkn3ONT/t95KaSsKzyxFvuW3jBUF1XfF89496pBN65qLNns2vqZFt25ZHkObGI0VcVWqz1s39HJ5eGeeR1vBvVxJ4PYQeGR4rVj/F14Z5drVy1vyzzPLTajRsYLasy2aFiK7Z9223ARSIlNlqcZgVBzsqlIdafbPJp5ZrIla5ERmRd0MYThiFOlSp1NScVkk88n3prmb7yTc21zoffX1/eWSurSvN1JTik6kFkk4yhLpQjls1XsXUYUrtOqtHrc+lV1l1qpQ5LrEtDp5rS8lRkslHynrEe0dHVhOnNwqc6e3xNsYddW17aUrmzadKcU45bFqtbNngeEcZNAAAAAAAACbonFV84fQQmUOiVDHPeV4fNkTL409ziukxFn0mWSx92h4L4IpDElgAAAAAAABcsy95czD2mYeqgtJj0yqSqoiQSj11rebbQaDLgyImiMvxMSZXLlbxt8tibefjl6HQUMBp0MarY0ptyqU403HLYlFyeeffrH3D2+ZeHtfdr8KCzLcdp8ynm26o0pJMhhbKlZlykSzMvwGVndOzqcYlnsa81kNJMBp6R2as6k3BKcJ5pZ9CSll+eWR+sOr7mYdXA7cEGAzLcdp8ynm26o0pJMhhTSlZlykSzMvwHyzunaVOMSz2NeayMdJNH6eklnG0qTcUpwnmlnthJSS/PLI/D97yn8O4eHaoLRRodYerCZJKPXUtxlDRoMuDIiQR5+cOUvkytstilrZ/lkfVgFOONTxrXetKkqWrlsyUnLPPftyL4vTGuy77kTavXMFaUqtzYyGV1FFYlpMloaS2hwmyVqZkSUnllkeQnXGJULluc6C1mss83uyzKpg+g2K4HCFvaYpNUYyb1OLp8zk5NZ8+3N7S3W8Wak2/h8+VJjGeHxJKKWur96ylKkd34NqtXZyCMr+S4l6v/AIf9duZ3L0PpOOJR41/8bz7F9H6Chs37FntLVuKsu3FcFTuB9lLLlTmPTFtpPNKFOLNZpIz5CzEStU42pKo+tt+ZZMNso4bZUrOLzVOMY579VZZkrcV8y7itG1rRfgsss2s1KaZeSozU8T7xumaiPYWRnkWQ5q106tGnSa6Gf55vM6zDdH6eHYld4lGbbuHBtZbFqR1dnjziz75l2fTLnpkaCzITc9JOkvLWoyNlButua6cuE82yLI/CFvdO3hUilnrrL+qfyPuNYBDGbi0rzm48nqKoslztRlHJ+Z+a/e0uv2nbFpvQ2mmbXblNsvIUes8T73ZTNRcBZHs2D5VuXVpU6TXQz/q8z7YYDTscRu8QU23cODay2LUjq7N+Zcl+Y43HiJQLPo9fgRFSLS18pyMyenGfYyJT3IaiQ0hOtwnltEm6xOpd06cKi2w69/Nz+R0eA6BWWjt3e3FnNqNzl9Dqh0s1Hubk3l1Hsv7F+yr+m1quzcG6dFrlaU485UG6xLM231f8wmzVqHt25ZZDkusRoXTlOVFKUuvWfPvyImAaF4rgEKFtSxOUqFLJajpw2xX+HW5/z5zzW1ihYVtsUycjBakyq/SktqaqDtUldhcfRtS85HJWqpWZEZkRkkzLgGNG+oUVGXEJyXXm+ffkSMS0SxfEZVqLxScaFTPOCpwzUXzxjPLNLLZnk2t5YderdSuWtz7hrEjs8+pyXJclzLLXdWo1KPLk2mY6+rVlWqOpPnbzZccOsKGF2lOytllCnFRiu5LJHgHGTQAAAAAAAAm6JxVfOH0EJlDolQxz3leHzZEy+NPc4rpMRZ9JlksfdoeC+CKQxJYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE3ROKr5w+ghModEqGOe8rw+bImXxp7nFdJiLPpMslj7tDwXwRSGJLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAm6JxVfOH0EJlDolQxz3leHzZEy+NPc4rpMRZ9JlksfdoeC+CKQxJYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE3ROKr5w+ghModEqGOe8rw+bPRJoMM5T+br30i+UvCfmHPO1g5PnOC1xu4jQgso8y6nu8SnvBD8a96xdQx5JDvOf27cdmPk/UbwQ/GvesXUHJId49u3HZj5P1G8EPL6V71i6g5JDvHt247MfJ+o3gh+Ne9YuoOSQ7x7duOzHyfqN4IfjXvWLqDkkO8e3bjsx8n6jeCHn9K96xdQckh3j27cdmPk/UbwQ/GvesXUHJId49u3HZj5P1G8EPL6V71i6g5JDvHt247MfJ+o3gh+Ne4frF1BySHePbtx2Y+T9RvBD8a96xdQckh3j27cdmPk/UbwQ/GvesXUHJId49u3HZj5P1G8EPxr3rF1BySHePbtx2Y+T9RvBDy+le9YuoOSQ7x7duOzHyfqN4IfjXvWLqDkkO8e3bjsx8n6jeCH417g+sXUHJId49u3HZj5P1G8EPP6V71i6g5JDvHt247MfJ+o3gh+Ne9YuoOSQ7x7duOzHyfqN4IfjXvWLqDkkO8e3bjsx8n6n3eCH4171i6g5JDvHt247MfJ+p83gh+Ne9YuoOSQ7x7duOzHyfqN4Ief0r3rF1BySHePbtx2Y+T9RvBD8a96xdQckh3j27cdmPk/UbwQ/GvesXUHJId49u3HZj5P1G8EPxr3rF1BySHePbtx2Y+T9RvBDy+le9YuoOSQ7x7duOzHyfqN4Ief0r3rF1BySHePbtx2Y+T9SaolBh7lX+1e+kPlLwF5hJt7eCiyuYvi9eddNpc3fvfef//Z' };
+      }
+      if (key.includes('seabank') || key.includes('sea bank')) {
+        return { id: 'seabank', domain: 'seabank.ph', bg: '#FFFFFF', alt: 'SeaBank PH', fb: 'SeaBank', fbColor: '#EE4D2D', img: 'data:image/jpeg;base64,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' };
+      }
+      if (key.includes('tonik')) {
+        return { id: 'tonik', domain: 'tonikbank.com', bg: '#FFFFFF', alt: 'Tonik', fb: 'Tonik', fbColor: '#6C3CE1' };
+      }
+      if (key.includes('komo')) {
+        return { id: 'komo', domain: 'komo.com.ph', bg: '#FFFFFF', alt: 'Komo', fb: 'Komo', fbColor: '#00A651' };
+      }
+      if (key.includes('unionbank') || key.includes('union bank')) {
+        return { id: 'unionbank', domain: 'unionbankph.com', bg: '#FFFFFF', alt: 'UnionBank', fb: 'UB', fbColor: '#E31837' };
+      }
+      return null;
+    }
+
+    /** Square brand tile — logo centered with padding, whole mark visible */
+    function brandTileHtml(idOrName, sizeClass) {
+      const meta = brandLogoMeta(idOrName);
+      const box = sizeClass || 'w-11 h-11';
+      if (!meta) {
+        return `<div class="${box} rounded-xl bg-pink-300/15 text-pink-300 flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-building-columns"></i>
+        </div>`;
+      }
+      const ring = meta.bg === '#FFFFFF' ? 'ring-1 ring-black/10' : 'ring-1 ring-white/15';
+      const src = meta.img || `https://logo.clearbit.com/${meta.domain}?size=128`;
+      // Custom uploaded logos are already full-bleed square icons — fill the tile edge-to-edge, no extra padding.
+      // Clearbit fallback logos vary in aspect ratio — keep them padded + contained so nothing gets cropped.
+      const padClass = meta.img ? '' : 'p-1.5';
+      const fitClass = meta.img ? 'object-cover' : 'object-contain';
+      return `<div class="${box} rounded-xl overflow-hidden shrink-0 flex items-center justify-center ${padClass} ${ring}" style="background:${meta.bg}">
+        <img src="${src}"
+          alt="${meta.alt}"
+          class="w-full h-full ${fitClass}"
+          loading="eager"
+          referrerpolicy="no-referrer"
+          onerror="this.onerror=null;this.src='https://www.google.com/s2/favicons?domain=${meta.domain}&sz=128';this.onerror=function(){this.style.display='none';this.parentElement.insertAdjacentHTML('beforeend','<span class=\\'text-[9px] font-extrabold\\' style=\\'color:${meta.fbColor}\\'>${meta.fb}</span>');};">
+      </div>`;
+    }
+
+    function channelLogoHtml(c) {
+      const meta = brandLogoMeta(c.id) || brandLogoMeta(c.name);
+      if (meta) return brandTileHtml(meta.id);
+      if (c.type === 'bank') {
+        return `<div class="w-11 h-11 rounded-xl bg-pink-300/15 text-pink-300 flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-building-columns"></i>
+        </div>`;
+      }
+      return `<div class="w-11 h-11 rounded-xl ${channelIconBg(c.type)} flex items-center justify-center shrink-0">
+        <i class="fa-solid ${channelIcon(c.type)}"></i>
+      </div>`;
+    }
+
+    function channelCardExists(id) {
+      return !!(document.getElementById('ch-tax-' + id));
+    }
+
+    /** In-place toggle — no logo reload / no full list rebuild */
+    function updateChannelToggleDom(channel) {
+      if (!channel || !channel.id) return false;
+      const id = channel.id;
+      if (!channelCardExists(id)) return false;
+      const on = !!channel.enabled;
+      // Prefer data attribute (set on first paint); fallback to onclick match
+      const btn = document.querySelector(`#admin-channels-list button.ban-toggle[data-channel-toggle="${id}"]`)
+        || document.querySelector(`#admin-channels-list button.ban-toggle[onclick*="'${id}'"]`);
+      if (!btn) return false;
+      btn.classList.toggle('is-on', on);
+      btn.classList.toggle('is-off', !on);
+      btn.setAttribute('aria-checked', on ? 'true' : 'false');
+      btn.title = on ? 'Enabled for users' : 'Disabled — hidden from users';
+      const knobIcon = btn.querySelector('.ban-toggle-knob i');
+      if (knobIcon) {
+        knobIcon.className = 'fa-solid ' + (on ? 'fa-check' : 'fa-ban');
+      }
+      return true;
+    }
+
+    /** In-place settings — update summary + inputs only (logos stay) */
+    function updateChannelSettingsDom(channel) {
+      if (!channel || !channel.id) return false;
+      const id = channel.id;
+      if (!channelCardExists(id)) return false;
+      const tax = Number.isFinite(Number(channel.taxPercent)) ? Number(channel.taxPercent) : 0;
+      const minA = Number.isFinite(Number(channel.minAmount)) ? Number(channel.minAmount) : 0;
+      const maxA = Number.isFinite(Number(channel.maxAmount)) ? Number(channel.maxAmount) : 0;
+      const maxLabel = maxA > 0 ? ('₱' + maxA.toLocaleString('en-PH')) : '₱0';
+      const taxEl = document.getElementById('ch-tax-' + id);
+      const minEl = document.getElementById('ch-min-' + id);
+      const maxEl = document.getElementById('ch-max-' + id);
+      if (taxEl) taxEl.value = tax === 0 ? '' : String(tax);
+      if (minEl) minEl.value = minA === 0 ? '' : String(minA);
+      if (maxEl) maxEl.value = maxA === 0 ? '' : String(maxA);
+      // Summary line (class ch-summary — no logo touch)
+      const card = taxEl && taxEl.closest('.glass-strong');
+      if (card) {
+        const line = card.querySelector('.ch-summary');
+        if (line) {
+          line.textContent = `Tax ${tax}% · Min ₱${minA.toLocaleString('en-PH')} · Max ${maxLabel}`;
+        }
+      }
+      return true;
+    }
+
+    function renderAdminChannels(channels) {
+      const el = document.getElementById('admin-channels-list');
+      if (!el) return;
+      adminChannelsCache = channels || [];
+      if (!adminChannelsCache.length) {
+        el.innerHTML = '<p class="text-center text-xs text-pink-100/40 py-6">No channels configured</p>';
+        return;
+      }
+      el.innerHTML = adminChannelsCache.map(c => {
+        const on = !!c.enabled;
+        const safeId = String(c.id).replace(/'/g, "\\'");
+        const tax = Number.isFinite(Number(c.taxPercent)) ? Number(c.taxPercent) : 0;
+        const minA = Number.isFinite(Number(c.minAmount)) ? Number(c.minAmount) : 0;
+        const maxA = Number.isFinite(Number(c.maxAmount)) ? Number(c.maxAmount) : 0;
+        // 0 → empty value + faint placeholder (disappears when typing)
+        const taxVal = tax === 0 ? '' : String(tax);
+        const minVal = minA === 0 ? '' : String(minA);
+        const maxVal = maxA === 0 ? '' : String(maxA);
+        const maxLabel = maxA > 0 ? ('₱' + maxA.toLocaleString('en-PH')) : '₱0';
+        return `
+        <div class="glass-strong rounded-2xl p-4 space-y-3" data-channel-id="${safeId}">
+          <div class="flex items-center gap-3">
+            ${channelLogoHtml(c)}
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium truncate">${c.name}</p>
+              <p class="text-[10px] text-pink-100/45 truncate">${c.description || (c.type === 'bank' ? 'Bank' : 'E-wallet')}</p>
+              <p class="text-[10px] text-pink-200/50 mt-0.5 ch-summary">Tax ${tax}% · Min ₱${minA.toLocaleString('en-PH')} · Max ${maxLabel}</p>
+            </div>
+            <button type="button" role="switch" aria-checked="${on}"
+              class="ban-toggle ${on ? 'is-on' : 'is-off'} shrink-0"
+              data-channel-toggle="${safeId}"
+              title="${on ? 'Enabled for users' : 'Disabled — hidden from users'}"
+              onclick="toggleWithdrawChannel('${safeId}')">
+              <span class="ban-toggle-knob"><i class="fa-solid ${on ? 'fa-check' : 'fa-ban'}"></i></span>
+            </button>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="block text-[10px] text-pink-100/45 mb-1">Tax %</label>
+              <input type="text" id="ch-tax-${safeId}" inputmode="decimal" autocomplete="off"
+                ${taxVal ? `value="${taxVal}"` : ''} placeholder="0"
+                onfocus="this.select()"
+                class="input-field w-full px-2.5 py-2 rounded-lg text-xs placeholder:text-pink-100/30" >
+            </div>
+            <div>
+              <label class="block text-[10px] text-pink-100/45 mb-1">Min ₱</label>
+              <input type="text" id="ch-min-${safeId}" inputmode="numeric" autocomplete="off"
+                ${minVal ? `value="${minVal}"` : ''} placeholder="0"
+                onfocus="this.select()"
+                class="input-field w-full px-2.5 py-2 rounded-lg text-xs placeholder:text-pink-100/30" >
+            </div>
+            <div>
+              <label class="block text-[10px] text-pink-100/45 mb-1">Max ₱</label>
+              <input type="text" id="ch-max-${safeId}" inputmode="numeric" autocomplete="off"
+                ${maxVal ? `value="${maxVal}"` : ''} placeholder="0"
+                onfocus="this.select()"
+                class="input-field w-full px-2.5 py-2 rounded-lg text-xs placeholder:text-pink-100/30" >
+            </div>
+          </div>
+          <button type="button" onclick="saveChannelSettings('${safeId}')"
+            class="w-full py-2 rounded-xl text-xs font-semibold bg-pink-300/15 text-pink-200 border border-pink-300/25 hover:bg-pink-300/25 active:scale-[0.99] transition-all">
+            Save limits
+          </button>
+        </div>`;
+      }).join('');
+    }
+
+    async function saveChannelSettings(id) {
+      const taxEl = document.getElementById('ch-tax-' + id);
+      const minEl = document.getElementById('ch-min-' + id);
+      const maxEl = document.getElementById('ch-max-' + id);
+      if (!taxEl || !minEl || !maxEl) return;
+      // Empty field = 0
+      const taxPercent = taxEl.value.trim() === '' ? 0 : Number(taxEl.value);
+      const minAmount = minEl.value.trim() === '' ? 0 : Number(minEl.value);
+      const maxAmount = maxEl.value.trim() === '' ? 0 : Number(maxEl.value);
+      try {
+        const res = await fetch(`${API_URL}/admin/withdraw-channels/${encodeURIComponent(id)}/settings`, {
+          method: 'POST',
+          headers: { ...adminHeaders(), 'Content-Type': 'application/json' },
+          body: JSON.stringify({ taxPercent, minAmount, maxAmount })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (data.success) {
+          showToast('Limits saved for ' + (data.channel?.name || id), 'success');
+          if (Array.isArray(data.channels)) adminChannelsCache = data.channels;
+          else if (data.channel) {
+            adminChannelsCache = (adminChannelsCache || []).map(c =>
+              c.id === data.channel.id ? { ...c, ...data.channel } : c
+            );
+          }
+          // In-place update — keep logos, no full rebuild
+          if (!updateChannelSettingsDom(data.channel || { id, taxPercent, minAmount, maxAmount })) {
+            renderAdminChannels(adminChannelsCache);
+          }
+        } else {
+          showToast(data.message || 'Save failed', 'error');
+        }
+      } catch (e) {
+        showToast('Cannot reach server', 'error');
+      }
+    }
+
+    async function loadAdminChannels() {
+      const token = getAdminToken();
+      if (!token) return;
+      const el = document.getElementById('admin-channels-list');
+      // Skip full rebuild if cards already painted from cache (avoids logo blink on re-enter)
+      if (el && adminChannelsCache && adminChannelsCache.length) {
+        const allPresent = adminChannelsCache.every(c => channelCardExists(c.id));
+        if (allPresent && el.querySelector('[data-channel-id]')) {
+          // Still soft-refresh cache in background without touching DOM logos
+          fetch(`${API_URL}/admin/withdraw-channels`, {
+            headers: { Authorization: 'Bearer ' + token }
+          }).then(r => r.json()).then(data => {
+            if (data.success && Array.isArray(data.channels)) {
+              adminChannelsCache = data.channels;
+              data.channels.forEach(ch => {
+                updateChannelToggleDom(ch);
+                updateChannelSettingsDom(ch);
+              });
+            }
+          }).catch(() => {});
+          return;
+        }
+      }
+      try {
+        const res = await fetch(`${API_URL}/admin/withdraw-channels`, {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        const data = await res.json();
+        if (data.success) {
+          renderAdminChannels(data.channels || []);
+        } else if (el) {
+          el.innerHTML = '<p class="text-center text-xs text-rose-300/80 py-6">Failed to load channels</p>';
+        }
+      } catch (e) {
+        if (el) el.innerHTML = '<p class="text-center text-xs text-rose-300/80 py-6">Cannot reach server</p>';
+      }
+    }
+
+    async function toggleWithdrawChannel(id) {
+      const token = getAdminToken();
+      if (!token || !id) return;
+      // Optimistic UI flip (smooth) before server responds
+      const cached = (adminChannelsCache || []).find(c => c.id === id);
+      const optimisticOn = cached ? !cached.enabled : null;
+      if (optimisticOn !== null) {
+        updateChannelToggleDom({ id, enabled: optimisticOn });
+      }
+      try {
+        const res = await fetch(`${API_URL}/admin/withdraw-channels/${encodeURIComponent(id)}/toggle`, {
+          method: 'POST',
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        const data = await res.json();
+        if (data.success) {
+          if (Array.isArray(data.channels)) adminChannelsCache = data.channels;
+          else if (data.channel) {
+            adminChannelsCache = (adminChannelsCache || []).map(c =>
+              c.id === data.channel.id ? { ...c, ...data.channel } : c
+            );
+          }
+          // In-place only — no logo blink
+          if (!updateChannelToggleDom(data.channel || { id, enabled: optimisticOn })) {
+            renderAdminChannels(adminChannelsCache);
+          }
+          showToast(data.channel && data.channel.enabled ? 'Channel enabled' : 'Channel disabled', 'success');
+        } else {
+          // Revert optimistic flip
+          if (cached) updateChannelToggleDom(cached);
+          showToast(data.message || 'Toggle failed', 'error');
+        }
+      } catch (e) {
+        if (cached) updateChannelToggleDom(cached);
+        showToast('Cannot reach server', 'error');
+      }
+    }
+
+    // Admin cash-out (UI only until real ledger / payout exists)
+    const ADMIN_WD_BANKS = [
+      { id: 'gotyme', name: 'GoTyme', domain: 'gotyme.com.ph' },
+      { id: 'cimb', name: 'CIMB', domain: 'cimb.com' },
+      { id: 'seabank', name: 'SeaBank', domain: 'seabank.ph' }
+    ];
+    // When true, bank list is open for picking; after pick it closes
+    let adminWdBankListOpen = false;
+
+    function renderAdminWdChannelPicks() {
+      const el = document.getElementById('admin-wd-channel-picks');
+      if (!el) return;
+      const channels = [
+        { id: 'gcash', name: 'GCash', logo: 'gcash' },
+        { id: 'maya', name: 'Maya', logo: 'maya' },
+        { id: 'bank', name: 'Bank', logo: null }
+      ];
+      const current = document.getElementById('admin-wd-channel')?.value || 'gcash';
+      el.innerHTML = channels.map(c => {
+        const on = c.id === current;
+        const tile = c.logo
+          ? brandTileHtml(c.logo)
+          : `<div class="w-11 h-11 rounded-xl bg-pink-300/15 text-pink-300 flex items-center justify-center shrink-0 ring-1 ring-pink-300/20">
+              <i class="fa-solid fa-building-columns text-lg"></i>
+            </div>`;
+        return `<button type="button" data-channel="${c.id}" onclick="selectAdminWdChannel('${c.id}')"
+          class="admin-wd-ch ${on ? 'is-selected' : ''} flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all duration-200 active:scale-95">
+          ${tile}
+          <span class="text-[11px] font-semibold ${on ? 'text-pink-100' : 'text-pink-100/70'}">${c.name}</span>
+        </button>`;
+      }).join('');
+      updateAdminWdFormFields();
+    }
+
+    function renderAdminWdBankPicks() {
+      const el = document.getElementById('admin-wd-bank-picks');
+      if (!el) return;
+      el.innerHTML = ADMIN_WD_BANKS.map(b => {
+        const tile = brandLogoMeta(b.id)
+          ? brandTileHtml(b.id, 'w-7 h-7')
+          : `<div class="w-7 h-7 rounded-lg bg-white flex items-center justify-center ring-1 ring-black/10 overflow-hidden shrink-0">
+              <img src="https://logo.clearbit.com/${b.domain}?size=64" alt="${b.name}" class="w-full h-full object-contain p-0.5">
+            </div>`;
+        return `<button type="button" data-bank="${b.id}" onclick="selectAdminWdBank('${b.id}')"
+          class="admin-wd-bank-row">
+          ${tile}
+          <span class="text-sm font-medium text-pink-50/90">${b.name}</span>
+          <i class="fa-solid fa-chevron-right bank-check text-[10px] text-pink-100/35" style="opacity:1"></i>
+        </button>`;
+      }).join('');
+    }
+
+    function selectAdminWdChannel(ch) {
+      const prev = document.getElementById('admin-wd-channel')?.value || '';
+      const input = document.getElementById('admin-wd-channel');
+      if (input) input.value = ch;
+      document.querySelectorAll('#admin-wd-channel-picks .admin-wd-ch').forEach(btn => {
+        const on = btn.getAttribute('data-channel') === ch;
+        btn.classList.toggle('is-selected', on);
+        const label = btn.querySelector('span:last-child');
+        if (label) {
+          label.classList.toggle('text-pink-100', on);
+          label.classList.toggle('text-pink-100/70', !on);
+        }
+      });
+      if (ch !== 'bank') {
+        const bankInput = document.getElementById('admin-wd-bank');
+        if (bankInput) bankInput.value = '';
+        adminWdBankListOpen = false;
+      } else {
+        // Entering Bank: open list to pick (clear previous pick so list shows)
+        const bankInput = document.getElementById('admin-wd-bank');
+        if (bankInput) bankInput.value = '';
+        adminWdBankListOpen = true;
+      }
+      // Only animate field labels when switching e-wallet ↔ bank (not GCash ↔ Maya)
+      updateAdminWdFormFields(prev !== ch && (prev === 'bank' || ch === 'bank'));
+    }
+
+    function selectAdminWdBank(id) {
+      const input = document.getElementById('admin-wd-bank');
+      if (input) input.value = id;
+      adminWdBankListOpen = false; // list closes → proceed to details
+      updateAdminWdFormFields(true);
+    }
+
+    function reopenAdminWdBankList() {
+      const bankInput = document.getElementById('admin-wd-bank');
+      if (bankInput) bankInput.value = '';
+      adminWdBankListOpen = true;
+      updateAdminWdFormFields(false);
+    }
+
+    function updateAdminWdFormFields(animateFields) {
+      const ch = document.getElementById('admin-wd-channel')?.value || 'gcash';
+      const isBank = ch === 'bank';
+      const bankId = (document.getElementById('admin-wd-bank')?.value || '').trim();
+      const bankWrap = document.getElementById('admin-wd-bank-wrap');
+      const selectedEl = document.getElementById('admin-wd-selected-bank');
+      const fields = document.getElementById('admin-wd-fields');
+      const numLabel = document.getElementById('admin-wd-number-label');
+      const numInput = document.getElementById('admin-wd-number');
+      const numIcon = document.getElementById('admin-wd-number-icon');
+
+      const showList = isBank && adminWdBankListOpen;
+      const showSelected = isBank && !!bankId && !adminWdBankListOpen;
+      const showDetails = !isBank || showSelected; // hide details while picking bank
+
+      // Bank list open/close
+      if (bankWrap) {
+        if (showList) {
+          bankWrap.classList.remove('hidden');
+          renderAdminWdBankPicks();
+          void bankWrap.offsetHeight;
+          bankWrap.classList.add('is-open');
+        } else {
+          bankWrap.classList.remove('is-open');
+          setTimeout(() => {
+            if (!adminWdBankListOpen) bankWrap.classList.add('hidden');
+          }, 320);
+        }
+      }
+
+      // Selected bank chip
+      if (selectedEl) {
+        if (showSelected) {
+          const b = ADMIN_WD_BANKS.find(x => x.id === bankId);
+          selectedEl.classList.remove('hidden');
+          const nameEl = document.getElementById('admin-wd-selected-bank-name');
+          const logoEl = document.getElementById('admin-wd-selected-bank-logo');
+          if (nameEl) nameEl.textContent = b ? b.name : bankId;
+          if (logoEl) logoEl.innerHTML = brandTileHtml(bankId, 'w-8 h-8');
+        } else {
+          selectedEl.classList.add('hidden');
+        }
+      }
+
+      // Details visibility (stable: no opacity flash on GCash↔Maya)
+      if (fields) {
+        fields.style.display = showDetails ? '' : 'none';
+      }
+
+      const applyFieldLabels = () => {
+        if (isBank) {
+          if (numLabel) numLabel.textContent = 'Account number';
+          if (numInput) {
+            numInput.placeholder = 'Bank account number';
+            numInput.inputMode = 'numeric';
+            numInput.maxLength = 20;
+          }
+          if (numIcon) numIcon.className = 'fa-solid fa-building-columns absolute left-3.5 top-1/2 -translate-y-1/2 text-pink-300/50 text-sm';
+        } else {
+          if (numLabel) numLabel.textContent = 'Mobile number';
+          if (numInput) {
+            numInput.placeholder = '09XXXXXXXXX';
+            numInput.inputMode = 'tel';
+            numInput.maxLength = 11;
+          }
+          if (numIcon) numIcon.className = 'fa-solid fa-mobile-screen absolute left-3.5 top-1/2 -translate-y-1/2 text-pink-300/50 text-sm';
+        }
+      };
+
+      if (animateFields && showDetails) {
+        if (fields) {
+          fields.style.transition = 'opacity 0.18s ease';
+          fields.style.opacity = '0.4';
+          setTimeout(() => {
+            applyFieldLabels();
+            fields.style.opacity = '1';
+          }, 120);
+        } else applyFieldLabels();
+      } else {
+        applyFieldLabels();
+        if (fields) fields.style.opacity = '1';
+      }
+    }
+
+    function submitAdminWithdraw() {
+      const channel = (document.getElementById('admin-wd-channel')?.value || '').trim();
+      const bankId = (document.getElementById('admin-wd-bank')?.value || '').trim();
+      const name = (document.getElementById('admin-wd-name')?.value || '').trim();
+      const number = (document.getElementById('admin-wd-number')?.value || '').trim();
+      const amountRaw = (document.getElementById('admin-wd-amount')?.value || '').trim();
+      const amount = Number(amountRaw);
+      if (channel === 'bank' && !bankId) {
+        showToast('Select a bank', 'error');
+        return;
+      }
+      if (!name) {
+        showToast('Enter account name', 'error');
+        return;
+      }
+      if (!number) {
+        showToast(channel === 'bank' ? 'Enter account number' : 'Enter mobile number', 'error');
+        return;
+      }
+      if (!amountRaw || !Number.isFinite(amount) || amount <= 0) {
+        showToast('Enter a valid amount', 'error');
+        return;
+      }
+      const bankName = (ADMIN_WD_BANKS.find(b => b.id === bankId) || {}).name || bankId;
+      const channelLabel = channel === 'bank'
+        ? ('Bank · ' + bankName)
+        : (channel === 'gcash' ? 'GCash' : channel === 'maya' ? 'Maya' : channel);
+      showToast('Withdrawal recorded (demo — no real payout yet)', 'success');
+      const hist = document.getElementById('admin-my-withdraw-history');
+      if (hist) {
+        const row = document.createElement('div');
+        row.className = 'px-3 py-3 flex items-center justify-between gap-3 text-left';
+        row.style.animation = 'pageIn 0.25s ease-out';
+        row.innerHTML = `
+          <div class="min-w-0">
+            <p class="text-sm font-medium truncate">${channelLabel} · ${name}</p>
+            <p class="text-[10px] text-pink-100/40 truncate">${number}</p>
+          </div>
+          <p class="text-sm font-semibold text-rose-300 shrink-0">₱${amount.toLocaleString('en-PH')}</p>`;
+        if (hist.querySelector('p.text-xs')) hist.innerHTML = '';
+        hist.classList.remove('p-6', 'text-center');
+        hist.classList.add('p-1', 'divide-y', 'divide-pink-200/10');
+        hist.prepend(row);
+      }
+      const amtEl = document.getElementById('admin-wd-amount');
+      if (amtEl) amtEl.value = '';
+    }
+
+    // One-click Ban / Unban via toggle switch
+    let adminActionBusy = false;
+
+    function banToggleHtml(id, email, isBanned) {
+      const safeEmail = (email || '').replace(/'/g, "\\'");
+      const on = !isBanned;
+      const icon = on ? 'fa-check' : 'fa-ban';
+      return `<button type="button" role="switch" aria-checked="${on}"
+        class="ban-toggle ${on ? 'is-on' : 'is-off'}"
+        title="${on ? 'Access on — click to deactivate' : 'Banned — click to reactivate'}"
+        onclick="toggleBanUser(event, '${id}', '${safeEmail}', ${isBanned})">
+        <span class="ban-toggle-knob"><i class="fa-solid ${icon}"></i></span>
+      </button>`;
+    }
+
+    function refreshAllUsersList() {
+      const q = (document.getElementById('admin-all-search')?.value || '').trim().toLowerCase();
+      renderAdminAllUsers(
+        q ? adminUsersCache.filter(u => (u.email || '').toLowerCase().includes(q)) : adminUsersCache
+      );
+    }
+
+    async function toggleBanUser(ev, id, email, currentlyBanned) {
+      if (!id || adminActionBusy) return;
+      // Optimistic UI: animate switch immediately (smooth), then sync server
+      const btn = ev && ev.currentTarget ? ev.currentTarget : null;
+      if (btn && btn.classList) {
+        const willBeOn = currentlyBanned; // unban → on
+        btn.classList.toggle('is-on', willBeOn);
+        btn.classList.toggle('is-off', !willBeOn);
+        btn.setAttribute('aria-checked', willBeOn ? 'true' : 'false');
+        const knob = btn.querySelector('.ban-toggle-knob i');
+        if (knob) {
+          knob.className = 'fa-solid ' + (willBeOn ? 'fa-check' : 'fa-ban');
+        }
+      }
+      if (currentlyBanned) {
+        await unbanAdminUser(id, email);
+      } else {
+        await banAdminUser(id, email);
+      }
+    }
+
     async function banAdminUser(id, email) {
-      if (!id) return;
-      const ok = confirm('Deactivate / ban user "' + (email || id) + '"?\nThey will not be able to log in. Data is kept.');
-      if (!ok) return;
+      if (!id || adminActionBusy) return;
+      adminActionBusy = true;
       const token = getAdminToken();
       if (!token) {
+        adminActionBusy = false;
         showToast('Admin session expired', 'error');
         return;
       }
@@ -2951,26 +3893,27 @@
           adminUsersCache = (adminUsersCache || []).map(u =>
             u.id === id ? { ...u, status: 'banned', isActive: false } : u
           );
-          renderAdminAllUsers(
-            (document.getElementById('admin-all-search')?.value || '').trim()
-              ? adminUsersCache.filter(u => (u.email || '').toLowerCase().includes((document.getElementById('admin-all-search')?.value || '').toLowerCase().trim()))
-              : adminUsersCache
-          );
-          loadAdminData();
+          // Delay list re-render so toggle slide can finish smoothly
+          setTimeout(() => {
+            refreshAllUsersList();
+            renderAdminUsers(adminUsersCache);
+          }, 420);
         } else {
           showToast(data.message || 'Ban failed', 'error');
         }
       } catch (err) {
         showToast('Cannot reach server', 'error');
+      } finally {
+        adminActionBusy = false;
       }
     }
 
     async function unbanAdminUser(id, email) {
-      if (!id) return;
-      const ok = confirm('Reactivate user "' + (email || id) + '"?');
-      if (!ok) return;
+      if (!id || adminActionBusy) return;
+      adminActionBusy = true;
       const token = getAdminToken();
       if (!token) {
+        adminActionBusy = false;
         showToast('Admin session expired', 'error');
         return;
       }
@@ -2985,17 +3928,17 @@
           adminUsersCache = (adminUsersCache || []).map(u =>
             u.id === id ? { ...u, status: 'active' } : u
           );
-          renderAdminAllUsers(
-            (document.getElementById('admin-all-search')?.value || '').trim()
-              ? adminUsersCache.filter(u => (u.email || '').toLowerCase().includes((document.getElementById('admin-all-search')?.value || '').toLowerCase().trim()))
-              : adminUsersCache
-          );
-          loadAdminData();
+          setTimeout(() => {
+            refreshAllUsersList();
+            renderAdminUsers(adminUsersCache);
+          }, 420);
         } else {
           showToast(data.message || 'Unban failed', 'error');
         }
       } catch (err) {
         showToast('Cannot reach server', 'error');
+      } finally {
+        adminActionBusy = false;
       }
     }
 
@@ -3029,12 +3972,16 @@
     }
 
     let adminRefreshTimer = null;
+    let adminEventSource = null;
+    let adminLoadDebounce = null;
+    let adminSseReconnectTimer = null;
+
     function formatPeso(n) {
       const num = Number(n) || 0;
       return '₱' + num.toLocaleString('en-PH');
     }
 
-    async function loadAdminData() {
+    async function loadAdminData(silent) {
       const token = getAdminToken();
       if (!token) return;
       try {
@@ -3049,11 +3996,27 @@
 
         if (usersData.success) {
           adminUsersCache = usersData.users || [];
-          renderAdminUsers(adminUsersCache);
-          if (document.getElementById('admin-users-all')?.classList.contains('active')) {
-            renderAdminAllUsers(adminUsersCache);
+          // Don't re-render lists while admin is clicking Ban/Unban or typing a password
+          // (live SSE was wiping the row mid-click → needed many clicks)
+          const activeEl = document.activeElement;
+          const typingInAdmin =
+            activeEl &&
+            activeEl.tagName === 'INPUT' &&
+            (activeEl.id === 'admin-all-search' ||
+              activeEl.id === 'admin-search' ||
+              (activeEl.id && activeEl.id.indexOf('pwd-input') === 0));
+          const modalOpen = document.getElementById('confirm-overlay')?.classList.contains('open');
+
+          if (!adminActionBusy && !typingInAdmin && !modalOpen) {
+            renderAdminUsers(adminUsersCache);
+            if (document.getElementById('admin-users-all')?.classList.contains('active')) {
+              const q = (document.getElementById('admin-all-search')?.value || '').trim().toLowerCase();
+              renderAdminAllUsers(
+                q ? adminUsersCache.filter(u => (u.email || '').toLowerCase().includes(q)) : adminUsersCache
+              );
+            }
+            if (document.getElementById('admin-active')?.classList.contains('active')) renderAdminActivePage();
           }
-          // Real active count from lastSeen (20s window)
           const activeNow = adminUsersCache.filter(u => u.isActive).length;
           const elActive = document.getElementById('stat-active');
           if (elActive) elActive.textContent = activeNow;
@@ -3088,22 +4051,70 @@
         }
         renderAdminChart();
       } catch (err) {
-        showToast('Failed to load admin data', 'error');
+        if (!silent) showToast('Failed to load admin data', 'error');
       }
     }
 
+    function scheduleAdminLoad() {
+      if (adminLoadDebounce) return;
+      adminLoadDebounce = setTimeout(() => {
+        adminLoadDebounce = null;
+        if (getAdminToken()) loadAdminData(true);
+      }, 350);
+    }
+
+    // Real-time: SSE push when users login / register / heartbeat / ban, etc.
+    // Fallback: light poll every 30s if stream drops
     function startAdminRefresh() {
       stopAdminRefresh();
+      const token = getAdminToken();
+      if (!token) return;
+
+      try {
+        const url = `${API_URL}/admin/stream?token=${encodeURIComponent(token)}`;
+        adminEventSource = new EventSource(url);
+        const onPush = () => scheduleAdminLoad();
+        adminEventSource.addEventListener('connected', onPush);
+        adminEventSource.addEventListener('update', onPush);
+        adminEventSource.addEventListener('presence', onPush);
+        adminEventSource.onmessage = onPush;
+        adminEventSource.onerror = () => {
+          // Browser will retry EventSource; also schedule our own reconnect if closed
+          if (adminEventSource && adminEventSource.readyState === EventSource.CLOSED) {
+            try { adminEventSource.close(); } catch (e) {}
+            adminEventSource = null;
+            if (adminSseReconnectTimer) clearTimeout(adminSseReconnectTimer);
+            adminSseReconnectTimer = setTimeout(() => {
+              if (getAdminToken()) startAdminRefresh();
+            }, 3000);
+          }
+        };
+      } catch (e) {
+        console.error('SSE failed, using poll only', e);
+      }
+
+      // Safety net if SSE unavailable (old proxy, etc.)
       adminRefreshTimer = setInterval(() => {
-        if (getAdminToken() && document.getElementById('admin-dash')?.classList.contains('active')) {
-          loadAdminData();
-        }
-      }, 10000); // refresh every 10s for near real-time
+        if (getAdminToken()) loadAdminData(true);
+      }, 30000);
     }
+
     function stopAdminRefresh() {
       if (adminRefreshTimer) {
         clearInterval(adminRefreshTimer);
         adminRefreshTimer = null;
+      }
+      if (adminLoadDebounce) {
+        clearTimeout(adminLoadDebounce);
+        adminLoadDebounce = null;
+      }
+      if (adminSseReconnectTimer) {
+        clearTimeout(adminSseReconnectTimer);
+        adminSseReconnectTimer = null;
+      }
+      if (adminEventSource) {
+        try { adminEventSource.close(); } catch (e) {}
+        adminEventSource = null;
       }
     }
 
@@ -3156,20 +4167,46 @@
     }
 
     let heartbeatTimer = null;
+    let forceLogoutInProgress = false;
+
+    function forceLogoutBanned(message) {
+      if (forceLogoutInProgress) return;
+      forceLogoutInProgress = true;
+      stopHeartbeat();
+      clearAuth();
+      showToast(message || 'Account is deactivated. Contact support.', 'error');
+      showPage('login', true);
+      setTimeout(() => { forceLogoutInProgress = false; }, 1500);
+    }
+
     function startHeartbeat() {
       stopHeartbeat();
       const send = async () => {
         const token = getToken();
         if (!token) return;
+        // Tab not visible → don't ping (counts toward 5s inactive)
+        if (typeof document !== 'undefined' && document.hidden) return;
         try {
-          await fetch(`${API_URL}/heartbeat`, {
+          const res = await fetch(`${API_URL}/heartbeat`, {
             method: 'POST',
             headers: { Authorization: 'Bearer ' + token }
           });
-        } catch (e) { /* ignore */ }
+          let data = null;
+          try { data = await res.json(); } catch (e) { /* ignore */ }
+          // Admin banned this account while session was open → kick out
+          if (res.status === 403 && data && data.code === 'BANNED') {
+            forceLogoutBanned(data.message);
+            return;
+          }
+          if (res.status === 401) {
+            forceLogoutBanned('Session expired. Please sign in again.');
+            return;
+          }
+        } catch (e) { /* ignore network errors */ }
       };
       send();
-      heartbeatTimer = setInterval(send, 12000); // every 12s
+      // Every 2s so admin can mark Inactive within ~5s of leaving
+      heartbeatTimer = setInterval(send, 2000);
     }
     function stopHeartbeat() {
       if (heartbeatTimer) {
@@ -3177,6 +4214,17 @@
         heartbeatTimer = null;
       }
     }
+
+    // Pause presence when user switches away / minimizes; resume when back
+    document.addEventListener('visibilitychange', () => {
+      if (!getToken()) return;
+      if (document.hidden) {
+        // stop pings → after ~5s server marks Inactive
+        stopHeartbeat();
+      } else {
+        startHeartbeat();
+      }
+    });
 
     // ========== AUTO-LOGIN CHECK ==========
     function getSavedAdminPage() {
