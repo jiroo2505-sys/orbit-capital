@@ -1,4 +1,5 @@
 const express = require('express');
+const crypto = require('crypto');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -290,6 +291,16 @@ function authMiddleware(req, res, next) {
         code: 'BANNED'
       });
     }
+    // Single active session: token must carry the CURRENT sessionId for this user.
+    // A newer login on another device overwrites dbUser.sessionId, which
+    // immediately invalidates every older token on its next request.
+    if (dbUser.sessionId && decoded.sessionId !== dbUser.sessionId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Logged in on another device.',
+        code: 'SESSION_REPLACED'
+      });
+    }
     req.user = decoded;
     next();
   } catch (err) {
@@ -362,6 +373,7 @@ app.post('/api/register', async (req, res) => {
     }
 
     const hashed = await bcrypt.hash(password, 10);
+    const sessionId = crypto.randomBytes(16).toString('hex');
     const newUser = {
       id: Date.now().toString(),
       email: email.toLowerCase().trim(),
@@ -371,7 +383,8 @@ app.post('/api/register', async (req, res) => {
       bannedAt: null,
       invitationCode: invitationCode || null,
       createdAt: new Date().toISOString(),
-      lastSeen: new Date().toISOString()
+      lastSeen: new Date().toISOString(),
+      sessionId
     };
 
     users.push(newUser);
@@ -386,9 +399,9 @@ app.post('/api/register', async (req, res) => {
 
     // Auto-login after register
     const token = jwt.sign(
-      { id: newUser.id, email: newUser.email },
+      { id: newUser.id, email: newUser.email, sessionId },
       JWT_SECRET,
-      { expiresIn: '7d' }
+      { expiresIn: '24h' }
     );
 
     res.status(201).json({
@@ -441,13 +454,15 @@ app.post('/api/login', async (req, res) => {
 
     user.lastLogin = new Date().toISOString();
     user.lastSeen = new Date().toISOString();
+    const sessionId = crypto.randomBytes(16).toString('hex');
+    user.sessionId = sessionId; // new login = new session; old device's token stops working next request
     saveUsers(users);
     logActivity('login', user.email);
 
     const token = jwt.sign(
-      { id: user.id, email: user.email },
+      { id: user.id, email: user.email, sessionId },
       JWT_SECRET,
-      { expiresIn: '7d' }
+      { expiresIn: '24h' }
     );
 
     const time = new Date().toLocaleString();
@@ -469,12 +484,17 @@ app.post('/api/login', async (req, res) => {
 
 // LOGOUT (mostly client-side, but endpoint exists for completeness)
 app.post('/api/logout', authMiddleware, (req, res) => {
-  // Clear lastSeen so admin shows Inactive immediately
+  // Clear lastSeen so admin shows Inactive immediately, and kill the
+  // session server-side so a copied/leaked token can't be reused after logout.
   try {
     const users = loadUsers();
     const user = users.find(u => u.id === req.user.id);
     if (user) {
       user.lastSeen = null;
+      // Rotate to a throwaway sessionId (not null) so the just-used token
+      // stops matching immediately — a null/falsy value would skip the
+      // check entirely (see authMiddleware's backward-compat guard).
+      user.sessionId = crypto.randomBytes(16).toString('hex');
       saveUsers(users);
     }
   } catch (e) { /* ignore */ }
@@ -537,7 +557,7 @@ app.post('/api/admin/login', async (req, res) => {
     const token = jwt.sign(
       { isAdmin: true, role: 'admin' },
       JWT_SECRET,
-      { expiresIn: '12h' }
+      { expiresIn: '24h' }
     );
     logActivity('admin_login', 'admin');
     res.json({ success: true, message: 'Admin login successful', token });

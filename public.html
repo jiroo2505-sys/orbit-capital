@@ -2251,6 +2251,7 @@
         if (data.success) {
           saveAuth(data.token, data.user);
           startHeartbeat();
+          startUserIdleWatch();
           showToast('Welcome back!', 'success');
           showPage('home');
         } else {
@@ -2329,6 +2330,7 @@
         if (data.success) {
           saveAuth(data.token, data.user);
           startHeartbeat();
+          startUserIdleWatch();
           showToast('Account created successfully!', 'success');
           showPage('home');
         } else {
@@ -2359,6 +2361,7 @@
         }
       }
       stopHeartbeat();
+      stopUserIdleWatch();
       clearAuth();
       showToast('Signed out successfully', 'success');
       showPage('login');
@@ -2583,6 +2586,7 @@
           showPage('admin-dash');
           loadAdminData();
           startAdminRefresh();
+          startAdminIdleWatch();
         } else {
           showToast(data.message || 'Invalid admin password', 'error');
         }
@@ -2593,11 +2597,48 @@
 
     function handleAdminLogout() {
       stopAdminRefresh();
+      stopAdminIdleWatch();
       closeAdminDrawer();
       clearAdminToken();
       try { sessionStorage.removeItem('orbit_admin_page'); } catch (e) {}
       showToast('Admin signed out', 'success');
       showPage('admin-login', true);
+    }
+
+    // ========== ADMIN AUTO-LOGOUT AFTER 1 HOUR OF INACTIVITY ==========
+    const ADMIN_IDLE_LIMIT_MS = 15 * 60 * 1000; // 15 minutes
+    let adminIdleTimer = null;
+    let adminIdleWatching = false;
+
+    function resetAdminIdleTimer() {
+      if (!getAdminToken()) return;
+      clearTimeout(adminIdleTimer);
+      adminIdleTimer = setTimeout(adminIdleAutoLogout, ADMIN_IDLE_LIMIT_MS);
+    }
+
+    function adminIdleAutoLogout() {
+      if (!getAdminToken()) return;
+      stopAdminRefresh();
+      stopAdminIdleWatch();
+      closeAdminDrawer();
+      clearAdminToken();
+      try { sessionStorage.removeItem('orbit_admin_page'); } catch (e) {}
+      showToast('Signed out — no activity for 1 hour', 'error');
+      showPage('admin-login', true);
+    }
+
+    function startAdminIdleWatch() {
+      if (adminIdleWatching) { resetAdminIdleTimer(); return; }
+      adminIdleWatching = true;
+      ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'].forEach(evt => {
+        document.addEventListener(evt, resetAdminIdleTimer, { passive: true });
+      });
+      resetAdminIdleTimer();
+    }
+
+    function stopAdminIdleWatch() {
+      clearTimeout(adminIdleTimer);
+      adminIdleTimer = null;
     }
 
     // ========== ADMIN DRAWER (left menu + swipe) ==========
@@ -4088,6 +4129,7 @@
       if (forceLogoutInProgress) return;
       forceLogoutInProgress = true;
       stopHeartbeat();
+      stopUserIdleWatch();
       clearAuth();
       showToast(message || 'Account is deactivated. Contact support.', 'error');
       showPage('login', true);
@@ -4114,7 +4156,11 @@
             return;
           }
           if (res.status === 401) {
-            forceLogoutBanned('Session expired. Please sign in again.');
+            if (data && data.code === 'SESSION_REPLACED') {
+              forceLogoutBanned('Logged in on another device. This session has ended.');
+            } else {
+              forceLogoutBanned('Session expired. Please sign in again.');
+            }
             return;
           }
         } catch (e) { /* ignore network errors */ }
@@ -4128,6 +4174,40 @@
         clearInterval(heartbeatTimer);
         heartbeatTimer = null;
       }
+    }
+
+    // ========== USER AUTO-LOGOUT AFTER 15 MIN OF INACTIVITY ==========
+    const USER_IDLE_LIMIT_MS = 15 * 60 * 1000; // 15 minutes
+    let userIdleTimer = null;
+    let userIdleWatching = false;
+
+    function resetUserIdleTimer() {
+      if (!getToken()) return;
+      clearTimeout(userIdleTimer);
+      userIdleTimer = setTimeout(userIdleAutoLogout, USER_IDLE_LIMIT_MS);
+    }
+
+    function userIdleAutoLogout() {
+      if (!getToken()) return;
+      stopHeartbeat();
+      stopUserIdleWatch();
+      clearAuth();
+      showToast('Signed out — no activity for 15 minutes', 'error');
+      showPage('login', true);
+    }
+
+    function startUserIdleWatch() {
+      if (userIdleWatching) { resetUserIdleTimer(); return; }
+      userIdleWatching = true;
+      ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'].forEach(evt => {
+        document.addEventListener(evt, resetUserIdleTimer, { passive: true });
+      });
+      resetUserIdleTimer();
+    }
+
+    function stopUserIdleWatch() {
+      clearTimeout(userIdleTimer);
+      userIdleTimer = null;
     }
 
     // Pause presence when user switches away / minimizes; resume when back
@@ -4174,6 +4254,7 @@
           showPage(page, true);
           loadAdminData();
           startAdminRefresh();
+          startAdminIdleWatch();
         } else {
           showPage('admin-login', true);
         }
@@ -4192,6 +4273,7 @@
         // Main site
         if (getToken()) {
           startHeartbeat();
+          startUserIdleWatch();
           const saved = getSavedUserPage();
           showPage(saved || 'home', true);
           window.addEventListener('hashchange', () => {
