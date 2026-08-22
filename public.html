@@ -793,7 +793,7 @@
             <span class="text-[10px] text-pink-100/55">Portfolio</span>
           </div>
           <p class="font-bold text-sm">₱0</p>
-          <p class="text-[10px] text-emerald-300 mt-0.5">+0% (30D)</p>
+          <p class="text-[10px] text-emerald-300 mt-0.5">+0% (1D)</p>
         </div>
         <div class="glass rounded-2xl p-3.5 card-hover">
           <div class="flex items-center gap-1.5 mb-2">
@@ -801,7 +801,7 @@
             <span class="text-[10px] text-pink-100/55">Space Mkt</span>
           </div>
           <p class="font-bold text-sm">₱0</p>
-          <p class="text-[10px] text-emerald-300 mt-0.5">+0% (30D)</p>
+          <p class="text-[10px] text-emerald-300 mt-0.5">+0% (1D)</p>
         </div>
         <div class="glass rounded-2xl p-3.5 card-hover">
           <div class="flex items-center gap-1.5 mb-2">
@@ -994,6 +994,34 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== NETWORKS ========== -->
+  <div id="networks" class="page">
+    <div class="max-w-md mx-auto min-h-screen flex flex-col px-5 pt-6 pb-28 relative z-10">
+      <header class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-bold">Networks</h1>
+        <button onclick="showPage('menu')" class="w-11 h-11 rounded-xl glass flex items-center justify-center card-hover">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </header>
+      <p class="text-pink-100/55 text-sm mb-5">Connect with fellow investors · Partners · Referrals</p>
+
+      <div class="space-y-4">
+        <div class="glass rounded-2xl p-4 card-hover">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl bg-pink-300/15 flex items-center justify-center shrink-0">
+              <i class="fa-solid fa-user-group text-pink-300"></i>
+            </div>
+            <div class="flex-1">
+              <h3 class="font-bold text-sm">Your Network</h3>
+              <p class="text-xs text-pink-100/55 mt-0.5">People you've connected with</p>
+            </div>
+          </div>
+        </div>
+        <p class="text-center text-xs text-pink-100/40 py-6">No connections yet.</p>
       </div>
     </div>
   </div>
@@ -2131,6 +2159,10 @@
       <i class="fa-solid fa-rocket text-lg"></i>
       <span class="text-[10px]">Deals</span>
     </button>
+    <button onclick="showPage('networks')" id="nav-networks" class="nav-btn flex flex-col items-center gap-1 text-pink-100/50">
+      <i class="fa-solid fa-user-group text-lg"></i>
+      <span class="text-[10px]">Networks</span>
+    </button>
     <button onclick="showPage('insights')" id="nav-insights" class="nav-btn flex flex-col items-center gap-1 text-pink-100/50">
       <i class="fa-solid fa-chart-simple text-lg"></i>
       <span class="text-[10px]">Insights</span>
@@ -2403,6 +2435,7 @@
       portfolio: 'bg-portfolio',
       deals: 'bg-deals',
       insights: 'bg-insights',
+      networks: 'bg-menu',
       explore: 'bg-explore',
       featured: 'bg-featured',
       menu: 'bg-menu',
@@ -2417,7 +2450,8 @@
       home: 'nav-home',
       portfolio: 'nav-portfolio',
       deals: 'nav-deals',
-      insights: 'nav-insights'
+      insights: 'nav-insights',
+      networks: 'nav-networks'
     };
 
     const AUTH_PAGES = ['login', 'create', 'admin-login', 'admin-dash', 'admin-users-all', 'admin-active', 'admin-logins', 'admin-earnings', 'admin-deposits', 'admin-withdrawals', 'admin-withdraw-options', 'admin-pending-withdrawals', 'admin-my-withdraw', 'admin-packages', 'admin-referral', 'admin-gateways', 'admin-gift-codes', 'admin-profile', 'admin-settings', 'admin-payments'];
@@ -2633,7 +2667,7 @@
       showPage('admin-login', true);
     }
 
-    // ========== ADMIN AUTO-LOGOUT AFTER 1 HOUR OF INACTIVITY ==========
+    // ========== ADMIN AUTO-LOGOUT AFTER 15 MIN OF INACTIVITY ==========
     const ADMIN_IDLE_LIMIT_MS = 15 * 60 * 1000; // 15 minutes
     let adminIdleTimer = null;
     let adminIdleWatching = false;
@@ -2651,7 +2685,7 @@
       closeAdminDrawer();
       clearAdminToken();
       try { sessionStorage.removeItem('orbit_admin_page'); } catch (e) {}
-      showToast('Signed out — no activity for 1 hour', 'error');
+      showToast('Signed out — no activity for 15 minutes', 'error');
       showPage('admin-login', true);
     }
 
