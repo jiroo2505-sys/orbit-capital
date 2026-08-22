@@ -2243,6 +2243,7 @@
         return;
       }
 
+      showAuthLoader();
       try {
         const res = await fetch(`${API_URL}/login`, {
           method: 'POST',
@@ -2258,12 +2259,14 @@
           showToast('Welcome back!', 'success');
           showPage('home');
         } else {
+          hideAuthLoader();
           showToast(data.message || 'Invalid email or password', 'error');
           shakeElement(formCard);
           markError(emailInput, passwordInput);
         }
       } catch (err) {
         console.error(err);
+        hideAuthLoader();
         showToast('Cannot reach server. Check if backend is running.', 'error');
         shakeElement(formCard);
       }
@@ -2322,6 +2325,7 @@
         return;
       }
 
+      showAuthLoader();
       try {
         const res = await fetch(`${API_URL}/register`, {
           method: 'POST',
@@ -2337,6 +2341,7 @@
           showToast('Account created successfully!', 'success');
           showPage('home');
         } else {
+          hideAuthLoader();
           showToast(data.message || 'Registration failed', 'error');
           shakeElement(formCard);
           if (data.message && data.message.toLowerCase().includes('email')) {
@@ -2345,6 +2350,7 @@
         }
       } catch (err) {
         console.error(err);
+        hideAuthLoader();
         showToast('Cannot reach server. Check if backend is running.', 'error');
         shakeElement(formCard);
       }
@@ -2506,6 +2512,20 @@
       } catch (e) { /* ignore */ }
     }
 
+    // Show the "Entering orbit…" loader the instant Sign In / Create Account /
+    // Admin Login is pressed — don't wait for the network response first.
+    // showPage() (called on success) reuses this same 'show' class and
+    // removes it once the new page is ready, so the loader stays visible
+    // seamlessly through slow connections instead of flashing late.
+    function showAuthLoader() {
+      const loader = document.getElementById('loader');
+      if (loader) loader.classList.add('show');
+    }
+    function hideAuthLoader() {
+      const loader = document.getElementById('loader');
+      if (loader) loader.classList.remove('show');
+    }
+
     function showPage(pageId, instant) {
       if (isNavigating && !instant) return;
 
@@ -2578,6 +2598,7 @@
         showToast('Please enter admin password', 'error');
         return;
       }
+      showAuthLoader();
       try {
         const res = await fetch(`${API_URL}/admin/login`, {
           method: 'POST',
@@ -2593,9 +2614,11 @@
           startAdminRefresh();
           startAdminIdleWatch();
         } else {
+          hideAuthLoader();
           showToast(data.message || 'Invalid admin password', 'error');
         }
       } catch (err) {
+        hideAuthLoader();
         showToast('Cannot reach server. Check if backend is running.', 'error');
       }
     }
