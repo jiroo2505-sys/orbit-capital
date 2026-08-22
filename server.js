@@ -17,21 +17,26 @@ const PRODUCTS_FILE = path.join(__dirname, 'products.json');
 
 // Middleware
 app.use(cors({ origin: true, credentials: true }));
-app.use(express.json());
+// Raised from Express's default 100kb so admin-uploaded product photos
+// (sent as base64 data URLs in the JSON body) aren't rejected with 413.
+// 8mb (not 5mb) because base64 adds ~33% overhead: a 5MB raw image file
+// (the client-side cap) becomes ~6.7MB once base64-encoded, plus a small
+// margin for the rest of the product JSON payload.
+app.use(express.json({ limit: '8mb' }));
 
 // Serve the frontend (public.html) — main site + admin share the same file
-app.get('/', (req, res) => {
+// no-store: public.html is being actively edited during dev; without this,
+// browsers (especially mobile) can silently keep serving a stale cached
+// copy after a file change + server restart, making fixes look like they
+// "didn't work" when they actually did.
+function sendFreshPublicHtml(req, res) {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
   res.sendFile(path.join(__dirname, 'public.html'));
-});
-app.get('/index.html', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public.html'));
-});
-app.get('/admin', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public.html'));
-});
-app.get('/admin/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public.html'));
-});
+}
+app.get('/', sendFreshPublicHtml);
+app.get('/index.html', sendFreshPublicHtml);
+app.get('/admin', sendFreshPublicHtml);
+app.get('/admin/', sendFreshPublicHtml);
 
 // ---- Simple file-based user store ----
 function loadUsers() {
@@ -205,11 +210,20 @@ function ensureProducts() {
   // Backfill any missing fields on older records
   let changed = false;
   for (const p of products) {
+    // One-time migration from the pre-2026-08-22 field names, in case a
+    // stale/imported products.json still uses them.
+    if (typeof p.rate !== 'number' && typeof p.minAmount === 'number') { p.rate = p.minAmount; changed = true; }
+    if (typeof p.dailyYield !== 'number' && typeof p.days === 'number') { p.dailyYield = p.days; changed = true; }
+    if (typeof p.termDays !== 'number' && typeof p.targetPercent === 'number') { p.termDays = p.targetPercent; changed = true; }
+    if ('minAmount' in p) { delete p.minAmount; changed = true; }
+    if ('days' in p) { delete p.days; changed = true; }
+    if ('targetPercent' in p) { delete p.targetPercent; changed = true; }
+
     if (typeof p.enabled !== 'boolean') { p.enabled = true; changed = true; }
     if (typeof p.sort !== 'number') { p.sort = 0; changed = true; }
-    if (typeof p.minAmount !== 'number' || Number.isNaN(p.minAmount)) { p.minAmount = 0; changed = true; }
-    if (typeof p.days !== 'number' || Number.isNaN(p.days)) { p.days = 0; changed = true; }
-    if (typeof p.targetPercent !== 'number' || Number.isNaN(p.targetPercent)) { p.targetPercent = 0; changed = true; }
+    if (typeof p.rate !== 'number' || Number.isNaN(p.rate)) { p.rate = 0; changed = true; }
+    if (typeof p.dailyYield !== 'number' || Number.isNaN(p.dailyYield)) { p.dailyYield = 0; changed = true; }
+    if (typeof p.termDays !== 'number' || Number.isNaN(p.termDays)) { p.termDays = 0; changed = true; }
   }
   if (changed) saveProducts(products);
   return products;
@@ -260,12 +274,23 @@ function ensureChannels() {
   return channels;
 }
 
-// Ensure files exist
-if (!fs.existsSync(USERS_FILE)) {
+// ---- Dev reset: wipe users/activity/products on every server start ----
+// Owner wants a clean slate ("parang bagong install") every time localhost
+// is restarted, since test accounts/packages kept piling up during dev.
+// IMPORTANT: this must be OFF once deployed to Render/production, or every
+// redeploy/idle-restart would wipe real user data. Controlled by an env var
+// so it defaults ON for local dev but can be disabled for production:
+//   Render → set RESET_ON_START=false in the environment settings.
+const RESET_ON_START = process.env.RESET_ON_START !== 'false';
+
+if (RESET_ON_START) {
   saveUsers([]);
-}
-if (!fs.existsSync(ACTIVITY_FILE)) {
   saveActivity([]);
+  saveProducts(defaultProducts());
+  console.log('🧹 Dev reset: users.json, activity.json, and products.json cleared on startup (RESET_ON_START).');
+} else {
+  if (!fs.existsSync(USERS_FILE)) saveUsers([]);
+  if (!fs.existsSync(ACTIVITY_FILE)) saveActivity([]);
 }
 ensureChannels();
 
@@ -921,15 +946,21 @@ app.get('/api/admin/products', adminMiddleware, (req, res) => {
   }
 });
 
+// Field model as of 2026-08-22: Rate (₱ price of the package), Daily Yield
+// (₱ earned per day on that package), Term/Days (length of the investment
+// in days). These replaced the old Min ₱ / Days / Target % fields — this
+// used to be a label-only rename (still validated as a 0–100 percent
+// underneath), which broke Term/Days for any value over 100. Validation
+// below now matches what each field actually holds.
 function validateProductBody(body) {
   const name = (body.name || '').toString().trim();
   if (!name) return 'Product name is required';
-  const minAmount = Number(body.minAmount);
-  const days = Number(body.days);
-  const targetPercent = Number(body.targetPercent);
-  if (!Number.isFinite(minAmount) || minAmount < 0) return 'Min amount must be ≥ 0';
-  if (!Number.isFinite(days) || days < 0) return 'Days must be ≥ 0';
-  if (!Number.isFinite(targetPercent) || targetPercent < 0 || targetPercent > 100) return 'Target % must be 0–100';
+  const rate = Number(body.rate);
+  const dailyYield = Number(body.dailyYield);
+  const termDays = Number(body.termDays);
+  if (!Number.isFinite(rate) || rate < 0) return 'Rate must be ≥ 0';
+  if (!Number.isFinite(dailyYield) || dailyYield < 0) return 'Daily Yield must be ≥ 0';
+  if (!Number.isFinite(termDays) || termDays < 0) return 'Term (days) must be ≥ 0';
   return null;
 }
 
@@ -946,11 +977,11 @@ app.post('/api/admin/products', adminMiddleware, (req, res) => {
       id,
       name,
       subtitle: (body.subtitle || '').toString().trim(),
-      tag: (body.tag || '').toString().trim() || 'Medium',
+      tag: (body.tag || '').toString().trim() || 'Orbit',
       description: (body.description || '').toString().trim(),
-      minAmount: Math.floor(Number(body.minAmount)),
-      days: Math.floor(Number(body.days)),
-      targetPercent: Math.round(Number(body.targetPercent) * 100) / 100,
+      rate: Math.floor(Number(body.rate)),
+      dailyYield: Math.round(Number(body.dailyYield) * 100) / 100,
+      termDays: Math.floor(Number(body.termDays)),
       image: (body.image || '').toString().trim(),
       enabled: body.enabled !== false,
       sort: products.length + 1
@@ -979,11 +1010,11 @@ app.put('/api/admin/products/:id', adminMiddleware, (req, res) => {
 
     p.name = String(body.name).trim();
     p.subtitle = (body.subtitle || '').toString().trim();
-    p.tag = (body.tag || '').toString().trim() || 'Medium';
+    p.tag = (body.tag || '').toString().trim() || 'Orbit';
     p.description = (body.description || '').toString().trim();
-    p.minAmount = Math.floor(Number(body.minAmount));
-    p.days = Math.floor(Number(body.days));
-    p.targetPercent = Math.round(Number(body.targetPercent) * 100) / 100;
+    p.rate = Math.floor(Number(body.rate));
+    p.dailyYield = Math.round(Number(body.dailyYield) * 100) / 100;
+    p.termDays = Math.floor(Number(body.termDays));
     p.image = (body.image || '').toString().trim();
     if (typeof body.enabled === 'boolean') p.enabled = body.enabled;
 

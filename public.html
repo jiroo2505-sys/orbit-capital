@@ -608,6 +608,82 @@
     .admin-wd-bank-row.is-selected .bank-check {
       opacity: 1;
     }
+
+    /* Subtitle / Tag choice dropdowns (Product Settings) */
+    .field-dropdown {
+      position: relative;
+    }
+    .field-dropdown-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      cursor: pointer;
+      text-align: left;
+    }
+    .field-dropdown-btn .fd-value {
+      color: #fff;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .field-dropdown-btn .fd-value.is-placeholder {
+      color: rgba(252, 231, 243, 0.3);
+    }
+    .field-dropdown-btn i {
+      color: rgba(249, 168, 212, 0.6);
+      font-size: 10px;
+      flex-shrink: 0;
+      transition: transform 0.2s ease;
+    }
+    .field-dropdown.is-open .field-dropdown-btn i {
+      transform: rotate(180deg);
+    }
+    .field-dropdown.is-open .field-dropdown-btn {
+      border-color: rgba(249, 168, 212, 0.55);
+      background: rgba(255, 220, 230, 0.12);
+    }
+    .field-dropdown-panel {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: calc(100% + 6px);
+      z-index: 30;
+      background: rgba(26, 11, 18, 0.97);
+      border: 1px solid rgba(255, 190, 205, 0.25);
+      border-radius: 0.75rem;
+      max-height: 104px; /* ~3 rows visible, rest scrolls */
+      overflow-y: auto;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+    }
+    .field-dropdown-panel.hidden {
+      display: none;
+    }
+    .field-dropdown-item {
+      padding: 9px 12px;
+      font-size: 11px;
+      line-height: 15px;
+      color: rgba(252, 231, 243, 0.85);
+      cursor: pointer;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      border-bottom: 1px solid rgba(255, 190, 205, 0.08);
+    }
+    .field-dropdown-item:last-child {
+      border-bottom: none;
+    }
+    .field-dropdown-item:hover,
+    .field-dropdown-item:active {
+      background: rgba(249, 168, 212, 0.12);
+      color: #fff;
+    }
+    .field-dropdown-item.is-selected {
+      background: rgba(249, 168, 212, 0.16);
+      color: #f9a8d4;
+      font-weight: 600;
+    }
   </style>
 </head>
 <body>
@@ -1896,30 +1972,87 @@
       </header>
       <div id="admin-add-product-card" class="glass-strong rounded-2xl p-4 space-y-2.5 mb-4 hidden">
         <p class="text-xs font-semibold text-pink-200 mb-1">New package</p>
-        <input type="text" id="np-name" placeholder="Name (e.g. Natnat 5.0)" class="input-field w-full px-3 py-2 rounded-lg text-xs placeholder:text-pink-100/30">
+        <input type="text" id="np-name" placeholder="Name (e.g. Orbital Capital V1)" class="input-field w-full px-3 py-2 rounded-lg text-xs placeholder:text-pink-100/30">
         <div class="grid grid-cols-2 gap-2">
-          <input type="text" id="np-subtitle" placeholder="Subtitle (e.g. Growth · Core)" class="input-field w-full px-3 py-2 rounded-lg text-xs placeholder:text-pink-100/30">
-          <input type="text" id="np-tag" placeholder="Tag (e.g. High)" class="input-field w-full px-3 py-2 rounded-lg text-xs placeholder:text-pink-100/30">
+          <div class="field-dropdown" id="np-subtitle-dd">
+            <input type="hidden" id="np-subtitle" value="">
+            <button type="button" onclick="toggleFieldDropdown('np-subtitle')" class="field-dropdown-btn input-field w-full px-3 py-2 rounded-lg text-xs">
+              <span class="fd-value is-placeholder" id="np-subtitle-label">Subtitle</span>
+              <i class="fa-solid fa-chevron-down"></i>
+            </button>
+            <div class="field-dropdown-panel hidden" id="np-subtitle-panel">
+              <div class="field-dropdown-item" onclick="selectFieldDropdownOption('np-subtitle', this)">Growth · Core</div>
+              <div class="field-dropdown-item" onclick="selectFieldDropdownOption('np-subtitle', this)">Balanced · Steady</div>
+              <div class="field-dropdown-item" onclick="selectFieldDropdownOption('np-subtitle', this)">High Yield · Aggressive</div>
+              <div class="field-dropdown-item" onclick="selectFieldDropdownOption('np-subtitle', this)">Capital Preservation</div>
+              <div class="field-dropdown-item" onclick="selectFieldDropdownOption('np-subtitle', this)">Long-Term Growth</div>
+              <div class="field-dropdown-item" onclick="selectFieldDropdownOption('np-subtitle', this)">Short-Term Gains</div>
+              <div class="field-dropdown-item" onclick="selectFieldDropdownOption('np-subtitle', this)">Diversified Portfolio</div>
+              <div class="field-dropdown-item" onclick="selectFieldDropdownOption('np-subtitle', this)">Premium Tier</div>
+              <div class="field-dropdown-item" onclick="selectFieldDropdownOption('np-subtitle', this)">Starter Plan</div>
+              <div class="field-dropdown-item" onclick="selectFieldDropdownOption('np-subtitle', this)">Flagship Package</div>
+            </div>
+          </div>
+          <div class="field-dropdown" id="np-tag-dd">
+            <input type="hidden" id="np-tag" value="">
+            <button type="button" onclick="toggleFieldDropdown('np-tag')" class="field-dropdown-btn input-field w-full px-3 py-2 rounded-lg text-xs">
+              <span class="fd-value is-placeholder" id="np-tag-label">Tag</span>
+              <i class="fa-solid fa-chevron-down"></i>
+            </button>
+            <div class="field-dropdown-panel hidden" id="np-tag-panel">
+              <div class="field-dropdown-item" onclick="selectFieldDropdownOption('np-tag', this)">Orbit</div>
+              <div class="field-dropdown-item" onclick="selectFieldDropdownOption('np-tag', this)">Stellar</div>
+              <div class="field-dropdown-item" onclick="selectFieldDropdownOption('np-tag', this)">Nova</div>
+              <div class="field-dropdown-item" onclick="selectFieldDropdownOption('np-tag', this)">Quantum</div>
+              <div class="field-dropdown-item" onclick="selectFieldDropdownOption('np-tag', this)">Nebula</div>
+              <div class="field-dropdown-item" onclick="selectFieldDropdownOption('np-tag', this)">Galactic</div>
+              <div class="field-dropdown-item" onclick="selectFieldDropdownOption('np-tag', this)">Warp Speed</div>
+              <div class="field-dropdown-item" onclick="selectFieldDropdownOption('np-tag', this)">Cosmic</div>
+              <div class="field-dropdown-item" onclick="selectFieldDropdownOption('np-tag', this)">Hyperdrive</div>
+              <div class="field-dropdown-item" onclick="selectFieldDropdownOption('np-tag', this)">Zenith</div>
+            </div>
+          </div>
         </div>
         <textarea id="np-description" placeholder="Short description shown on the Deals card" rows="2" class="input-field w-full px-3 py-2 rounded-lg text-xs placeholder:text-pink-100/30 resize-none"></textarea>
-        <input type="text" id="np-image" placeholder="Image URL (optional)" class="input-field w-full px-3 py-2 rounded-lg text-xs placeholder:text-pink-100/30">
+        <div class="flex gap-2 items-start">
+          <div id="np-image-preview" class="relative w-14 h-14 rounded-lg overflow-hidden glass shrink-0">
+            <div class="absolute inset-0 flex items-center justify-center">
+              <i class="fa-solid fa-image text-pink-100/30 text-lg" id="np-image-preview-icon"></i>
+            </div>
+            <img id="np-image-preview-img" class="hidden absolute inset-0 w-full h-full object-cover" alt="Package image preview">
+          </div>
+          <div class="flex-1 min-w-0 space-y-1.5">
+            <input type="text" id="np-image" placeholder="Image URL (optional)" oninput="updateProductImagePreview('np', '')" class="input-field w-full px-3 py-2 rounded-lg text-xs placeholder:text-pink-100/30">
+            <div class="flex gap-1.5">
+              <label class="flex-1 py-1.5 rounded-lg text-[10px] font-semibold text-center bg-white/5 text-pink-100/70 hover:bg-white/10 active:scale-[0.99] transition-all cursor-pointer flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-folder-open"></i>
+                <span>Upload photo</span>
+                <input type="file" accept="image/*" id="np-image-file" class="hidden" onchange="handleProductImageUpload(event, 'np', '')">
+              </label>
+              <button type="button" onclick="browseImagesOnline()" class="flex-1 py-1.5 rounded-lg text-[10px] font-semibold bg-white/5 text-pink-100/70 hover:bg-white/10 active:scale-[0.99] transition-all flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-globe"></i>
+                <span>Browse online</span>
+              </button>
+            </div>
+          </div>
+        </div>
         <div class="grid grid-cols-3 gap-2">
           <div>
-            <label class="block text-[10px] text-pink-100/45 mb-1">Min ₱</label>
-            <input type="text" id="np-min" inputmode="numeric" placeholder="0" onfocus="this.select()" class="input-field w-full px-2.5 py-2 rounded-lg text-xs placeholder:text-pink-100/30">
+            <label class="block text-[10px] text-pink-100/45 mb-1">Rate</label>
+            <input type="text" id="np-rate" inputmode="numeric" placeholder="0" onfocus="this.select()" class="input-field w-full px-2.5 py-2 rounded-lg text-xs placeholder:text-pink-100/30">
           </div>
           <div>
-            <label class="block text-[10px] text-pink-100/45 mb-1">Days</label>
-            <input type="text" id="np-days" inputmode="numeric" placeholder="90" onfocus="this.select()" class="input-field w-full px-2.5 py-2 rounded-lg text-xs placeholder:text-pink-100/30">
+            <label class="block text-[10px] text-pink-100/45 mb-1">Daily Yield</label>
+            <input type="text" id="np-yield" inputmode="decimal" placeholder="0" onfocus="this.select()" class="input-field w-full px-2.5 py-2 rounded-lg text-xs placeholder:text-pink-100/30">
           </div>
           <div>
-            <label class="block text-[10px] text-pink-100/45 mb-1">Target %</label>
-            <input type="text" id="np-target" inputmode="decimal" placeholder="0" onfocus="this.select()" class="input-field w-full px-2.5 py-2 rounded-lg text-xs placeholder:text-pink-100/30">
+            <label class="block text-[10px] text-pink-100/45 mb-1">Term/Days</label>
+            <input type="text" id="np-term" inputmode="numeric" placeholder="0" onfocus="this.select()" class="input-field w-full px-2.5 py-2 rounded-lg text-xs placeholder:text-pink-100/30">
           </div>
         </div>
         <div class="flex gap-2 pt-1">
           <button type="button" onclick="hideAddProductForm()" class="flex-1 py-2 rounded-xl text-xs font-semibold bg-white/5 text-pink-100/70 hover:bg-white/10 active:scale-[0.99] transition-all">Cancel</button>
-          <button type="button" onclick="createProduct()" class="flex-1 py-2 rounded-xl text-xs font-semibold bg-pink-300/15 text-pink-200 border border-pink-300/25 hover:bg-pink-300/25 active:scale-[0.99] transition-all">Create package</button>
+          <button type="button" onclick="createProduct()" id="np-create-btn" class="flex-1 py-2 rounded-xl text-xs font-semibold bg-pink-300/15 text-pink-200 border border-pink-300/25 hover:bg-pink-300/25 active:scale-[0.99] transition-all">Create package</button>
         </div>
       </div>
       <div class="space-y-3 mb-4" id="admin-packages-list">
@@ -3384,10 +3517,26 @@
               <input type="text" id="pp-name-${safeId}" value="${esc(p.name)}" placeholder="Name"
                 class="input-field w-full px-3 py-2 rounded-lg text-xs font-semibold placeholder:text-pink-100/30">
               <div class="grid grid-cols-2 gap-2">
-                <input type="text" id="pp-subtitle-${safeId}" value="${esc(p.subtitle)}" placeholder="Subtitle"
-                  class="input-field w-full px-2.5 py-2 rounded-lg text-xs placeholder:text-pink-100/30">
-                <input type="text" id="pp-tag-${safeId}" value="${esc(p.tag)}" placeholder="Tag"
-                  class="input-field w-full px-2.5 py-2 rounded-lg text-xs placeholder:text-pink-100/30">
+                <div class="field-dropdown" id="pp-subtitle-${safeId}-dd">
+                  <input type="hidden" id="pp-subtitle-${safeId}" value="${esc(p.subtitle)}">
+                  <button type="button" onclick="toggleFieldDropdown('pp-subtitle-${safeId}')" class="field-dropdown-btn input-field w-full px-3 py-2 rounded-lg text-xs">
+                    <span class="fd-value${p.subtitle ? '' : ' is-placeholder'}" id="pp-subtitle-${safeId}-label">${p.subtitle ? esc(p.subtitle) : 'Subtitle'}</span>
+                    <i class="fa-solid fa-chevron-down"></i>
+                  </button>
+                  <div class="field-dropdown-panel hidden" id="pp-subtitle-${safeId}-panel">
+                    ${['Growth · Core','Balanced · Steady','High Yield · Aggressive','Capital Preservation','Long-Term Growth','Short-Term Gains','Diversified Portfolio','Premium Tier','Starter Plan','Flagship Package'].map(opt => `<div class="field-dropdown-item${opt === p.subtitle ? ' is-selected' : ''}" onclick="selectFieldDropdownOption('pp-subtitle-${safeId}', this)">${opt}</div>`).join('')}
+                  </div>
+                </div>
+                <div class="field-dropdown" id="pp-tag-${safeId}-dd">
+                  <input type="hidden" id="pp-tag-${safeId}" value="${esc(p.tag)}">
+                  <button type="button" onclick="toggleFieldDropdown('pp-tag-${safeId}')" class="field-dropdown-btn input-field w-full px-3 py-2 rounded-lg text-xs">
+                    <span class="fd-value${p.tag ? '' : ' is-placeholder'}" id="pp-tag-${safeId}-label">${p.tag ? esc(p.tag) : 'Tag'}</span>
+                    <i class="fa-solid fa-chevron-down"></i>
+                  </button>
+                  <div class="field-dropdown-panel hidden" id="pp-tag-${safeId}-panel">
+                    ${['Orbit','Stellar','Nova','Quantum','Nebula','Galactic','Warp Speed','Cosmic','Hyperdrive','Zenith'].map(opt => `<div class="field-dropdown-item${opt === p.tag ? ' is-selected' : ''}" onclick="selectFieldDropdownOption('pp-tag-${safeId}', this)">${opt}</div>`).join('')}
+                  </div>
+                </div>
               </div>
             </div>
             <button type="button" role="switch" aria-checked="${on}"
@@ -3399,22 +3548,43 @@
           </div>
           <textarea id="pp-description-${safeId}" rows="2" placeholder="Short description"
             class="input-field w-full px-3 py-2 rounded-lg text-xs placeholder:text-pink-100/30 resize-none">${esc(p.description)}</textarea>
-          <input type="text" id="pp-image-${safeId}" value="${esc(p.image)}" placeholder="Image URL (optional)"
-            class="input-field w-full px-3 py-2 rounded-lg text-xs placeholder:text-pink-100/30">
+          <div class="flex gap-2 items-start">
+            <div id="pp-image-preview-${safeId}" class="relative w-14 h-14 rounded-lg overflow-hidden glass shrink-0">
+              <div class="absolute inset-0 flex items-center justify-center">
+                <i class="fa-solid fa-image text-pink-100/30 text-lg${p.image ? ' hidden' : ''}" id="pp-image-preview-icon-${safeId}"></i>
+              </div>
+              <img id="pp-image-preview-img-${safeId}" class="${p.image ? '' : 'hidden '}absolute inset-0 w-full h-full object-cover" alt="Package image preview" ${p.image ? `src="${esc(p.image)}"` : ''}>
+            </div>
+            <div class="flex-1 min-w-0 space-y-1.5">
+              <input type="text" id="pp-image-${safeId}" value="${esc(p.image)}" placeholder="Image URL (optional)"
+                oninput="updateProductImagePreview('pp', '-${safeId}')" class="input-field w-full px-3 py-2 rounded-lg text-xs placeholder:text-pink-100/30">
+              <div class="flex gap-1.5">
+                <label class="flex-1 py-1.5 rounded-lg text-[10px] font-semibold text-center bg-white/5 text-pink-100/70 hover:bg-white/10 active:scale-[0.99] transition-all cursor-pointer flex items-center justify-center gap-1.5">
+                  <i class="fa-solid fa-folder-open"></i>
+                  <span>Upload photo</span>
+                  <input type="file" accept="image/*" id="pp-image-file-${safeId}" class="hidden" onchange="handleProductImageUpload(event, 'pp', '-${safeId}')">
+                </label>
+                <button type="button" onclick="browseImagesOnline()" class="flex-1 py-1.5 rounded-lg text-[10px] font-semibold bg-white/5 text-pink-100/70 hover:bg-white/10 active:scale-[0.99] transition-all flex items-center justify-center gap-1.5">
+                  <i class="fa-solid fa-globe"></i>
+                  <span>Browse online</span>
+                </button>
+              </div>
+            </div>
+          </div>
           <div class="grid grid-cols-3 gap-2">
             <div>
-              <label class="block text-[10px] text-pink-100/45 mb-1">Min ₱</label>
-              <input type="text" id="pp-min-${safeId}" inputmode="numeric" value="${p.minAmount || ''}" placeholder="0"
+              <label class="block text-[10px] text-pink-100/45 mb-1">Rate</label>
+              <input type="text" id="pp-rate-${safeId}" inputmode="numeric" value="${p.rate || ''}" placeholder="0"
                 onfocus="this.select()" class="input-field w-full px-2.5 py-2 rounded-lg text-xs placeholder:text-pink-100/30">
             </div>
             <div>
-              <label class="block text-[10px] text-pink-100/45 mb-1">Days</label>
-              <input type="text" id="pp-days-${safeId}" inputmode="numeric" value="${p.days || ''}" placeholder="0"
+              <label class="block text-[10px] text-pink-100/45 mb-1">Daily Yield</label>
+              <input type="text" id="pp-yield-${safeId}" inputmode="decimal" value="${p.dailyYield || ''}" placeholder="0"
                 onfocus="this.select()" class="input-field w-full px-2.5 py-2 rounded-lg text-xs placeholder:text-pink-100/30">
             </div>
             <div>
-              <label class="block text-[10px] text-pink-100/45 mb-1">Target %</label>
-              <input type="text" id="pp-target-${safeId}" inputmode="decimal" value="${p.targetPercent || ''}" placeholder="0"
+              <label class="block text-[10px] text-pink-100/45 mb-1">Term/Days</label>
+              <input type="text" id="pp-term-${safeId}" inputmode="numeric" value="${p.termDays || ''}" placeholder="0"
                 onfocus="this.select()" class="input-field w-full px-2.5 py-2 rounded-lg text-xs placeholder:text-pink-100/30">
             </div>
           </div>
@@ -3423,7 +3593,7 @@
               class="py-2 px-3 rounded-xl text-xs font-semibold bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 active:scale-[0.99] transition-all">
               <i class="fa-solid fa-trash"></i>
             </button>
-            <button type="button" onclick="saveProduct('${safeId}')"
+            <button type="button" onclick="saveProduct('${safeId}', this)"
               class="flex-1 py-2 rounded-xl text-xs font-semibold bg-pink-300/15 text-pink-200 border border-pink-300/25 hover:bg-pink-300/25 active:scale-[0.99] transition-all">
               Save changes
             </button>
@@ -3462,9 +3632,140 @@
       const card = document.getElementById('admin-add-product-card');
       if (!card) return;
       card.classList.add('hidden');
-      ['np-name', 'np-subtitle', 'np-tag', 'np-description', 'np-image', 'np-min', 'np-days', 'np-target']
+      ['np-name', 'np-subtitle', 'np-tag', 'np-description', 'np-image', 'np-rate', 'np-yield', 'np-term']
         .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+      const fileEl = document.getElementById('np-image-file');
+      if (fileEl) fileEl.value = '';
+      resetFieldDropdown('np-subtitle', 'Subtitle');
+      resetFieldDropdown('np-tag', 'Tag');
+      updateProductImagePreview();
     }
+
+    // ---- Package image: URL input, local upload, small live preview ----
+    const MAX_IMAGE_UPLOAD_BYTES = 5 * 1024 * 1024; // raw file cap; server's express.json 8mb limit covers the ~33% base64 overhead
+
+    function updateProductImagePreview(prefix, suffix) {
+      prefix = prefix || 'np';
+      suffix = suffix || '';
+      const url = (document.getElementById(`${prefix}-image${suffix}`)?.value || '').trim();
+      const img = document.getElementById(`${prefix}-image-preview-img${suffix}`);
+      const icon = document.getElementById(`${prefix}-image-preview-icon${suffix}`);
+      if (!img || !icon) return;
+      if (!url) {
+        img.classList.add('hidden');
+        img.removeAttribute('src');
+        icon.classList.remove('hidden');
+        return;
+      }
+      img.onerror = () => {
+        img.classList.add('hidden');
+        img.removeAttribute('src');
+        icon.classList.remove('hidden');
+      };
+      img.onload = () => {
+        icon.classList.add('hidden');
+        img.classList.remove('hidden');
+      };
+      img.src = url;
+    }
+
+    function handleProductImageUpload(event, prefix, suffix) {
+      prefix = prefix || 'np';
+      suffix = suffix || '';
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) {
+        showToast('Please choose an image file', 'error');
+        event.target.value = '';
+        return;
+      }
+      if (file.size > MAX_IMAGE_UPLOAD_BYTES) {
+        showToast('Image is too large — pick one under 5MB', 'error');
+        event.target.value = '';
+        return;
+      }
+      const uploadBtn = event.target.closest('label');
+      const uploadLabel = uploadBtn ? uploadBtn.querySelector('span') : null;
+      const originalUploadText = uploadLabel ? uploadLabel.textContent : '';
+      if (uploadLabel) uploadLabel.textContent = 'Reading…';
+      if (uploadBtn) uploadBtn.style.opacity = '0.6';
+      const reader = new FileReader();
+      reader.onload = () => {
+        const urlField = document.getElementById(`${prefix}-image${suffix}`);
+        if (urlField) urlField.value = reader.result;
+        updateProductImagePreview(prefix, suffix);
+        showToast('Photo loaded — check the preview', 'success');
+        if (uploadLabel) uploadLabel.textContent = originalUploadText;
+        if (uploadBtn) uploadBtn.style.opacity = '';
+      };
+      reader.onerror = () => {
+        showToast('Could not read that file', 'error');
+        if (uploadLabel) uploadLabel.textContent = originalUploadText;
+        if (uploadBtn) uploadBtn.style.opacity = '';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function browseImagesOnline() {
+      // No image-search API is wired up yet, so this opens a stock-photo
+      // site in a new tab. Admin picks a photo there, copies its image
+      // address, then pastes it into the Image field above (preview
+      // updates automatically once pasted).
+      window.open('https://unsplash.com/s/photos/investment', '_blank', 'noopener');
+      showToast('Right-click a photo → Copy image address, then paste it above', 'success');
+    }
+
+    // ---- Reusable "choice" dropdown for Subtitle / Tag fields ----
+    function toggleFieldDropdown(id) {
+      const wrap = document.getElementById(id + '-dd');
+      const panel = document.getElementById(id + '-panel');
+      if (!wrap || !panel) return;
+      const isOpen = !panel.classList.contains('hidden');
+      closeAllFieldDropdowns();
+      if (!isOpen) {
+        panel.classList.remove('hidden');
+        wrap.classList.add('is-open');
+      }
+    }
+
+    function closeAllFieldDropdowns() {
+      document.querySelectorAll('.field-dropdown-panel').forEach(p => p.classList.add('hidden'));
+      document.querySelectorAll('.field-dropdown.is-open').forEach(w => w.classList.remove('is-open'));
+    }
+
+    function selectFieldDropdownOption(id, el) {
+      const value = (el.textContent || '').trim();
+      const input = document.getElementById(id);
+      const label = document.getElementById(id + '-label');
+      const panel = document.getElementById(id + '-panel');
+      if (input) input.value = value;
+      if (label) {
+        label.textContent = value;
+        label.classList.remove('is-placeholder');
+      }
+      if (panel) {
+        panel.querySelectorAll('.field-dropdown-item').forEach(item => {
+          item.classList.toggle('is-selected', item === el);
+        });
+      }
+      closeAllFieldDropdowns();
+    }
+
+    function resetFieldDropdown(id, placeholderText) {
+      const label = document.getElementById(id + '-label');
+      const panel = document.getElementById(id + '-panel');
+      if (label) {
+        label.textContent = placeholderText;
+        label.classList.add('is-placeholder');
+      }
+      if (panel) {
+        panel.querySelectorAll('.field-dropdown-item.is-selected').forEach(item => item.classList.remove('is-selected'));
+      }
+    }
+
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest('.field-dropdown')) closeAllFieldDropdowns();
+    });
 
     function readProductForm(prefix, idSuffix) {
       const val = (field) => document.getElementById(`${prefix}-${field}${idSuffix}`)?.value ?? '';
@@ -3474,9 +3775,9 @@
         tag: val('tag').trim(),
         description: val('description').trim(),
         image: val('image').trim(),
-        minAmount: val('min').trim() === '' ? 0 : Number(val('min')),
-        days: val('days').trim() === '' ? 0 : Number(val('days')),
-        targetPercent: val('target').trim() === '' ? 0 : Number(val('target'))
+        rate: val('rate').trim() === '' ? 0 : Number(val('rate')),
+        dailyYield: val('yield').trim() === '' ? 0 : Number(val('yield')),
+        termDays: val('term').trim() === '' ? 0 : Number(val('term'))
       };
     }
 
@@ -3487,6 +3788,13 @@
       if (!body.name) {
         showToast('Package name is required', 'error');
         return;
+      }
+      const btn = document.getElementById('np-create-btn');
+      const originalLabel = btn ? btn.innerHTML : '';
+      if (btn) {
+        btn.disabled = true;
+        btn.style.opacity = '0.6';
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creating…';
       }
       try {
         const res = await fetch(`${API_URL}/admin/products`, {
@@ -3505,16 +3813,28 @@
         }
       } catch (e) {
         showToast('Cannot reach server', 'error');
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.style.opacity = '';
+          btn.innerHTML = originalLabel;
+        }
       }
     }
 
-    async function saveProduct(id) {
+    async function saveProduct(id, btn) {
       const token = getAdminToken();
       if (!token) return;
       const body = readProductForm('pp', '-' + id);
       if (!body.name) {
         showToast('Package name is required', 'error');
         return;
+      }
+      const originalLabel = btn ? btn.innerHTML : '';
+      if (btn) {
+        btn.disabled = true;
+        btn.style.opacity = '0.6';
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving…';
       }
       try {
         const res = await fetch(`${API_URL}/admin/products/${encodeURIComponent(id)}`, {
@@ -3532,6 +3852,12 @@
         }
       } catch (e) {
         showToast('Cannot reach server', 'error');
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.style.opacity = '';
+          btn.innerHTML = originalLabel;
+        }
       }
     }
 
@@ -4149,11 +4475,11 @@
                 </div>
                 ${p.tag ? `<span class="tag">${p.tag}</span>` : ''}
               </div>
-              ${p.description ? `<p class="text-xs text-pink-100/55 mb-3 leading-relaxed">${p.description}</p>` : ''}
+              ${p.description ? `<p class="text-xs text-pink-100/55 mb-3 leading-relaxed" style="overflow-wrap:anywhere;word-break:break-word;text-align:justify;max-width:100%;overflow:hidden;">${p.description}</p>` : ''}
               <div class="flex justify-between text-sm mb-4">
-                <div><p class="text-[10px] text-pink-100/45">Min</p><p class="font-semibold">₱${Number(p.minAmount || 0).toLocaleString('en-PH')}</p></div>
-                <div><p class="text-[10px] text-pink-100/45">Period</p><p class="font-semibold">${p.days || 0} Days</p></div>
-                <div><p class="text-[10px] text-pink-100/45">Target</p><p class="font-semibold text-pink-300">${p.targetPercent || 0}%</p></div>
+                <div><p class="text-[10px] text-pink-100/45">Rate</p><p class="font-semibold">₱${Number(p.rate || 0).toLocaleString('en-PH')}</p></div>
+                <div><p class="text-[10px] text-pink-100/45">Daily Yield</p><p class="font-semibold text-pink-300">₱${Number(p.dailyYield || 0).toLocaleString('en-PH')}</p></div>
+                <div><p class="text-[10px] text-pink-100/45">Term</p><p class="font-semibold">${p.termDays || 0} Days</p></div>
               </div>
               <button class="w-full btn-peach font-semibold py-2.5 rounded-full text-sm">Invest Now</button>
             </div>
