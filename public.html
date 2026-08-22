@@ -2189,22 +2189,25 @@
     }
 
     // ========== AUTH HELPERS ==========
+    // sessionStorage (not localStorage): dies when the tab/browsing context
+    // is fully closed — e.g. swiped away in the phone's recent-apps switcher.
+    // Reopening after that shows the login screen again, by design.
     function saveAuth(token, user) {
-      localStorage.setItem('orbit_token', token);
-      localStorage.setItem('orbit_user', JSON.stringify(user));
+      sessionStorage.setItem('orbit_token', token);
+      sessionStorage.setItem('orbit_user', JSON.stringify(user));
     }
 
     function getToken() {
-      return localStorage.getItem('orbit_token');
+      return sessionStorage.getItem('orbit_token');
     }
 
     function clearAuth() {
-      localStorage.removeItem('orbit_token');
-      localStorage.removeItem('orbit_user');
+      sessionStorage.removeItem('orbit_token');
+      sessionStorage.removeItem('orbit_user');
     }
 
     function getUser() {
-      const u = localStorage.getItem('orbit_user');
+      const u = sessionStorage.getItem('orbit_user');
       return u ? JSON.parse(u) : null;
     }
 
@@ -2556,14 +2559,16 @@
     }
 
     // ========== ADMIN AUTH ==========
+    // sessionStorage: same reasoning as user auth above — dies on full tab
+    // close (e.g. swiped away in recents), forcing a fresh login on reopen.
     function getAdminToken() {
-      return localStorage.getItem('orbit_admin_token');
+      return sessionStorage.getItem('orbit_admin_token');
     }
     function setAdminToken(token) {
-      localStorage.setItem('orbit_admin_token', token);
+      sessionStorage.setItem('orbit_admin_token', token);
     }
     function clearAdminToken() {
-      localStorage.removeItem('orbit_admin_token');
+      sessionStorage.removeItem('orbit_admin_token');
     }
 
     async function handleAdminLogin() {
